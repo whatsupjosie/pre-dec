@@ -26,12 +26,12 @@ function fixture() {
   const writes = [], recoveries = [], notices = [], downloads = [];
   const indicator = {textContent:''};
   const context = createContext({
-    Blob, Event, TextEncoder, URL, setTimeout: () => {},
+    Blob, Event, TextEncoder, URL, setTimeout: () => {}, clearTimeout, serverTimer:null,
     document: {
       dispatchEvent() {},
       createElement: () => ({click() { downloads.push(this.download); }})
     },
-    window: {}, initializing: false, networked: false, recoverySafe: true,
+    window: {}, reachFileMode:false, initializing: false, networked: false, recoverySafe: true,
     documentId: 'first', mutation: 1, documentDirty: true, documentHandle: null,
     standaloneDocumentId: 1, standaloneSaveInProgress: false, fileSavingId: null,
     content: 'First line',
@@ -208,14 +208,15 @@ test('offline manuscript shelf lists browser recovery without asking Reach', asy
   const shelf = node();
   shelf.replaceChildren = () => { shelf.children = []; };
   const context = createContext({
-    networked:false, $:() => shelf, document:{createElement:node},
+    reachFileMode:false, networked:false, $:() => shelf, document:{createElement:node},
     writeRecovery:() => clicks.push('write'),
     browserManuscripts:() => [{id:'draft', title:'My recovered draft', dirty:true, ts:0}],
     openModal:() => clicks.push('open'),
     api:() => assert.fail('Disk recovery does not use Reach'),
     saveDocument:() => assert.fail('Disk shelf must not await a server save')
   });
-  await runInContext(shelfSource + '\nshowShelf()', context);
+  const fileGuard = extract(reach, 'function blockReachFileOperation(', 'async function saveDocumentAs(');
+  await runInContext(fileGuard + shelfSource + '\nshowShelf()', context);
   assert.deepEqual(clicks, ['write', 'open']);
   assert.equal(shelf.children[0].children[0].textContent, 'My recovered draft');
   assert.equal(shelf.children[0].dataset.source, 'browser');

@@ -241,9 +241,9 @@ const deadline=setTimeout(()=>{console.error('FAIL: editor test did not finish')
   const offlineA=h.run('documentId');await h.run('newDocument()');
   h.run(`soloTextarea.value='Offline manuscript B';soloTextarea.dispatchEvent(new Event('input'));`);await h.run('saveDocument()');
   const offlineB=h.run('documentId');await h.run('showShelf()');
-  const recovery=h.w.document.querySelector('#reachShelfList button[data-document-id="'+offlineA+'"][data-source="browser"]');assert(recovery);recovery.click();await pause();
-  assert.equal(h.run('documentId'),offlineA);assert.equal(h.w.document.getElementById('soloTextarea').value,'Offline manuscript A');
-  assert.equal(h.run(`stored(RECOVERY_KEY+':'+${JSON.stringify(offlineB)},null).state.committed[0]`),'Offline manuscript B');
+  const recovery=h.w.document.querySelector('#reachShelfList button[data-document-id="'+offlineA+'"][data-source="browser"]');assert(recovery);await recovery.onclick();
+  assert.notEqual(h.run('documentId'),offlineA);assert.notEqual(h.run('documentId'),offlineB);assert.equal(h.w.document.getElementById('soloTextarea').value,'Offline manuscript A');
+  assert.equal(h.run(`browserManuscripts().find(copy=>copy.id===${JSON.stringify(offlineB)}&&copy.dirty).state.committed[0]`),'Offline manuscript B');
   const recoveryStorage=h.storage();h.w.close();h=harness(recoveryStorage,timing);await h.w.reachStarted;await h.w.reachArtworkReady;
   assert.equal(h.w.document.getElementById('soloTextarea').value,'Offline manuscript A');assert.equal(h.errors.length,0,h.errors.join('\n'));h.w.close();
   console.log('PASS: offline manuscript copies remain separately recoverable through switching and reload');

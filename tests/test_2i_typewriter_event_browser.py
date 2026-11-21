@@ -1,7 +1,7 @@
 """Claude's touch-key events must edit 2i's authoritative textarea, not a demo buffer.
 
-Standalone synthetic host: uses the ACTUAL production 2i input bridge,
-studio-desk and typewriter-demo scripts through intercepted localhost routes.
+Synthetic host uses the ACTUAL current 2i input adapter, interactive typewriter
+iframe, studio-desk and typewriter-demo scripts through intercepted localhost routes.
 No real server, account or network required. Requires Chromium/Playwright.
 """
 from pathlib import Path
@@ -14,19 +14,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 PARENT = """<!doctype html><html><head><meta charset="utf-8"></head><body>
 <section id="mcSection"><div class="section-body"></div></section>
+<div id="notebookFrame"></div>
 <textarea id="soloTextarea">Original</textarea><textarea id="draftArea"></textarea>
 <script>
 const reachFileMode=false;
 const $=id=>document.getElementById(id);
 const soloTextarea=$('soloTextarea'),draftArea=$('draftArea');
 let coWriting=false,initializing=false,generating=false,chatSending=false,editingIdx=null;
+let committed=['Original'],buffer=[];
+function render(){} // the production desk wraps render to synchronize its iframe
 window.receivedInputs=0;window.writerNotes=[];
 function addChat(role,message){writerNotes.push({role,message});}
 soloTextarea.addEventListener('input',()=>receivedInputs++);
 draftArea.addEventListener('input',()=>receivedInputs++);
 </script>
 <script src="/static/2i_studio_bridge.js"></script>
-<script src="/2i/2i-assets/typewriter-key-bridge.js"></script>
+<script src="/2i/2i-assets/typewriter-input.js"></script>
 <script src="/2i/2i-assets/studio-desk.js"></script>
 </body></html>"""
 
@@ -62,7 +65,7 @@ def app():
             sources = {
                 "/static/2i_studio_bridge.js":"static/2i_studio_bridge.js",
                 "/static/typewriter_console_demo.js":"static/typewriter_console_demo.js",
-                "/2i/2i-assets/typewriter-key-bridge.js":"2i/2i-assets/typewriter-key-bridge.js",
+                "/2i/2i-assets/typewriter-input.js":"2i/2i-assets/typewriter-input.js",
                 "/2i/2i-assets/studio-desk.js":"2i/2i-assets/studio-desk.js",
             }
             if request.path in sources:
@@ -76,8 +79,8 @@ def app():
         page.goto("http://localhost/test-parent")
         page.evaluate("twoiSetPresentation('typewriter')")
         page.evaluate("soloTextarea.focus(); soloTextarea.setSelectionRange(soloTextarea.value.length,soloTextarea.value.length)")
-        page.locator("#twoiTouchableTypewriter").click()
-        child = page.frame_locator("#twoiLiveKeysFrame")
+        page.wait_for_function("document.querySelector('#twoiTypewriterConsole')?.dataset.ready === 'true'", timeout=20000)
+        child = page.frame_locator("#twoiTypewriterConsole")
         child.locator("#painted").wait_for()
         yield page, child
         assert errors == [], errors
@@ -111,7 +114,8 @@ def test_touch_keyboard_edits_real_manuscript_and_preserves_native_undo(app):
 
 def test_closing_keyboard_and_spoofed_messages_cannot_edit_document(app):
     page,child = app
-    page.locator("#twoiLiveKeys button").click()
+    page.evaluate("twoiSetPresentation('notebook')")
+    assert page.evaluate("document.body.dataset.twoiDesk") == "notebook"
     _key(child,"A","X")
     page.wait_for_timeout(60)
     assert page.input_value("#soloTextarea") == "Original"

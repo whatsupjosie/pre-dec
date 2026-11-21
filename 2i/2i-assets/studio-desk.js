@@ -80,7 +80,12 @@
   const typewriter=el("iframe",null,figure);
   typewriter.id="twoiTypewriterConsole";
   typewriter.title="Interactive blue and brass typewriter";
-  typewriter.src="/typewriter-console?embedded=2i";
+  const diskConsole = location.protocol === "file:";
+  const diskToken = diskConsole ? crypto.randomUUID() : null;
+  let diskPaperPort;
+  typewriter.src = diskConsole
+    ? "../static/typewriter_console.html?embedded=2i#" + diskToken
+    : "/typewriter-console?embedded=2i";
   typewriter.loading="lazy";
   const expand=el("button","Expand keys",figure);
   expand.id="twoiTypewriterExpand";expand.type="button";
@@ -102,18 +107,28 @@
   }
   function syncPaper(){
     if(typewriter.dataset.ready!=="true" || !typewriter.contentWindow)return;
-    typewriter.contentWindow.postMessage({
+    const message = {
       type:"pubcast:2i-manuscript",
       // Only a decorative excerpt goes into the frame. Saving uses the actual editor.
       text:currentText().slice(-2000)
-    },location.origin);
+    };
+    if (diskConsole) diskPaperPort?.postMessage(message);
+    else typewriter.contentWindow.postMessage(message,location.origin);
   }
   typewriter.addEventListener("load",syncPaper); // child also sends its own ready handshake
   window.addEventListener("message",event=>{
     // Do not accept commands from another frame, domain, or an inactive view.
-    if(event.source!==typewriter.contentWindow || event.origin!==location.origin)return;
+    if(event.source!==typewriter.contentWindow || event.origin!==(diskConsole?"null":location.origin))return;
     const data=event.data;
+    // file: documents have opaque origins. Bind the paper to the port
+    // supplied by this particular local console, including after reload.
+    if (diskConsole && data?.token !== diskToken) return;
     if(data?.type==="pubcast:2i-ready"){
+      if (diskConsole) {
+        if (!event.ports[0]) return;
+        diskPaperPort?.close();
+        diskPaperPort = event.ports[0];
+      }
       typewriter.dataset.ready="true";syncPaper();return;
     }
     if(data?.type==="pubcast:2i-collapse"){setExpanded(false);return;}

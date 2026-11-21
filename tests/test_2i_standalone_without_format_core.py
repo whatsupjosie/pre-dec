@@ -132,6 +132,8 @@ def test_partner_checks_report_offline_instead_of_failing_on_names_only_the_host
     """ppHealthCheck, ppCommit and ppLoadIntelligence read documentId and initializing, which reach.js creates.
     From disk those names do not exist; the three calls used to stop with "initializing is not defined"."""
     page, errors = opened
+    requests = []
+    page.on("request", lambda request: requests.append(request.url))
     page.wait_for_timeout(2600)  # the page's own start-up health check has run by now
     assert errors == []
     page.evaluate("""async (lines) => {
@@ -142,3 +144,4 @@ def test_partner_checks_report_offline_instead_of_failing_on_names_only_the_host
     assert errors == []
     assert page.evaluate("[typeof documentId, typeof initializing, ppDocumentId(), ppStartingUp()]") == ["undefined", "undefined", None, False]
     assert page.inner_text("#ppStatus") == "PubPartner: offline"
+    assert not any("/api/pubpartner/" in url for url in requests)

@@ -38,7 +38,7 @@ async function bridgeTest(){
    saveDocument:save,docPayload:()=>({format:'2i-document',version:4,state:{committed:['My untouched draft']}}),safeName:()=>"Original_Work",
    Blob,URLSearchParams,Promise,console,Event:class Event{constructor(type){this.type=type}},
    document:{documentElement:{dataset:{}},addEventListener(){},dispatchEvent(){}},
-   documentDirty:false,saveConflict:false,savePromise:null,chatSending:false,generating:false,PP:{inflight:false},recoverySafe:true,
+   initializing:false,documentDirty:false,saveConflict:false,savePromise:null,chatSending:false,generating:false,PP:{inflight:false},recoverySafe:true,
  };
  vm.runInNewContext(fileBridge,context,{filename:'file-workspace.js'});
  await tick();

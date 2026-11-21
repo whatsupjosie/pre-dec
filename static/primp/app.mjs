@@ -12,7 +12,7 @@ const $ = id => document.getElementById(id);
 const history = new History();
 let renderer, scene, camera, controls, avatar, animations = [], source, source64, targets = [], active = 0, layerIndex = 5;
 let tool = 'lipstick', edit = null, previous = null, pointer = null, busy = false, dirty = false, comparing = false;
-let db = null, recoveryTimer, generation = 0, recoveryWrites = Promise.resolve();
+let db = null, recoveryTimer, pendingRecovery = 0, generation = 0, recoveryWrites = Promise.resolve();
 let graphicsReady = false, pendingFrame = null, recoveryRevision = 0, recoveryScope;
 const ndc = new THREE.Vector2();
 const viewport = $('viewport');
@@ -279,16 +279,19 @@ async function openDatabase() {
 function scheduleRecovery() {
   clearTimeout(recoveryTimer); if (!db || !avatar) return;
   const version = generation;
+  const editNumber = ++pendingRecovery;
+  $('storage-status').textContent = 'Saving local recovery…';
   recoveryTimer = setTimeout(() => {
     if (version !== generation || edit) return;
     recoveryWrites = recoveryWrites.catch(() => {}).then(async () => {
       if (version !== generation) return;
       await checkRecoverySession();
+      if (version !== generation || editNumber !== pendingRecovery) return;
       const snapshot = project();
       recoveryRevision = await writeRecoveryRecord(db, snapshot, recoveryRevision);
-      if (version !== generation) return;
+      if (version !== generation || editNumber !== pendingRecovery) return;
       $('storage-status').textContent = 'Local recovery saved on this device.'; $('recover').hidden = false;
-    }).catch(error => { if (version !== generation) return; $('storage-status').textContent = `Local recovery failed: ${error.message}. Save a look file now.`; });
+    }).catch(error => { if (version !== generation || editNumber !== pendingRecovery) return; $('storage-status').textContent = `Local recovery failed: ${error.message}. Save a look file now.`; });
   }, 600);
 }
 

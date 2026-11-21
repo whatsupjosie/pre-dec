@@ -90,7 +90,7 @@ test('manuscript shortcut owner preserves every native text-field undo',()=>{
   assert.equal(shortcut({key:'z',ctrlKey:true,shiftKey:true},{nativeTextField:false}),'redo');
 });
 test('Reach capture guard stops Ctrl+Z in Find and Rename, not Save',()=>{
-  const s=take(reach,"// Preserve native undo in EVERY text entry",'// Drop is handled once');
+  const s=take(reach,"// Native undo belongs to the focused text field",'// Drop is handled once');
   let callback=null;
   const c={
     document:{
@@ -132,5 +132,5 @@ test('standalone Replace All counts once and never edits protected lines',()=>{
   elements.frReplaceAllBtn.onclick();
   assert.equal(c.soloTextarea.value,'the fox sat\nthe cat is locked\na fox and a fox');
   assert.equal(c.committed.join('\n'),c.soloTextarea.value);
-  assert.equal(elements.frResult.textContent,'3 replacements made; 1 in locked lines left as they are');
+  assert.equal(elements.frResult.textContent,'3 replacements made; 1 in locked lines left unchanged');
 });

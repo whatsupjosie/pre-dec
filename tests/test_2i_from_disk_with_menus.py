@@ -182,11 +182,10 @@ def test_the_file_menu_and_the_keyboard_save_the_same_way_as_the_button(disk):
 def test_closing_the_picker_saves_nothing_downloads_nothing_and_says_so(disk):
     page, _, downloads = disk
     _type(page, "Not saved yet.")
-    page.wait_for_timeout(400)
     page.evaluate("window.__file.cancel = true")
     page.click("#saveBtn")
     page.wait_for_function("window.__file.savePickers === 1")
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(1200)  # beyond the pending one-second autosave
     assert page.evaluate("window.__file.writes.length") == 0 and downloads == []
     assert page.inner_text("#saveIndicator") == "Not saved to a file · kept in this browser"
     assert page.evaluate("documentDirty") is True

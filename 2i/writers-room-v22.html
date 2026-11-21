@@ -2863,6 +2863,7 @@ $('hmRestoreAutosave').onclick = async () => {
 function manuscriptShortcut(event,context) {
   if(event.defaultPrevented||event.isComposing||context.nativeDialog)return null;
   const key=String(event.key||'').toLowerCase();
+  if((key==='z'||key==='y')&&context.nativeTextField)return null;
   if(key==='escape')return context.legacyModal?'close-modal':'escape-editor';
   if(context.legacyModal||context.otherTextField||event.altKey||!(event.ctrlKey||event.metaKey))return null;
   if(event.repeat&&['s','e','enter','g'].includes(key))return null;
@@ -2879,7 +2880,8 @@ function manuscriptShortcut(event,context) {
 document.addEventListener('keydown',e=>{
   const target=e.target,editor=target===soloTextarea||target===draftArea||!!target?.closest?.('.m-line-edit textarea');
   const otherTextField=!editor&&!!target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
-  const action=manuscriptShortcut(e,{nativeDialog:!!document.querySelector('dialog[open]'),legacyModal:!!document.querySelector('.modal-backdrop.open'),otherTextField,collab:coWriting});
+  const nativeTextField=(editor||otherTextField)&&!target?.closest?.('.m-line-edit');
+  const action=manuscriptShortcut(e,{nativeDialog:!!document.querySelector('dialog[open]'),legacyModal:!!document.querySelector('.modal-backdrop.open'),otherTextField,nativeTextField,collab:coWriting});
   if(!action)return;
   if(target?.closest?.('.m-line-edit textarea')&&(action==='undo'||action==='redo'))return;
   e.preventDefault();
@@ -3135,6 +3137,7 @@ function ppWordCount() {
 /* ── transport ─────────────────────────────────────────────────────── */
 
 async function ppFetch(path, options = {}, timeoutMs = 15000) {
+  if (window.location.protocol === 'file:') throw Error('PubPartner requires a running PubCast host.');
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {

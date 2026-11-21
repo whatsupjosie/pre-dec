@@ -12,9 +12,9 @@ const ctx={window:{reachStarted:new Promise(resolve=>{resolveStartup=resolve})},
  parent:{postMessage:message=>messages.push(message)},URLSearchParams,URL,Event:class{},
  addEventListener:(type,fn)=>{events[type]=fn},document:{createElement:element,querySelector:element,
  body:{insertBefore(){}},addEventListener(){},documentElement:{dataset:{}},dispatchEvent(){}},
- $:element,ResizeObserver:class{observe(){}disconnect(){}},markDirty(){},soloTextarea:{},
+ $:element,ResizeObserver:class{observe(){}disconnect(){}},markDirty(){},soloTextarea:{},draftArea:{},saveDocument:null,saveDocumentAs:null,openDocument:null,newDocument:null,
  ForesightFiles:{mount:async()=>{mounted=true;return session}},
- chatSending:false,generating:false,PP:{inflight:false},getDocState:()=>({}),render(){},console};
+ initializing:false,chatSending:false,generating:false,PP:{inflight:false},getDocState:()=>({}),render(){},console};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 async function request(command){await events.message({origin:ctx.location.origin,source:ctx.parent,
  data:{type:'foresight:file-command',fileId:'document-a',requestId:command,sessionNonce:'nonce',command}});

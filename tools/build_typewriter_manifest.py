@@ -92,4 +92,13 @@ def build() -> dict:
 if __name__ == "__main__":
     out = Path(__file__).resolve().parents[1] / "static" / "typewriter_console_hotspot_manifest.json"
     out.write_text(json.dumps(build(), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    # file:// pages cannot fetch a JSON sidecar. Keep the disk copy in sync
+    # with the map served to the hosted console.
+    page = out.with_name("typewriter_console.html")
+    html = page.read_text(encoding="utf-8")
+    marker = '<script id="disk-key-map" type="application/json">'
+    before, body = html.split(marker)
+    _, after = body.split("</script>", 1)
+    data = json.dumps(build(), ensure_ascii=False, separators=(",", ":"))
+    page.write_text(before + marker + data + "</script>" + after, encoding="utf-8")
     print("wrote", out, len(build()["hotspots"]), "hotspots")

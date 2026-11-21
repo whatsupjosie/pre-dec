@@ -499,9 +499,15 @@
     const manifestPath = root.getAttribute("data-console-manifest");
     state.adapter = new window.PubCastStudioConsoleHotspots.StudioConsoleHotspots();
 
-    const response = await fetch(manifestPath);
-    if (!response.ok) throw new Error("Could not load the console map (" + response.status + ").");
-    state.manifest = await response.json();
+    const diskMap = location.protocol === "file:" && document.getElementById("disk-key-map");
+    if (diskMap) {
+      state.manifest = JSON.parse(diskMap.textContent);
+      state.manifest.image.clean_path = "../" + state.manifest.image.clean_path.replace(/^\//, "");
+    } else {
+      const response = await fetch(manifestPath);
+      if (!response.ok) throw new Error("Could not load the console map (" + response.status + ").");
+      state.manifest = await response.json();
+    }
     validateManifest(state.manifest);
 
     const frame = el("div", { className: "pc-console-frame" });

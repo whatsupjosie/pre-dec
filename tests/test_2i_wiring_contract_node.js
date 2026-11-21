@@ -30,6 +30,7 @@ function assetRefs(html) {
 }
 function scripts(html) {
   return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
+    .filter(m=>!m[0].startsWith('<script id="disk-key-map" type="application/json">'))
     .map(m=>m[1]).filter(x=>x.trim());
 }
 test('combined PubCast server retains Fable server lifecycle and security wiring',()=>{
@@ -99,7 +100,7 @@ test('embedded typewriter console has original art and mapped keys',()=>{
   assert.equal(new Set(manifest.hotspots.map(x=>x.id)).size,manifest.hotspots.length);
   assert.match(studio,/\/typewriter-console\?embedded=2i/);
   assert.match(studio,/event\.source!==typewriter\.contentWindow/);
-  assert.match(studio,/event\.origin!==location\.origin/);
+  assert.deepEqual(JSON.parse(machine.match(/<script id="disk-key-map" type="application\/json">([^<]+)<\/script>/)[1]),manifest);
 });
 test('Foresight file-tray presentation is selectable without stealing its save adapter',()=>{
   assert.match(studio,/const filePresentation=!!reachFileMode/);

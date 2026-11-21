@@ -57,11 +57,14 @@ def test_alex_bridge_marks_memory_resurrection_for_jeremy(tmp_path: Path):
     bridge.shutdown()
 
 
-def test_alex_routes_message_and_recent_memory(tmp_path: Path):
+def test_alex_routes_message_and_recent_memory(tmp_path: Path, monkeypatch):
     fallback_alex = AlexCore(user_id="default", data_dir=tmp_path / "fallback_alex")
     bridge = AlexJeremyBridge(tmp_path / "bridge")
-    alex_routes.set_alex_instance(fallback_alex)
-    alex_routes.set_alex_provider(bridge.alex_for)
+    # The message route and the memory reader must share this test's bridge,
+    # even when a session-scoped host has already installed its own.
+    monkeypatch.setattr(alex_routes, "_alex_core", fallback_alex)
+    monkeypatch.setattr(alex_routes, "_alex_provider", bridge.alex_for)
+    monkeypatch.setattr(alex_routes, "_alex_bridge", bridge)
     app = FastAPI()
     app.include_router(alex_routes.router)
     client = TestClient(app)

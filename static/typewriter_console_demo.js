@@ -65,23 +65,36 @@
       paper.scrollTop = paper.scrollHeight;
     };
 
+    const diskConsole = location.protocol === "file:";
+    function tellEditor(message, ports = []) {
+      if (diskConsole) parent.postMessage({...message, token:location.hash.slice(1)}, "*", ports);
+      else parent.postMessage(message, location.origin);
+    }
+    function updatePaper(data) {
+      if (data?.type !== "pubcast:2i-manuscript") return;
+      typed = String(data.text || "").slice(-2000);
+      render();
+    }
     if (embedded) {
       window.addEventListener("message", function (event) {
         if (event.source !== parent || event.origin !== location.origin || event.data?.type !== "pubcast:2i-manuscript") return;
-        typed = String(event.data.text || "").slice(-2000);
-        render();
+        if (!diskConsole) updatePaper(event.data);
       });
-      parent.postMessage({type:"pubcast:2i-ready"}, location.origin);
+      if (diskConsole) {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = event => updatePaper(event.data);
+        tellEditor({type:"pubcast:2i-ready"}, [channel.port2]);
+      } else tellEditor({type:"pubcast:2i-ready"});
       window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") parent.postMessage({type:"pubcast:2i-collapse"}, location.origin);
+        if (event.key === "Escape") tellEditor({type:"pubcast:2i-collapse"});
       });
     }
     frame.addEventListener("pubcast:key", function (event) {
       const key = event.detail;
       if (embedded) {
-        parent.postMessage({type:"pubcast:2i-key", key: {
+        tellEditor({type:"pubcast:2i-key", key: {
           id:key.id, char:key.char, text:key.text, source:key.source, shift:key.shift
-        }}, location.origin);
+        }});
         return;
       }
       const before = typed;

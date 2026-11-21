@@ -37,15 +37,29 @@ def _write(page, text):
     page.keyboard.insert_text(text)
 
 
+def _click_manuscript_tool(page, selector):
+    """Use the visible drawer UI, so tests exercise the current single-page design."""
+    tab = page.locator("#twoiDrawerTabTools")
+    assert tab.is_visible(), "The manuscript-tools drawer tab must be accessible"
+    assert tab.get_attribute("aria-expanded") == "false"
+    tab.click()
+    assert tab.get_attribute("aria-expanded") == "true"
+    control = page.locator(selector)
+    assert control.is_visible(), f"{selector} was not exposed when the drawer opened"
+    control.click()
+    tab.click()
+    assert tab.get_attribute("aria-expanded") == "false"
+
+
 def test_unlock_by_write_caret_without_selected_collab_line(editor):
     page = editor
     _write(page, "A\nB\nC")
-    page.locator("#lockAllBtn").click()
+    _click_manuscript_tool(page, "#lockAllBtn")
     page.evaluate("""() => {
       const t = document.getElementById('soloTextarea');
       t.focus(); t.setSelectionRange(3,3);
     }""")
-    page.locator("#unlockBtn").click()
+    _click_manuscript_tool(page, "#unlockBtn")
     assert sorted(page.evaluate("[...lockedLines]")) == [0,2]
     assert page.input_value("#soloTextarea") == "A\nB\nC"
 
@@ -53,7 +67,7 @@ def test_unlock_by_write_caret_without_selected_collab_line(editor):
 def test_undo_lock_preserves_later_text_then_redo_relocks(editor):
     page = editor
     _write(page, "First.")
-    page.locator("#lockSceneBtn").click()
+    _click_manuscript_tool(page, "#lockSceneBtn")
     assert page.evaluate("[...lockedLines]") == [0]
     page.evaluate("""() => {
       const t = document.getElementById('soloTextarea');
@@ -75,7 +89,7 @@ def test_undo_lock_preserves_later_text_then_redo_relocks(editor):
 def test_undo_in_find_or_rename_does_not_rewind_manuscript(editor, field):
     page = editor
     _write(page, "Before.")
-    page.locator("#lockAllBtn").click()
+    _click_manuscript_tool(page, "#lockAllBtn")
     page.evaluate("""() => {
       const t = document.getElementById('soloTextarea');
       t.focus();t.setSelectionRange(t.value.length,t.value.length);
@@ -111,5 +125,5 @@ def test_cancel_chapter_does_not_add_an_undo_point(editor):
     page = editor
     before = page.evaluate("undoStack.length")
     page.on("dialog", lambda d: d.dismiss())
-    page.locator("#newChapterBtn").click()
+    _click_manuscript_tool(page, "#newChapterBtn")
     assert page.evaluate("undoStack.length") == before

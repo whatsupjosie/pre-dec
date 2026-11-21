@@ -9,7 +9,7 @@ const script=fs.readFileSync(path.join(__dirname,'../static/typewriter_console_d
 
 function fixture(embedded) {
   const messages=[],docEvents={},windowEvents={},frameEvents={},nodes=[];
-  const parent={postMessage:(data,origin)=>messages.push({data,origin})};
+  const parent={postMessage:(data,origin)=>messages.push({data:structuredClone(data),origin})};
   const document={
     body:{classList:{add(value){document.body.embeddedClass=value;}}},
     addEventListener:(type,handler)=>{docEvents[type]=handler;},

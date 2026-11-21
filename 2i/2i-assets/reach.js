@@ -250,6 +250,9 @@ async function saveToFile() {
   const savingId = documentId;
   const savingMutation = mutation;
   fileSavingId = savingId;
+  // This Save writes recovery immediately. Its pending autosave must not
+  // replace the result of the picker after cancellation or a write error.
+  clearTimeout(serverTimer);
   try {
     writeRecovery();
     const result = await writeOfflineManuscript({
@@ -711,8 +714,9 @@ async function showShelf() {
     catch (error) { remoteError=error; }
   }
   const local=browserManuscripts();
-  const entries=remote.map(doc=>({...doc,source:'server'}));
-  for(const doc of local) if(doc.dirty||!remote.some(r=>r.id===doc.id))entries.unshift({...doc,source:'browser'});
+  const entries=local.filter(doc=>doc.dirty||!remote.some(r=>r.id===doc.id))
+    .map(doc=>({...doc,source:'browser'}))
+    .concat(remote.map(doc=>({...doc,source:'server'})));
   // A disconnected Reach server must not masquerade as an empty manuscript shelf.
   if (remoteError) {
     const warning=document.createElement('p');

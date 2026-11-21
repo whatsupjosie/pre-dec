@@ -120,8 +120,18 @@ def test_paint_undo_compare_save_reopen_export_and_recovery(mirror, tmp_path):
     page.locator('#avatar-file').set_input_files(exported)
     expect(page.locator('#status')).to_contain_text('Avatar ready')
     assert same(painted, image(page))
+    page.evaluate('''() => {
+        const status = document.getElementById('storage-status');
+        window.recoveryMessages = [];
+        new MutationObserver(() => recoveryMessages.push(status.textContent))
+            .observe(status, {childList:true, subtree:true, characterData:true});
+    }''')
     page.locator('#project-file').set_input_files(project)
-    expect(page.locator('#storage-status')).to_have_text('Local recovery saved on this device.', timeout=15000)
+    expect(page.locator('#status')).to_contain_text('Editable look reopened')
+    page.wait_for_function('''() => {
+        const pending = recoveryMessages.indexOf('Saving local recovery…');
+        return pending >= 0 && recoveryMessages.slice(pending + 1).includes('Local recovery saved on this device.');
+    }''')
     page.reload()
     expect(page.locator('#recover')).to_be_visible()
     page.locator('#recover').click()
