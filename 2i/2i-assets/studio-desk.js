@@ -97,6 +97,78 @@
   });
   el("figcaption",config.seated?"Type on the machine or in the manuscript":"Typewriter view · keys edit this manuscript",figure);
 
+  // ---- the machine's own sounds -------------------------------------------
+  // Josie: "audio effects must be optional". Both are off until she turns them
+  // on, and her choice is kept. The controls live on the typewriter itself, so
+  // they are in front of her only in the view that makes a sound.
+  //
+  // The cue logic is TwoiStudioBridge.cue, shared with preview-standalone.html
+  // and tested in tests/test_2i_studio_bridge_node.js: it refuses to fire on a
+  // paste, a drop, a replacement or a composition, so dictation and pasted text
+  // do not rattle. The tones are synthesised, so this needs no audio files and
+  // works with no network -- which is the point, since the dressing room is
+  // somewhere she may be sitting offline.
+  const audioOptions=el("div",null,figure);
+  audioOptions.id="twoiAudioOptions";
+  const audioKey="twoi.typewriter.audio.v1";
+  let audioPrefs={click:false,bell:false};
+  try{
+    const saved=JSON.parse(localStorage.getItem(audioKey)||"null");
+    if(saved){if(typeof saved.click==="boolean")audioPrefs.click=saved.click;if(typeof saved.bell==="boolean")audioPrefs.bell=saved.bell;}
+  }catch{/* a browser that refuses storage still gets working sound, just not remembered */}
+  function audioToggle(name,label){
+    const wrap=el("label",null,audioOptions),box=el("input",null,wrap);
+    box.type="checkbox";box.checked=audioPrefs[name];
+    el("span",label,wrap);
+    box.onchange=()=>{audioPrefs[name]=box.checked;try{localStorage.setItem(audioKey,JSON.stringify(audioPrefs));}catch{}};
+    return box;
+  }
+  audioToggle("click","Key clicks");
+  audioToggle("bell","Line-end bell");
+  let audioContext=null,lastClickAt=0;
+  function sound(kind){
+    if(document.body.dataset.twoiDesk!=="typewriter"||!audioPrefs[kind])return;
+    // Private interface effects only; never production or broadcast audio.
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+      if(!audioContext)audioContext=new AC();
+      if(audioContext.state==="suspended")audioContext.resume().catch(()=>{});
+      const t=audioContext.currentTime;
+      // Held keys and key repeat must not stack into a buzz.
+      if(kind==="click"&&lastClickAt!==0&&t-lastClickAt<0.022)return;
+      if(kind==="click")lastClickAt=t;
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+      osc.type=kind==="bell"?"sine":"triangle";
+      osc.frequency.setValueAtTime(kind==="bell"?1450:940,t);
+      if(kind==="click")osc.frequency.exponentialRampToValueAtTime(190,t+0.027);
+      gain.gain.setValueAtTime(kind==="bell"?0.075:0.045,t);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+(kind==="bell"?0.22:0.042));
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start(t);osc.stop(t+(kind==="bell"?0.23:0.05));
+      osc.onended=()=>{osc.disconnect();gain.disconnect();};
+    }catch{/* no audio device, or the browser refused one */}
+  }
+  function play(cue){if(cue.click)sound("click");if(cue.bell)sound("bell");}
+  // The plain writing fields report themselves through their own values.
+  const typedBefore=new WeakMap();
+  const isWritingField=node=>node===soloTextarea||node===draftArea||!!node?.matches?.(".m-line-edit textarea");
+  document.addEventListener("beforeinput",event=>{
+    if(event.isTrusted&&isWritingField(event.target)&&!event.isComposing)typedBefore.set(event.target,event.target.value);
+  },true);
+  document.addEventListener("input",event=>{
+    if(!event.isTrusted||!isWritingField(event.target)||event.isComposing||!typedBefore.has(event.target))return;
+    const before=typedBefore.get(event.target);typedBefore.delete(event.target);
+    play(TwoiStudioBridge.cue(before,event.target.value,event.target.selectionStart,event.inputType,event.data));
+  });
+  // The live formatting surface is a contenteditable with no value of its own,
+  // so it reports its own paragraph through twoi:typed (rich-surface.js).
+  document.addEventListener("twoi:typed",event=>{
+    const d=event.detail;
+    if(!d)return;
+    play(TwoiStudioBridge.cue(d.before,d.after,d.position,d.inputType,d.data));
+  });
+  window.addEventListener("pagehide",()=>{if(audioContext){audioContext.close().catch(()=>{});audioContext=null;}});
+
   function currentText(){
     return coWriting ? [committed.join("\n"),buffer.join("\n")].filter(Boolean).join("\n") : soloTextarea.value;
   }
@@ -144,6 +216,7 @@
   const syncPresentation=()=>{
     const active=document.body.dataset.twoiDesk==="typewriter";
     figure.hidden=!active;
+    audioOptions.style.display=active?"":"none";
     if(!active)setExpanded(false);
     if(active)syncPaper();
   };

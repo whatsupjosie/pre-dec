@@ -278,20 +278,49 @@ present, a "Stand up · return to room" button present, all three looks
 switchable, no page errors — **and the new formatting surface works while
 seated at it** (a word was bolded from the typewriter view).
 
-**What is genuinely not wired, and is small.** Josie described typing sounds:
-a click per key, the paper rolling on Enter, a ding after several rolls, and
-all of it mutable. The cue logic for this exists and is tested —
-`TwoiStudioBridge.cue()` returns `{click, bell}` and handles paste, composition
-and non-input correctly. It is called in exactly one place:
-`2i/preview-standalone.html` around line 6385, which synthesises the click and
-bell with an oscillator, so it needs no audio files and works offline. It is
-**not** called in `2i/writers-room-v22.html`, which is the file the dressing
-room actually opens. Wiring it across is a short change and needs no new
-assets, but it was not done in this pass because the typewriter's look and feel
+**The typing sounds are now wired** (asked for and approved 2026-11-21).
+`TwoiStudioBridge.cue()` already existed and was tested — it returns
+`{click, bell}` and refuses to fire on a paste, drop, replacement or
+composition — but it was called only in `2i/preview-standalone.html`, never in
+`2i/writers-room-v22.html`, which is the file the dressing room actually opens.
+The sound is now in `2i/2i-assets/studio-desk.js`, on the live interactive
+console rather than on the standalone's static image.
+
+- Both switches are **off until she turns them on** — her rule, in her words:
+  *"audio effects must be optional."* The choice is kept in `localStorage` under
+  `twoi.typewriter.audio.v1`.
+- The tones are synthesised through the Web Audio API, so this needs **no audio
+  files and no network** — which matters, because the dressing room is somewhere
+  she may be sitting offline. A click is a triangle at 940 Hz ramping to 190,
+  the bell a sine at 1450 Hz.
+- It sounds **only in typewriter view**, only for **trusted** events (so a
+  script, a test, or the AI writing into the draft stays silent), and never on
+  a paste. Held keys cannot stack into a buzz (22 ms floor).
+- It works from the plain textarea, the Collab line editor **and** the live
+  formatting surface. A contenteditable has no `value` to compare, so
+  `rich-surface.js` reports its own keystroke as a `twoi:typed` event and
+  `studio-desk.js` turns that into the same cue. One subtlety worth keeping:
+  what counts as "before" depends on the keystroke. Typing a character changes
+  one paragraph, so the paragraph is the comparison; pressing Enter leaves that
+  paragraph's text alone and adds another beside it, so comparing the paragraph
+  would say nothing changed and **the bell would never ring** — the whole
+  manuscript is the comparison there.
+- The switches sit on the machine itself, opposite Expand keys and in the same
+  chip, so they are in front of her only in the view that makes a sound. An
+  older duplicate `#twoiAudioOptions` rule in `studio-desk.css` was replaced
+  rather than overridden.
+
+Verified by 8 tests in `tests/test_2i_typewriter_sound_browser.py`. Audio cannot
+be heard in a sandbox, so every tone is counted at the Web Audio API: the
+page's `AudioContext` is replaced before 2i loads with a recorder that notes
+each oscillator's type and frequency.
+
+**Still not built**, and recorded in `static/world/world.json` around line 8001
+as her 2026-10-18 description: the words appearing on the paper as she types,
+the paper rolling up on Enter, and the ding after several rolls. The sound is
+in; the paper behaviour is not. Ask before building it — the typewriter's feel
 is hers in detail (painterly lapis machine, a visible row of key bars with a
-random one depressing per keypress, sound in time, audio optional) and
-`static/world/world.json` line ~8001 records the fuller behaviour as not built.
-Ask her before building it.
+random one depressing per keypress, the sound in time with it).
 
 Still genuinely absent from this pass: a draggable ruler with tab stops,
 inserting pictures, writing `.docx`, importing `.rtf`.

@@ -340,6 +340,34 @@
            (typeof chatSending!=='undefined'&&chatSending)||
            (typeof editingIdx!=='undefined'&&editingIdx!==null);
   }
+  // The typewriter's sounds need to know what one keystroke did. A
+  // contenteditable has no value to compare, so the paragraph the caret is in is
+  // noted before the browser changes it and reported afterwards as twoi:typed.
+  // studio-desk.js turns that into a click or a bell through the same shared
+  // TwoiStudioBridge.cue the plain writing fields use. Untrusted events are
+  // ignored, so a test or a script typing into the page stays silent.
+  let soundBefore=null;
+  surface.addEventListener('beforeinput',event=>{
+    if(!active||event.isComposing||!event.isTrusted){soundBefore=null;return;}
+    const range=selectionRange();
+    soundBefore=range?{index:range.first,text:committed[range.first]??''}:null;
+  },true);
+  // before and after are supplied by the caller, because what counts as "before"
+  // depends on what the keystroke did. Typing a character changes one paragraph,
+  // so the paragraph is the comparison. Pressing Enter leaves that paragraph's
+  // text alone and adds another one beside it, so comparing the paragraph would
+  // say nothing changed and the bell would never ring: the whole manuscript is
+  // the comparison there. The slow path is the rare one, so joining it costs
+  // nothing that matters.
+  function announceTyping(event,before,after,position){
+    const was=soundBefore;soundBefore=null;
+    if(!was||!event?.isTrusted||event.isComposing)return;
+    if(typeof before!=='string'||typeof after!=='string')return;
+    document.dispatchEvent(new CustomEvent('twoi:typed',{detail:{
+      before,after,position,inputType:event.inputType,data:event.data
+    }}));
+  }
+
   // Typing. Reads the page into the model and stops -- no re-render, so the
   // caret stays exactly where the writer left it.
   // When one paragraph changed and the paragraph count did not -- which is what
@@ -379,6 +407,7 @@
         inputType:typeof creativeInputType==='function'?creativeInputType(event):'insertText'});
       markDirty();
       if(typeof countWordsSoon==='function')countWordsSoon();
+      announceTyping(event,previousText,one.text,(selectionRange()||{}).start??one.text.length);
       writing=false;
       return;
     }
@@ -406,6 +435,7 @@
     mirror();
     markDirty();
     if(typeof countWordsSoon==='function')countWordsSoon();
+    announceTyping(event,before,committed.join('\n'),paragraphStart((selectionRange()||{first:0}).first)+((selectionRange()||{}).start??0));
     writing=false;
   });
 
