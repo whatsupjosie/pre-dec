@@ -315,6 +315,47 @@ be heard in a sandbox, so every tone is counted at the Web Audio API: the
 page's `AudioContext` is replaced before 2i loads with a recorder that notes
 each oscillator's type and frequency.
 
+### What the machine actually looks like, verified by serving it
+
+Loaded `/typewriter-console` over a local HTTP server and looked at it, rather
+than reading the code and guessing. It is the painted lapis typewriter, plate
+reading NOW CURTSEY / FEIC MO CHROÍ, with **a full sheet of paper standing in
+the carriage** and a caret near its top left. The paper is a live region, not
+paint: `static/typewriter_console_hotspot_manifest.json` places it at x 34.7%,
+y 0%, w 30.8%, h 37.2% of `static/typewriter_keys.webp` (2560 × 1430), and
+`static/typewriter_console_demo.js` writes into it and keeps the caret at the
+end. Embedded in 2i, `studio-desk.js` sends the **last 2,000 characters** of
+the manuscript, labelled in its own comment as a decorative excerpt — the paper
+is a window on the tail of the work, not a page of it.
+
+### Two defects this uncovered, both fixed here
+
+1. **The typewriter keys typed into a hidden box.** The relay types into
+   `soloTextarea`, which the live formatting surface hides and keeps only as a
+   mirror, so a key pressed on the machine would have gone into the mirror and
+   been overwritten at the next model update. The relay now offers the key to
+   the surface first (`window.twoiRichSurface.key`, which maps it through the
+   same `TwoiTypewriterInput.keyAction`) and falls back to the manuscript if
+   the surface refuses it. **Introduced by the surface; found by looking at the
+   real console.**
+2. **A key on the machine made two sounds.** `static/typewriter_sound.js`
+   already plays a key sound for every `pubcast:key` on the console, and rings
+   a margin bell eight characters from the end of a line. The new 2i sound then
+   clicked again for the same keystroke, because the relay produces a trusted
+   input event. 2i now stays quiet while it is relaying a console key: one key,
+   one sound, whichever way it was typed.
+
+### Two sound controls, which is one too many — her call
+
+The console has its own toggle (`[data-typewriter-sound]`, the "Sound on"
+button top right of `static/typewriter_console.html`) and it **defaults to on**.
+2i's new switches default to **off**, per her rule. So there are two places to
+turn typewriter sound on and off, with opposite defaults. Nothing is broken by
+it and nothing doubles any more, but it should be one control. Unifying means
+either having 2i's switches drive the console by postMessage (a new message
+type on a console described in-code as Claude's original) or dropping 2i's own
+switches when embedded. **Not decided here. Ask her.**
+
 **Still not built**, and recorded in `static/world/world.json` around line 8001
 as her 2026-10-18 description: the words appearing on the paper as she types,
 the paper rolling up on Enter, and the ding after several rolls. The sound is

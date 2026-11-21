@@ -125,7 +125,7 @@
   }
   audioToggle("click","Key clicks");
   audioToggle("bell","Line-end bell");
-  let audioContext=null,lastClickAt=0;
+  let audioContext=null,lastClickAt=0,relayingConsoleKey=false;
   function sound(kind){
     if(document.body.dataset.twoiDesk!=="typewriter"||!audioPrefs[kind])return;
     // Private interface effects only; never production or broadcast audio.
@@ -148,7 +148,11 @@
       osc.onended=()=>{osc.disconnect();gain.disconnect();};
     }catch{/* no audio device, or the browser refused one */}
   }
-  function play(cue){if(cue.click)sound("click");if(cue.bell)sound("bell");}
+  function play(cue){
+    if(relayingConsoleKey)return; // the console already made that noise
+    if(cue.click)sound("click");
+    if(cue.bell)sound("bell");
+  }
   // The plain writing fields report themselves through their own values.
   const typedBefore=new WeakMap();
   const isWritingField=node=>node===soloTextarea||node===draftArea||!!node?.matches?.(".m-line-edit textarea");
@@ -200,12 +204,22 @@
       addChat("notice","Finish the active edit or request before using the typewriter keys.");
       return;
     }
-    const target=coWriting?draftArea:soloTextarea;
     if(!window.TwoiTypewriterInput){
       addChat("notice","Typewriter input is unavailable; write in the manuscript instead.");
       return;
     }
-    window.TwoiTypewriterInput.apply(target,data.key);
+    // The console plays its own key sound through static/typewriter_sound.js, so
+    // 2i must not add a second click on top of it for the same keystroke. One
+    // key, one sound, whichever way the writer typed it.
+    relayingConsoleKey=true;
+    try{
+      const surface=window.twoiRichSurface;
+      const onSurface=!coWriting&&typeof surface?.active==="function"&&surface.active();
+      // The live formatting surface is where the words are when it is on; the
+      // hidden textarea behind it would lose them at the next model update.
+      if(!onSurface||!surface.key(data.key))
+        window.TwoiTypewriterInput.apply(coWriting?draftArea:soloTextarea,data.key);
+    }finally{relayingConsoleKey=false;}
     // Existing input handlers enforce locked lines and synchronize Save Now.
     syncPaper();
   });

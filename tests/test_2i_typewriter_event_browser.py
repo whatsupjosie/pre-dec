@@ -75,6 +75,22 @@ def app():
         except Exception as exc:
             pytest.skip(f"Chromium unavailable: {exc}")
         context = browser.new_context(viewport={"width": 1024, "height": 768})
+        # Count every tone at the Web Audio API; sound cannot be heard here.
+        context.add_init_script("""
+          window.__tones = [];
+          class RecordingAudioContext {
+            constructor(){ this.state='running'; this.currentTime=0; this.destination={}; }
+            resume(){ return Promise.resolve(); } close(){ return Promise.resolve(); }
+            createGain(){ return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}; }
+            createOscillator(){ const self=this; return {
+              type:'', frequency:{setValueAtTime(v){this._v=v;},exponentialRampToValueAtTime(){}},
+              connect(){}, disconnect(){},
+              start(){ self.currentTime += 0.5; window.__tones.push({type:this.type, hz:this.frequency._v}); },
+              stop(){}, onended:null }; }
+          }
+          window.AudioContext = RecordingAudioContext;
+          window.webkitAudioContext = RecordingAudioContext;
+        """)
         errors = []
 
         def serve(route):
@@ -164,3 +180,46 @@ def test_expand_and_collapse_the_keys(app):
     assert expand.get_attribute("aria-expanded") == "true"
     page.keyboard.press("Escape")
     assert expand.get_attribute("aria-expanded") == "false"
+
+
+def test_keys_reach_the_live_formatting_surface_when_it_is_on(app):
+    """With the formatting surface on, soloTextarea is hidden and holds only a
+    mirror. A key pressed on the machine has to land in the surface, or the
+    words go into the mirror and are overwritten at the next model update."""
+    page, console = app
+    page.evaluate("""() => {
+      // a minimal stand-in for the live surface, recording what reaches it
+      window.__surfaceKeys = [];
+      window.twoiRichSurface = {
+        active: () => true,
+        key: (k) => { window.__surfaceKeys.push(k.text || k.char); return true; }
+      };
+    }""")
+    _key(console, "A", "X")
+    page.wait_for_function("window.__surfaceKeys.length === 1")
+    assert page.evaluate("window.__surfaceKeys") == ["X"]
+    assert page.input_value("#soloTextarea") == "Original", "the hidden mirror must not be typed into"
+
+
+def test_a_surface_that_refuses_the_key_falls_back_to_the_manuscript(app):
+    page, console = app
+    page.evaluate("""() => { window.twoiRichSurface = {active: () => true, key: () => false}; }""")
+    _key(console, "A", "X")
+    page.wait_for_function("soloTextarea.value==='OriginalX'")
+
+
+def test_a_key_on_the_machine_makes_one_sound_not_two(app):
+    """static/typewriter_sound.js already clicks for every key pressed on the
+    console. 2i must not add a second click on top of it for the same keystroke.
+    Typing on the keyboard, where the console makes no sound, still clicks."""
+    page, console = app
+    boxes = page.locator("#twoiAudioOptions input[type=checkbox]")
+    boxes.nth(0).check()
+    _key(console, "A", "X")
+    page.wait_for_function("soloTextarea.value==='OriginalX'")
+    page.wait_for_timeout(80)
+    assert page.evaluate("window.__tones") == [], "the console already clicked for that key"
+    page.locator("#soloTextarea").focus()
+    page.keyboard.type("yz", delay=30)
+    clicks = [t for t in page.evaluate("window.__tones") if t["type"] == "triangle"]
+    assert len(clicks) == 2, page.evaluate("window.__tones")

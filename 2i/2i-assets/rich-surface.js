@@ -806,6 +806,24 @@
     render=function(){previousRender.apply(this,arguments);refreshFromModel();};
   }
 
+  // A key pressed on the studio typewriter has to land wherever the writer is
+  // actually writing. The relay in studio-desk.js types into soloTextarea, which
+  // is hidden while this surface is live -- the keys would have gone into the
+  // mirror and been overwritten by the next model update. This takes the same
+  // key description the relay uses and applies it here instead.
+  function applyConsoleKey(key){
+    if(!active)return false;
+    const action=window.TwoiTypewriterInput?.keyAction?.(key);
+    if(!action)return false;
+    surface.focus({preventScroll:true});
+    try{
+      if(action.inputType==='deleteContentBackward')return document.execCommand('delete');
+      if(action.inputType==='insertLineBreak')
+        return document.execCommand('insertParagraph')||document.execCommand('insertText',false,'\n');
+      return document.execCommand('insertText',false,action.text);
+    }catch{return false;}
+  }
+
   // Exposed so the menus and the rest of 2i can reach it without reading
   // anything private: window.twoiRichSurface.active() etc.
   window.twoiRichSurface={
@@ -814,6 +832,7 @@
     apply:applyMarks,
     clear:clearMarks,
     insert:insertText,
+    key:applyConsoleKey,
     refresh:renderSurface,
     selection:selectionRange,
     node:surface
