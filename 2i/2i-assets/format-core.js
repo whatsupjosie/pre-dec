@@ -31,11 +31,16 @@ function makeFormatCore(){
   const names={body:"Body text",heading1:"Heading 1",heading2:"Heading 2",heading3:"Heading 3",quote:"Block quote",list:"List paragraph",title:"Title",subtitle:"Subtitle",caption:"Caption",general:"General",scene:"Scene heading",action:"Action",character:"Character cue",dialogue:"Dialogue",parenthetical:"Parenthetical",transition:"Transition",shot:"Shot",act:"Act / teaser",cast:"Scene cast",cue:"Production cue",sound:"Sound effect",music:"Music",segment:"Segment",visual:"Video / image",audio:"Audio",voiceover:"Voice-over",interview:"Interview",logline:"Logline",summary:"Summary",character_profile:"Character profile",episode:"Episode outline",audience:"Audience / positioning"};
   const allRoles=new Set(Object.keys(names)), fonts=["default","serif","sans","mono"], aligns=["default","left","center","right","justify"];
   const fresh=()=>({version:1,profile:"manuscript",page:{size:"letter",orientation:"portrait",margin:1},rows:[],unmapped:[],annotations:[],inline:[],inlineUnmapped:[]});
+  // A bulleted or numbered paragraph. Optional, so a document saved before lists
+  // existed still opens; absent means "none".
+  const lists=["none","bullet","number"];
   function validStyle(s){
     if(!s||!allRoles.has(s.role)||!aligns.includes(s.align)||!fonts.includes(s.font)||!Number.isFinite(s.indent)||s.indent<0||s.indent>4||!Number.isFinite(s.size)||s.size<0||s.size>48||![0,1,1.15,1.5,2].includes(s.spacing)||["bold","italic","underline"].some(k=>typeof s[k]!=="boolean"))throw Error("Invalid paragraph format.");
+    if(s.list!==undefined&&!lists.includes(s.list))throw Error("Invalid list style.");
     return clone(s);
   }
-  const defaultStyle=role=>({role,align:"default",font:"default",indent:0,size:0,spacing:0,bold:false,italic:false,underline:false});
+  const defaultStyle=role=>({role,align:"default",font:"default",indent:0,size:0,spacing:0,bold:false,italic:false,underline:false,list:"none"});
+  const listKind=style=>style&&lists.includes(style.list)&&style.list!=="none"?style.list:null;
   // Paragraph-anchored private author annotations reuse the native document's
   // existing snapshot, recovery, revision and undo state. Never guess a new
   // anchor from text similarity. Detached notes retain the author's exact text.
@@ -415,6 +420,7 @@ function makeFormatCore(){
     if(s.align!=="default")css.push("text-align:"+s.align);
     if(s.font!=="default")css.push("font-family:"+({serif:"Georgia,serif",sans:"Arial,sans-serif",mono:"'Courier New',monospace"}[s.font]));
     if(s.indent)css.push("margin-left:"+s.indent+"in");
+    if(listKind(s)&&!s.indent)css.push("margin-left:0.25in");
     if(s.size)css.push("font-size:"+s.size+"pt");
     if(s.spacing)css.push("line-height:"+s.spacing);
     if(s.bold)css.push("font-weight:bold");if(s.italic)css.push("font-style:italic");if(s.underline)css.push("text-decoration:underline");
@@ -437,9 +443,134 @@ function makeFormatCore(){
         else if(audio.has(e.style.role))body+="<tr><td></td><td>"+element(e)+"</td></tr>";
         else body+='<tr><td colspan="2">'+element(e)+"</td></tr>";
       }body+="</tbody></table>";
-    }else body=entries.map((e,i)=>{const headings=(state.profile==="manuscript"||state.profile==="story")?chapters.filter(c=>c.startLine===i&&typeof c.title==="string").map(c=>'<h2 class="chapter">'+esc(c.title)+'</h2>'+(c.subtitle?'<p class="chapter-subtitle">'+esc(c.subtitle)+'</p>':"")).join(""):"";return headings+element(e);}).join("\n");
+    }else{
+      const heading=i=>(state.profile==="manuscript"||state.profile==="story")?chapters.filter(c=>c.startLine===i&&typeof c.title==="string").map(c=>'<h2 class="chapter">'+esc(c.title)+'</h2>'+(c.subtitle?'<p class="chapter-subtitle">'+esc(c.subtitle)+'</p>':"")).join(""):"";
+      const item=(e)=>'<li style="'+esc(styleCss(e.style,p.kind))+'">'+(e.text?inlineHtml(e.text,e.runs):"&nbsp;")+'</li>';
+      const parts=[];
+      let open=null;
+      const close=()=>{if(open){parts.push(open==="bullet"?"</ul>":"</ol>");open=null;}};
+      entries.forEach((e,i)=>{
+        const kind=listKind(e.style),head=heading(i);
+        // A chapter heading always ends a list; a list never runs through one.
+        if(head||kind!==open)close();
+        if(head)parts.push(head);
+        if(kind&&kind!==open){parts.push(kind==="bullet"?"<ul>":"<ol>");open=kind;}
+        parts.push(kind?item(e):element(e));
+      });
+      close();
+      body=parts.join("\n");
+    }
     const defaultFont=script?"'Courier New',monospace":"Georgia,serif",defaultSpacing=script?1:1.5;
-    return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>@page{size:'+width+" "+height+";margin:"+page.margin+'in}*{box-sizing:border-box}html{background:#e8e5df}body{max-width:'+width+';min-height:'+height+';margin:16px auto;padding:'+page.margin+'in;background:white;color:#191919;font:12pt/'+defaultSpacing+' '+defaultFont+'}.chapter{text-align:center;break-after:avoid;margin:22pt 0 8pt}.chapter-subtitle{text-align:center;font-style:italic;break-after:avoid}.paragraph{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:0;margin-bottom:6pt;orphans:2;widows:2}table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{width:50%;border:1px solid #555;padding:8pt;vertical-align:top}tr{break-inside:avoid}@media print{html{background:white}body{margin:0;padding:0;max-width:none;min-height:0}}</style><body>'+body+'</body></html>';
+    return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>@page{size:'+width+" "+height+";margin:"+page.margin+'in}*{box-sizing:border-box}html{background:#e8e5df}body{max-width:'+width+';min-height:'+height+';margin:16px auto;padding:'+page.margin+'in;background:white;color:#191919;font:12pt/'+defaultSpacing+' '+defaultFont+'}.chapter{text-align:center;break-after:avoid;margin:22pt 0 8pt}.chapter-subtitle{text-align:center;font-style:italic;break-after:avoid}.paragraph{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:0;margin-bottom:6pt;orphans:2;widows:2}ul,ol{margin:0 0 6pt;padding-left:0.4in}li{margin-bottom:2pt}table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{width:50%;border:1px solid #555;padding:8pt;vertical-align:top}tr{break-inside:avoid}@media print{html{background:white}body{margin:0;padding:0;max-width:none;min-height:0}}</style><body>'+body+'</body></html>';
+  }
+
+  // ---------------------------------------------------------------------------
+  // RTF export.
+  //
+  // WordPad's own format, and the one most word processors will open without
+  // argument. Everything 2i can say about a character -- bold, italic,
+  // underline, strikethrough, superscript, subscript, font, size, colour,
+  // highlight -- has an RTF equivalent, so a formatted manuscript arrives
+  // formatted rather than as plain text.
+  //
+  // Lists are written as a marker and a hanging indent rather than as RTF list
+  // tables. A list table is a large, fragile structure that several readers
+  // disagree about; a bullet and a tab render correctly everywhere, and the
+  // words are identical either way.
+  const RTF_FONTS={"default":"Georgia","serif":"Georgia","sans":"Arial","mono":"Courier New"};
+  function rtfText(value){
+    let out="";
+    for(const char of String(value)){
+      if(char==="\\"||char==="{"||char==="}"){out+="\\"+char;continue;}
+      if(char==="\t"){out+="\\tab ";continue;}
+      const cp=char.codePointAt(0);
+      if(cp<128){out+=char;continue;}
+      // RTF takes signed 16-bit words, so anything past the basic plane goes out
+      // as its surrogate pair, each with an ASCII fallback character after it.
+      for(let i=0;i<char.length;i++){
+        let unit=char.charCodeAt(i);
+        if(unit>32767)unit-=65536;
+        out+="\\u"+unit+"?";
+      }
+    }
+    return out;
+  }
+  function exportRtf(title,lines,state,chapters=[]){
+    const profile=profiles[state.profile],script=["script","multi"].includes(profile.kind);
+    const byRow=new Map(state.rows.map(r=>[r.index,r]));
+    const byInline=new Map((state.inline||[]).map(r=>[r.index,r]));
+    const fontNames=[script?"Courier New":"Georgia"];
+    const colours=["#000000"];
+    const fontIndex=name=>{const value=RTF_FONTS[name]||name;const at=fontNames.indexOf(value);if(at>=0)return at;fontNames.push(value);return fontNames.length-1;};
+    const colourIndex=hex=>{const value=String(hex).toLowerCase();const at=colours.indexOf(value);if(at>=0)return at;colours.push(value);return colours.length-1;};
+    const headings=new Map();
+    for(const chapter of chapters)
+      if(Number.isInteger(chapter?.startLine)&&typeof chapter.title==="string")
+        headings.set(chapter.startLine,chapter);
+    const align={left:"\\ql",center:"\\qc",right:"\\qr",justify:"\\qj",default:""};
+    const body=[];
+    let ordinal=0;
+    lines.forEach((text,index)=>{
+      const row=byRow.get(index),style=row&&row.text===text?row.style:defaultStyle(script?"action":"general");
+      const list=listKind(style);
+      ordinal=list==="number"?ordinal+1:0;
+      const chapter=headings.get(index);
+      if(chapter){
+        body.push("\\pard\\plain\\qc\\sb240\\sa120\\b\\fs32 "+rtfText(chapter.title)+"\\b0\\fs24\\par");
+        if(chapter.subtitle)body.push("\\pard\\plain\\qc\\i "+rtfText(chapter.subtitle)+"\\i0\\par");
+      }
+      // \pard resets paragraph properties; \plain resets character ones. Without
+      // \plain a bold paragraph makes every paragraph after it bold, because RTF
+      // character state runs on until something turns it off. Verified by opening
+      // the result in LibreOffice, which is how this was caught.
+      const control=["\\pard\\plain"];
+      if(align[style.align])control.push(align[style.align]);
+      const indent=Math.round((style.indent||0)*1440)+(list?360:0);
+      if(indent)control.push("\\li"+indent);
+      if(list)control.push("\\fi-360");                       // hang the marker
+      if(style.spacing)control.push("\\sl"+Math.round(style.spacing*240)+"\\slmult1");
+      control.push("\\sa120");
+      if(style.font&&style.font!=="default")control.push("\\f"+fontIndex(style.font));
+      if(style.size)control.push("\\fs"+Math.round(style.size*2));
+      if(style.bold)control.push("\\b");
+      if(style.italic)control.push("\\i");
+      if(style.underline)control.push("\\ul");
+      let line=control.join("")+" ";
+      if(list)line+=(list==="bullet"?"\\u8226?":rtfText(ordinal+"."))+"\\tab ";
+      const inline=byInline.get(index);
+      const runs=inline&&inline.text===text?inline.runs:[];
+      const emit=(slice,marks)=>{
+        if(!slice)return;
+        if(!marks){line+=rtfText(slice);return;}
+        const on=[],off=[];
+        if(marks.bold){on.push("\\b");off.push("\\b0");}
+        if(marks.italic){on.push("\\i");off.push("\\i0");}
+        if(marks.underline){on.push("\\ul");off.push("\\ulnone");}
+        if(marks.strike){on.push("\\strike");off.push("\\strike0");}
+        if(marks.sup){on.push("\\super");off.push("\\nosupersub");}
+        if(marks.sub){on.push("\\sub");off.push("\\nosupersub");}
+        if(marks.font&&marks.font!=="default"){on.push("\\f"+fontIndex(marks.font));off.push("\\f0");}
+        if(marks.size){on.push("\\fs"+Math.round(marks.size*2));off.push(style.size?"\\fs"+Math.round(style.size*2):"\\fs24");}
+        if(marks.color){on.push("\\cf"+colourIndex(marks.color));off.push("\\cf0");}
+        if(marks.highlight){on.push("\\highlight"+colourIndex(marks.highlight));off.push("\\highlight0");}
+        line+="{"+on.join("")+" "+rtfText(slice)+off.join("")+"}";
+      };
+      let at=0;
+      for(const run of runs.slice().sort((a,b)=>a.start-b.start)){
+        if(run.start>at)emit(text.slice(at,run.start),null);
+        emit(text.slice(run.start,run.end),marksOf(run));
+        at=run.end;
+      }
+      emit(text.slice(at),null);
+      body.push(line+"\\par");
+    });
+    const fontTable="{\\fonttbl"+fontNames.map((name,i)=>"{\\f"+i+"\\fnil\\fcharset0 "+name+";}").join("")+"}";
+    const colourTable="{\\colortbl;"+colours.slice(1).map(hex=>
+      "\\red"+parseInt(hex.slice(1,3),16)+"\\green"+parseInt(hex.slice(3,5),16)+"\\blue"+parseInt(hex.slice(5,7),16)+";"
+    ).join("")+"}";
+    const info="{\\info{\\title "+rtfText(String(title||"Untitled"))+"}}";
+    return "{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1"+fontTable+colourTable+info+
+      "\\f0\\fs24\n"+body.join("\n")+"\n}";
   }
   function scriptRows(lines,state){
     const map=new Map((state.rows||[]).map(r=>[r.index,r]));
@@ -505,7 +636,8 @@ function makeFormatCore(){
     return {method,oldCount:oldLines.length,newCount:newLines.length,blocks,removedCount:blocks.reduce((n,b)=>n+b.removed.length,0),addedCount:blocks.reduce((n,b)=>n+b.added.length,0)};
   }
   return {profiles,names,fresh,restore,reconcile,apply,clear,defaultStyle,styleCss,exportHtml,profileContext,clone,scriptRows,exportFdx,dialogueIndex,compareLines,addAnnotation,changeAnnotation,
-    inlineFonts,inlineFlags,inlineRuns,inlineStateAt,applyInline,clearInline,inlineHtml,runCss,remapRuns,normalizeRuns,marksOf};
+    inlineFonts,inlineFlags,inlineRuns,inlineStateAt,applyInline,clearInline,inlineHtml,runCss,remapRuns,normalizeRuns,marksOf,
+    lists,listKind,aligns,exportRtf};
 }
 const TwoiFormatCore=makeFormatCore();
 if(typeof module!=="undefined"&&module.exports)module.exports=TwoiFormatCore;

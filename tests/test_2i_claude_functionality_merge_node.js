@@ -138,10 +138,7 @@ test('standalone Replace All counts once and never edits protected lines',()=>{
   elements.frReplaceAllBtn.onclick();
   assert.equal(c.soloTextarea.value,'the fox sat\nthe cat is locked\na fox and a fox');
   assert.equal(c.committed.join('\n'),c.soloTextarea.value);
-  // Every behavioural assertion above stays exact. Only the closing phrase differs
-  // between trees: writers-room-v22.html says "left unchanged",
-  // preview-standalone.html says "left as they are". These are Josie's words and
-  // hers to settle; tighten this to the single chosen phrase once she has said which.
-  assert.match(elements.frResult.textContent,
-    /^3 replacements made; 1 in locked lines left (unchanged|as they are)$/);
+  // Josie settled the wording on 2026-11-21: "left unchanged". Both trees say it
+  // now (preview-standalone.html said "left as they are"), so this is exact again.
+  assert.equal(elements.frResult.textContent,'3 replacements made; 1 in locked lines left unchanged');
 });

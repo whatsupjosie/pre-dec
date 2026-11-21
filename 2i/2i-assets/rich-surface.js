@@ -53,9 +53,24 @@
   const paragraphs=()=>[...surface.children].filter(n=>n.tagName==='P');
 
   // ------------------------------------------------------ model -> the page
-  function paragraphNode(index,text,runs,locked){
+  // The paragraph's own style (role, alignment, indent, spacing, list) is shown
+  // here too, so the Format menu's paragraph dialog has a visible effect at last
+  // instead of only changing the printed preview.
+  function paragraphNode(index,text,runs,locked,style,ordinal){
     const p=el('p',null,null);
     p.dataset.index=String(index);
+    if(style){
+      const css=C.styleCss(style,C.profiles[syncManuscriptFormat().profile]?.kind);
+      if(css)p.setAttribute('style',css);
+      const kind=C.listKind(style);
+      if(kind){
+        p.dataset.list=kind;
+        // The ordinal is worked out when the page is built rather than left to a
+        // CSS counter: a numbered list has to start again after any paragraph
+        // that is not part of it, and a counter cannot see that.
+        if(kind==='number')p.dataset.ordinal=String(ordinal)+'.';
+      }
+    }
     if(locked){p.dataset.locked='true';p.contentEditable='false';p.title='This paragraph is locked. Unlock it to edit.';}
     if(!text){el('br',null,p);return p;}
     if(!runs||!runs.length){p.append(document.createTextNode(text));return p;}
@@ -73,17 +88,36 @@
     if(pos<text.length)p.append(document.createTextNode(text.slice(pos)));
     return p;
   }
+  function styleFor(state,index){
+    const row=(state.rows||[]).find(r=>r.index===index);
+    if(row&&row.text===committed[index])return row.style;
+    return null;
+  }
+  // The role an unstyled paragraph is treated as, matching what exportHtml
+  // already assumes, so turning formatting on does not reinterpret the document.
+  function neutralRole(state){
+    const profile=C.profiles[state.profile];
+    const role=['script','multi'].includes(profile?.kind)?'action':'general';
+    return profile?.roles.includes(role)?role:profile.roles[0];
+  }
   function renderSurface(){
     const state=syncManuscriptFormat(),locks=lockedSet();
     const next=document.createDocumentFragment();
     const lines=committed.length?committed:[''];
-    lines.forEach((text,i)=>next.append(paragraphNode(i,text,C.inlineRuns(state,committed,i),locks.has(i))));
+    let ordinal=0;
+    lines.forEach((text,i)=>{
+      const style=styleFor(state,i),kind=C.listKind(style);
+      ordinal=kind==='number'?ordinal+1:0;
+      next.append(paragraphNode(i,text,C.inlineRuns(state,committed,i),locks.has(i),style,ordinal));
+    });
     surface.replaceChildren(next);
   }
   function renderParagraph(index){
-    const p=paragraphs().find(n=>Number(n.dataset.index)===index);
-    if(!p)return;
-    p.replaceWith(paragraphNode(index,committed[index]??'',C.inlineRuns(syncManuscriptFormat(),committed,index),lockedSet().has(index)));
+    const node=paragraphs().find(n=>Number(n.dataset.index)===index);
+    if(!node)return;
+    const state=syncManuscriptFormat(),style=styleFor(state,index);
+    const ordinal=Number((node.dataset.ordinal||'0').replace('.',''))||1;
+    node.replaceWith(paragraphNode(index,committed[index]??'',C.inlineRuns(state,committed,index),lockedSet().has(index),style,ordinal));
   }
 
   // ------------------------------------------------------ the page -> model
@@ -382,6 +416,53 @@
     if(typeof writeRecovery==='function')writeRecovery();
     refreshBar();
   }
+  // -------------------------------------------------- paragraph formatting
+  // Alignment, indent and lists are properties of a whole paragraph, so these go
+  // through the same TwoiFormatCore.apply the Format menu's dialog uses. One
+  // button instead of a dialog; the same stored result.
+  function paragraphStyleAt(state,index){
+    const existing=styleFor(state,index);
+    return existing?C.clone(existing):C.defaultStyle(neutralRole(state));
+  }
+  function applyParagraph(change){
+    if(!active)return;
+    if(busy()){notice('Finish the active request or edit before changing formatting.');return;}
+    const range=selectionRange();
+    if(!range){notice('Put the cursor in a paragraph first.');return;}
+    const locks=[...lockedSet()];
+    const indices=[];
+    for(let i=range.first;i<=range.last;i++)indices.push(i);
+    if(indices.some(i=>locks.includes(i))){notice('Unlock the protected paragraphs before changing their formatting.');return;}
+    const state=syncManuscriptFormat();
+    const resolved=typeof change==='function'?change(indices.map(i=>paragraphStyleAt(state,i))):change;
+    if(!resolved)return;
+    const backup=C.clone(state);
+    snapshot();
+    try{
+      for(const index of indices)
+        C.apply(manuscriptFormat,committed,[index],{...paragraphStyleAt(manuscriptFormat,index),...resolved},locks);
+    }catch(error){
+      manuscriptFormat=backup;
+      if(typeof undoStack!=='undefined')undoStack.pop();
+      notice(error.message);
+      return;
+    }
+    renderSurface();
+    if(range.first===range.last)placeCaret(range.first,range.start,range.end);else selectAcross(range);
+    markDirty();
+    if(typeof writeRecovery==='function')writeRecovery();
+    refreshBar();
+  }
+  function paragraphStateAt(){
+    const range=selectionRange();
+    if(!range)return null;
+    const state=syncManuscriptFormat();
+    const styles=[];
+    for(let i=range.first;i<=range.last;i++)styles.push(paragraphStyleAt(state,i));
+    return styles;
+  }
+  const everyStyle=(styles,test)=>!!styles&&styles.length>0&&styles.every(test);
+
   function insertText(text){
     if(!active)return;
     surface.focus();
@@ -467,6 +548,43 @@
   noColour.onclick=()=>applyMarks({color:false,highlight:false});
   el('div',null,bar).className='fb-sep';
 
+  // ---- paragraph controls: alignment, lists, indent ----
+  const paragraphButtons=[];
+  function paragraphButton(host,label,title,test,change,className){
+    const b=el('button',label,host);
+    b.type='button';b.title=title;b.setAttribute('aria-label',title);
+    b.setAttribute('aria-pressed','false');
+    if(className)b.className=className;
+    b.addEventListener('pointerdown',e=>e.preventDefault());
+    b.onclick=()=>applyParagraph(change);
+    if(test)paragraphButtons.push([b,test]);
+    return b;
+  }
+  const alignGroup=group(true);
+  for(const [value,label,title] of [['left','\u2630','Align left'],['center','\u2632','Centre'],['right','\u2635','Align right'],['justify','\u2637','Justify']])
+    paragraphButton(alignGroup,label,title,
+      styles=>everyStyle(styles,s=>s.align===value),
+      // Pressing the alignment a paragraph already has returns it to the
+      // template's own alignment, which is how the mark buttons behave too.
+      ()=>({align:everyStyle(paragraphStateAt(),s=>s.align===value)?'default':value}));
+  const listGroup=group(false);
+  for(const [value,label,title] of [['bullet','\u2022 List','Bulleted list'],['number','1. List','Numbered list']])
+    paragraphButton(listGroup,label,title,
+      styles=>everyStyle(styles,s=>C.listKind(s)===value),
+      ()=>({list:everyStyle(paragraphStateAt(),s=>C.listKind(s)===value)?'none':value}));
+  const indentGroup=group(true);
+  paragraphButton(indentGroup,'\u21E4','Decrease indent',null,
+    ()=>{const styles=paragraphStateAt();if(!styles)return null;
+      const least=Math.min(...styles.map(s=>s.indent||0));
+      if(least<=0)return null;
+      return {indent:Math.max(0,Math.round((least-0.25)*100)/100)};});
+  paragraphButton(indentGroup,'\u21E5','Increase indent',null,
+    ()=>{const styles=paragraphStateAt();if(!styles)return null;
+      const most=Math.max(...styles.map(s=>s.indent||0));
+      if(most>=4)return null;
+      return {indent:Math.min(4,Math.round((most+0.25)*100)/100)};});
+  el('div',null,bar).className='fb-sep';
+
   const tools=group(false);
   const clearButton=el('button','Clear',tools);
   clearButton.type='button';clearButton.title='Remove all formatting from the selection';clearButton.setAttribute('aria-label','Remove all formatting from the selection');
@@ -484,6 +602,8 @@
       range.first===range.last?range.start:range.start,
       range.first===range.last?range.end:(committed[range.first]??'').length):{};
     for(const [button,key] of marked)button.setAttribute('aria-pressed',state[key]===true?'true':'false');
+    const styles=paragraphStateAt();
+    for(const [button,test] of paragraphButtons)button.setAttribute('aria-pressed',String(!!test(styles)));
     fontSelect.value=C.inlineFonts.includes(state.font)?state.font:'default';
     sizeSelect.value=state.size?String(state.size):'0';
     if(state.color)textColour.value=state.color;
@@ -500,6 +620,13 @@
   // ------------------------------------------------------------- shortcuts
   surface.addEventListener('keydown',event=>{
     if(!active||event.isComposing)return;
+    // Tab belongs to the manuscript here, not to the focus order. Shift+Tab is
+    // left alone so there is still a way out of the page with the keyboard.
+    if(event.key==='Tab'&&!event.shiftKey&&!event.ctrlKey&&!event.metaKey&&!event.altKey){
+      event.preventDefault();
+      insertText('\t');
+      return;
+    }
     if(!(event.ctrlKey||event.metaKey)||event.altKey)return;
     const key=String(event.key||'').toLowerCase();
     const marks={b:'bold',i:'italic',u:'underline'}[key];
@@ -510,10 +637,15 @@
 
   // --------------------------------------------------------------- toggle
   const toggle=el('button','Formatting',null);
-  toggle.id='twoiRichToggle';toggle.type='button';toggle.className='zoom-btn';
+  toggle.id='twoiRichToggle';toggle.type='button';toggle.className='twoi-rich-toggle';
   toggle.title='Show bold, italic and colour while you write';
   toggle.setAttribute('aria-pressed','false');
-  if(row)row.append(toggle);else bar.prepend(toggle);
+  // Before the zone label, not after it: the row is justified to the right and
+  // "MANUSCRIPT" is the rightmost thing in Josie's layout. It stays there.
+  const zoneLabel=row&&row.querySelector('.zone-label');
+  if(zoneLabel)row.insertBefore(toggle,zoneLabel);
+  else if(row)row.append(toggle);
+  else bar.prepend(toggle);
 
   function setActive(on){
     const next=!!on&&!coWriting;

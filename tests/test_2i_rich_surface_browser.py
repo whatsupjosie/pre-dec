@@ -345,3 +345,126 @@ def test_enter_makes_a_new_paragraph_and_keeps_the_rest_formatted(page):
     page.keyboard.insert_text("third")
     page.wait_for_function("committed.length===3 && committed[2]==='third'")
     assert _runs(page, 0) == [{"start": 0, "end": 4, "bold": True}]
+
+
+# --------------------------------------------------------------------------
+# Paragraph formatting: the WordPad row -- lists, alignment, indent, Tab.
+# --------------------------------------------------------------------------
+
+def _styles(page):
+    return page.evaluate("(syncManuscriptFormat().rows||[]).map(r=>({i:r.index,align:r.style.align,list:r.style.list,indent:r.style.indent}))")
+
+
+def test_bulleted_list_marks_the_paragraphs_and_shows_a_bullet(page):
+    _type(page, "Shopping\nmilk\neggs")
+    _select(page, 1, 0, 4)
+    page.locator("#twoiFormatBar button[aria-label='Bulleted list']").click()
+    rows = [r for r in _styles(page) if r["list"] == "bullet"]
+    assert [r["i"] for r in rows] == [1]
+    assert page.evaluate(
+        "document.querySelectorAll('#twoiRichSurface p')[1].dataset.list"
+    ) == "bullet"
+    assert page.evaluate("committed.join('|')") == "Shopping|milk|eggs", "a list must not add characters"
+
+
+def test_a_numbered_list_numbers_in_order_and_restarts_after_a_gap(page):
+    _type(page, "one\ntwo\nbreak\nthree")
+    page.evaluate("""() => {
+      const S = window.twoiRichSurface;
+      const ps = S.node.querySelectorAll('p');
+      const r = document.createRange();
+      r.setStart(ps[0], 0); r.setEnd(ps[1], ps[1].childNodes.length);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }""")
+    page.locator("#twoiFormatBar button[aria-label='Numbered list']").click()
+    _select(page, 3, 0, 5)
+    page.locator("#twoiFormatBar button[aria-label='Numbered list']").click()
+    ordinals = page.evaluate(
+        "[...document.querySelectorAll('#twoiRichSurface p')].map(p=>p.dataset.ordinal||'')"
+    )
+    assert ordinals == ["1.", "2.", "", "1."], ordinals
+
+
+def test_pressing_the_same_list_again_turns_it_off(page):
+    _type(page, "item")
+    _select(page, 0, 0, 4)
+    bullet = page.locator("#twoiFormatBar button[aria-label='Bulleted list']")
+    bullet.click()
+    assert page.evaluate("document.querySelector('#twoiRichSurface p').dataset.list") == "bullet"
+    _select(page, 0, 0, 4)
+    bullet.click()
+    assert page.evaluate("document.querySelector('#twoiRichSurface p').dataset.list") is None
+
+
+def test_alignment_shows_on_the_page_and_is_stored(page):
+    _type(page, "centre me")
+    _select(page, 0, 0, 6)
+    page.locator("#twoiFormatBar button[aria-label='Centre']").click()
+    assert [r for r in _styles(page) if r["align"] == "center"]
+    assert page.evaluate(
+        "getComputedStyle(document.querySelector('#twoiRichSurface p')).textAlign"
+    ) == "center"
+
+
+def test_indent_steps_in_and_back_out(page):
+    _type(page, "indent me")
+    _select(page, 0, 0, 6)
+    page.locator("#twoiFormatBar button[aria-label='Increase indent']").click()
+    assert [r["indent"] for r in _styles(page)] == [0.25]
+    _select(page, 0, 0, 6)
+    page.locator("#twoiFormatBar button[aria-label='Increase indent']").click()
+    assert [r["indent"] for r in _styles(page)] == [0.5]
+    _select(page, 0, 0, 6)
+    page.locator("#twoiFormatBar button[aria-label='Decrease indent']").click()
+    assert [r["indent"] for r in _styles(page)] == [0.25]
+
+
+def test_tab_types_a_tab_instead_of_leaving_the_page(page):
+    _type(page, "start")
+    page.locator("#twoiRichSurface").click()
+    page.evaluate("""() => {
+      const p = document.querySelector('#twoiRichSurface p');
+      const node = document.createTreeWalker(p, NodeFilter.SHOW_TEXT).nextNode();
+      const r = document.createRange();
+      r.setStart(node, node.nodeValue.length); r.collapse(true);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }""")
+    page.keyboard.press("Tab")
+    page.wait_for_function("committed[0]==='start\\t'")
+    assert page.evaluate("document.activeElement.id") == "twoiRichSurface"
+
+
+def test_lists_export_as_real_lists(page):
+    _type(page, "Shopping\nmilk\neggs\nDone")
+    page.evaluate("""() => {
+      const ps = window.twoiRichSurface.node.querySelectorAll('p');
+      const r = document.createRange();
+      r.setStart(ps[1], 0); r.setEnd(ps[2], ps[2].childNodes.length);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }""")
+    page.locator("#twoiFormatBar button[aria-label='Bulleted list']").click()
+    html = page.evaluate(
+        "TwoiFormatCore.exportHtml('T', committed.slice(), syncManuscriptFormat(), chapters)"
+    )
+    assert "<ul>" in html and "</ul>" in html
+    assert html.count("<li") == 2
+    assert "Shopping" in html and "Done" in html
+
+
+def test_paragraph_buttons_light_up_for_the_paragraph_the_caret_is_in(page):
+    _type(page, "plain\nlisted")
+    _select(page, 1, 0, 6)
+    bullet = page.locator("#twoiFormatBar button[aria-label='Bulleted list']")
+    bullet.click()
+    _select(page, 1, 2, 2)
+    assert bullet.get_attribute("aria-pressed") == "true"
+    _select(page, 0, 2, 2)
+    assert bullet.get_attribute("aria-pressed") == "false"
+
+
+def test_a_locked_paragraph_refuses_a_list_too(page):
+    _type(page, "locked line")
+    page.evaluate("lockedLines.add(0); window.twoiRichSurface.refresh()")
+    _select(page, 0, 0, 6)
+    page.locator("#twoiFormatBar button[aria-label='Bulleted list']").click()
+    assert _styles(page) == []
