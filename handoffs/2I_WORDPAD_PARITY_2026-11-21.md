@@ -58,6 +58,19 @@ were used**, per her standing instruction.
 
 Nothing is red.
 
+**What was NOT run, and why:** the whole-repo Python suite
+(`python -m pytest -q`, 2,814 tests) does not complete in one run in this
+sandbox. At roughly 28% it stops on a Playwright-based test whose greenlet does
+not answer a thread timeout, which takes the whole run down with it. That is a
+property of the suite here and predates this work; it was not chased, because
+it is outside 2i. What *was* run instead is the whole blast radius: the full
+Node suite, every Python test matching `test_2i*`, `test_twoi*`,
+`test_reach_writers_room` and `test_typewriter_console_manifest`, and the three
+Foresight suites that touch the changed files
+(`test_foresight_8787_wiring.py`, `test_foresight_file_workspace.py`,
+`test_foresight_workbench_acceptance.py` — 28 passed). No file outside `2i/`
+and `tests/` was changed.
+
 Running the Python browser tests needs, in this sandbox:
 `pip install --break-system-packages fastapi uvicorn httpx psutil pyspellchecker pytest-asyncio`
 and Chromium available to Playwright. `pytest-asyncio` matters: without it
