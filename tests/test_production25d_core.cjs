@@ -54,5 +54,7 @@ test("a recorded slate title and filename stay with the original scene and take"
  assert.equal(C.takeFilename({title,startedAt:"2026-11-21T22:15:03.123Z",offsetMs:2450},"example-12345678"),
   "PubCast-Pilot-Scene-12A-Night-Shift-Take-07_2026-11-21T22-15-03-123Z_00-00-02-13_12345678");
  assert.equal(C.takeFilename(null,"old-take-id"),"old-take-id");
+ const audio=C.takeFilename({title,slate:stamp,label:"Sync reference",startedAt:"2026-11-21T22:15:03.123Z",offsetMs:2450},"audio-12345678");
+ assert.match(audio,/Scene-12A-Night-Shift-Take-07-Sync-reference/);
  assert.equal(C.slateTake({...slate,phase:"ended"}),null);
 });

@@ -102,7 +102,14 @@
   }
   function takeFilename(take, id) {
     if (!take?.title || !take.startedAt) return id;
-    const title = take.title.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^[._-]+|[._-]+$/g, "").slice(0, 85);
+    const segment = (value, limit) => String(value || "").normalize("NFKC")
+      .replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^[._-]+|[._-]+$/g, "").slice(0, limit);
+    const slate = take.slate;
+    const title = slate
+      ? [segment(slate.production, 24), slate.scene && "Scene-" + segment(slate.scene, 12),
+        segment(slate.sceneTitle, 24), slate.take && "Take-" + segment(slate.take, 12),
+        segment(take.label, 18)].filter(Boolean).join("-")
+      : segment(take.title, 85);
     const date = take.startedAt.replace(/[:.]/g, "-");
     return [title || "Take", date, stageTimecode(take.offsetMs || 0).replace(/:/g, "-"), id.slice(-8)].join("_");
   }

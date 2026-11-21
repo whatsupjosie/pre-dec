@@ -450,7 +450,7 @@ async function startRecording(){
      offsetMs:startedAt-Date.parse(sess.startedAt),...(slate?{slate,title}:{})};
    await Store.beginCapture(capture);check();
    media.sourceRecordings=new window.PubCast25DSourceRecordings({mixer:programAudio,session:sess,
-     parentTakeId:id,owner:captureOwner,references:[state.clacker.input],onFailure:e=>{
+     parentTakeId:id,owner:captureOwner,slate,references:[state.clacker.input],onFailure:e=>{
        if(op.cancelled||(state.recordingId!==id&&state.recordingStarting!==op))return;
        state.mediaError=state.mediaError||e;
        $("captureStatus").textContent="Recording interrupted: "+e.message+". Available chunks are retained.";
@@ -589,6 +589,7 @@ async function recoverCapture(id){
    if(capture.kind==='audio-source'){
      const source={id,parentTakeId:capture.parentTakeId,sourceId:capture.sourceId,label:capture.label,kind:capture.sourceKind||'voice',syncReferenceId:capture.syncReferenceId||null,
        mime:blob.type,bytes:blob.size,startedAt:capture.startedAt,offsetMs:capture.offsetMs,
+       ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
        durationMs:capture.durationMs,preFader:true,incomplete:true,recovered:true};
      await Store.saveSource(sess,source,blob,{id,owner:captureOwner});
      await refreshSessions();return;
@@ -638,7 +639,7 @@ async function refreshSessions(){
   }
   for(const source of session.sourceTracks||[]){
    const btn=document.createElement('button');
-   btn.textContent=(source.kind==='sync-reference'?'SYNC: ':'VOICE: ')+source.label+' · '+(source.incomplete?'INCOMPLETE · ':'')+source.bytes+' bytes';
+   btn.textContent=(source.kind==='sync-reference'?'SYNC: ':'VOICE: ')+(source.title||source.label)+' · '+(source.incomplete?'INCOMPLETE · ':'')+source.bytes+' bytes';
    btn.onclick=()=>safe(()=>selectSession(session.id,source.id));el.sessionList.appendChild(btn);
   }
  }

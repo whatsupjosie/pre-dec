@@ -4,10 +4,10 @@
  */
 (function(global){
 'use strict';
-const Store=global.PubCast25DStore,Capture=global.PubCast25DCapture;
+const Store=global.PubCast25DStore,Capture=global.PubCast25DCapture,Core=global.PubCast25D;
 class SourceRecordings {
- constructor({mixer,session,parentTakeId,owner,references=[],onFailure=()=>{}}){
-  Object.assign(this,{mixer,session,parentTakeId,owner,references,onFailure});this.jobs=[];this.closed=false;
+ constructor({mixer,session,parentTakeId,owner,slate,references=[],onFailure=()=>{}}){
+  Object.assign(this,{mixer,session,parentTakeId,owner,slate,references,onFailure});this.jobs=[];this.closed=false;
  }
  async start(){
   this.unsubscribe=this.mixer.onInput((type,input)=>{
@@ -26,6 +26,10 @@ class SourceRecordings {
    session:structuredClone(this.session),sourceId:input.id,label:input.label,sourceKind:input.kind||'voice',
    syncReferenceId:input.syncReferenceId||null,mime:recorder.mimeType,
    startedAt:new Date().toISOString(),offsetMs:Date.now()-Date.parse(this.session.startedAt)};
+  if(this.slate){
+   timing.slate=this.slate;
+   timing.title=[Core.slateTitle(this.slate),input.label].filter(Boolean).join(" · ");
+  }
   let resolve,reject,stopped=false,settling=false,failure=null,renewing=false;
   const completion=new Promise((a,b)=>{resolve=a;reject=b;});completion.catch(()=>{});
   const job={input,timing,completion,ready:null,stop:()=>{
@@ -48,6 +52,7 @@ class SourceRecordings {
      const record=await Store.readCapture(id),blob=await Capture.assemble(record,pending.pending);
      const source={id,parentTakeId:this.parentTakeId,sourceId:input.id,label:input.label,kind:timing.sourceKind,syncReferenceId:timing.syncReferenceId,
       mime:blob.type,bytes:blob.size,startedAt:timing.startedAt,offsetMs:timing.offsetMs,
+      ...(timing.slate?{slate:timing.slate,title:timing.title,timecode:Core.stageTimecode(timing.offsetMs)}:{}),
       durationMs:Date.now()-Date.parse(timing.startedAt),preFader:true,incomplete:!!failure};
      await Store.saveSource(this.session,source,blob,{id,owner:this.owner});
      this.session.sourceTracks=[...(this.session.sourceTracks||[]).filter(s=>s.id!==id),source];
