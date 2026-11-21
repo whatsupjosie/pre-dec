@@ -189,6 +189,20 @@
   }
   // Put the runs just read back into the document's format state, keeping every
   // other part of that state exactly as it was.
+  function storeParagraphRuns(index,text,runs){
+    const state=manuscriptFormat;
+    const rows=state.inline||(state.inline=[]);
+    let normalized=[];
+    if(runs&&runs.length){
+      try{normalized=C.normalizeRuns(runs,text.length);}
+      catch(error){notice(error.message);return;}
+    }
+    const at=rows.findIndex(r=>r.index===index);
+    if(!normalized.length){if(at>=0)rows.splice(at,1);return;}
+    if(at>=0){rows[at]={index,text,runs:normalized};return;}
+    rows.push({index,text,runs:normalized});
+    rows.sort((a,b)=>a.index-b.index);
+  }
   function storeRuns(lines,runsByLine){
     const state=manuscriptFormat;
     const rows=[];
@@ -216,6 +230,17 @@
   function mirror(){
     const text=committed.join('\n');
     if(soloTextarea.value!==text)soloTextarea.value=text;
+  }
+  // Mirroring one paragraph instead of rebuilding the whole document. Joining
+  // every paragraph on every keystroke means building and comparing a string the
+  // size of the manuscript each time a key goes down: at 8,000 paragraphs that
+  // is most of a megabyte per character, and it is what made typing in a long
+  // novel lag. Replacing just the range that changed is a native call.
+  function mirrorParagraph(index,previousText){
+    const start=paragraphStart(index);
+    if(soloTextarea.value.length<start+previousText.length){mirror();return;}
+    try{soloTextarea.setRangeText(committed[index],start,start+previousText.length,'preserve');}
+    catch{mirror();}
   }
   function paragraphStart(index){
     let at=0;
@@ -254,16 +279,33 @@
   }
   // The current selection as the model sees it: which paragraphs, and where in
   // the first and last of them.
+  // Selecting the whole page -- which is what Ctrl+A does -- gives a range whose
+  // container is the surface itself rather than a paragraph inside it. Walking
+  // up from there finds no paragraph, so formatting a select-all used to do
+  // nothing at all. An edge on the surface is resolved to the paragraph it
+  // stands at instead.
+  function resolveEdge(container,offset,isStart){
+    if(container===surface){
+      const kids=paragraphs();
+      if(!kids.length)return null;
+      const at=isStart?Math.min(offset,kids.length-1):Math.min(Math.max(offset-1,0),kids.length-1);
+      const node=kids[at];
+      return {node,offset:isStart?0:(node.textContent||'').length};
+    }
+    const node=paragraphOf(container);
+    if(!node)return null;
+    return {node,offset:offsetWithin(node,container,offset)};
+  }
   function selectionRange(){
     const sel=document.getSelection();
     if(!sel||!sel.rangeCount)return null;
     const range=sel.getRangeAt(0);
     if(!surface.contains(range.startContainer)||!surface.contains(range.endContainer))return null;
-    const startP=paragraphOf(range.startContainer),endP=paragraphOf(range.endContainer);
-    if(!startP||!endP)return null;
-    const first=Number(startP.dataset.index),last=Number(endP.dataset.index);
-    const start=offsetWithin(startP,range.startContainer,range.startOffset);
-    const end=offsetWithin(endP,range.endContainer,range.endOffset);
+    const from=resolveEdge(range.startContainer,range.startOffset,true);
+    const to=resolveEdge(range.endContainer,range.endOffset,false);
+    if(!from||!to)return null;
+    const first=Number(from.node.dataset.index),last=Number(to.node.dataset.index);
+    const start=from.offset,end=to.offset;
     return first<=last?{first,last,start,end}:{first:last,last:first,start:end,end:start};
   }
   function placeCaret(index,start,end=start){
@@ -300,9 +342,46 @@
   }
   // Typing. Reads the page into the model and stops -- no re-render, so the
   // caret stays exactly where the writer left it.
+  // When one paragraph changed and the paragraph count did not -- which is what
+  // ordinary typing is -- only that paragraph is read, only its runs are stored
+  // and only its line is mirrored. Everything else falls back to reading the
+  // whole page, so correctness never depends on guessing right.
+  function changedParagraphOnly(){
+    const range=selectionRange();
+    if(!range||range.first!==range.last)return null;
+    const nodes=paragraphs();
+    if(nodes.length!==committed.length)return null;
+    const node=nodes[range.first];
+    if(!node||Number(node.dataset.index)!==range.first)return null;
+    const row=readParagraph(node);
+    // A paragraph the browser has put a newline into becomes two manuscript
+    // paragraphs; that is a structural change and takes the full path.
+    if(row.text.includes('\n'))return null;
+    if(row.text===committed[range.first])return null;
+    return {index:range.first,...row};
+  }
   surface.addEventListener('input',event=>{
     if(!active)return;
     writing=true;
+    const one=changedParagraphOnly();
+    if(one){
+      const previous=committed.slice(),previousText=committed[one.index];
+      committed[one.index]=one.text;
+      if(window.twoiNarrativeHistory){
+        try{lockedLines=new Set(NarrativeCore.remapProtected(previous,committed,lockedSet()));}
+        catch(error){committed[one.index]=previousText;notice(error.message);renderSurface();writing=false;return;}
+      }
+      C.reconcile(manuscriptFormat,previous,committed);
+      storeParagraphRuns(one.index,one.text,one.runs);
+      if(typeof formatPrevious!=='undefined')formatPrevious=committed.slice();
+      mirrorParagraph(one.index,previousText);
+      window.twoiCreativeSession?.observeEdit({surface:'committed',before:previous.join('\n'),after:committed.join('\n'),
+        inputType:typeof creativeInputType==='function'?creativeInputType(event):'insertText'});
+      markDirty();
+      if(typeof countWordsSoon==='function')countWordsSoon();
+      writing=false;
+      return;
+    }
     const before=committed.join('\n');
     const {lines,runsByLine}=readSurface();
     if(window.twoiNarrativeHistory){
