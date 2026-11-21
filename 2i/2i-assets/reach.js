@@ -806,7 +806,10 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape' && $('reachAccount').classList.contains('open')){event.preventDefault();event.stopImmediatePropagation();return;}
   const key=String(event.key||'').toLowerCase();
   const field=document.activeElement;
-  const typing=field&&(field.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(field.tagName))&&!field.closest?.('.m-line-edit');
+  // #twoiRichSurface is excluded for the same reason .m-line-edit is: its undo
+  // is the manuscript's. The browser's own contenteditable undo would put the
+  // page back without putting the model back, and they would disagree.
+  const typing=field&&(field.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(field.tagName))&&!field.closest?.('.m-line-edit')&&!field.closest?.('#twoiRichSurface');
   if((event.ctrlKey||event.metaKey)&&['z','y'].includes(key)&&typing) event.stopImmediatePropagation();
 },true);
 // Drop is handled once; invalid input cannot partially replace the active document.

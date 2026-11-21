@@ -1,0 +1,64 @@
+/* The live writing surface: the manuscript page with its formatting showing.
+   It is deliberately the same type, size, colour and zoom as .solo-textarea,
+   so turning formatting on changes what you can see, not where the words sit. */
+.twoi-rich-surface {
+  display:none; flex:1; min-height:0; overflow-y:auto;
+  font-family:'Cormorant Garamond',serif;
+  font-size:calc(15.5px * var(--zoom-manuscript, 1)); line-height:1.55;
+  color:var(--ink); background:transparent;
+  padding:6px 24px 40px 14px;
+  outline:none; white-space:pre-wrap; overflow-wrap:anywhere;
+}
+body[data-twoi-rich="on"] .twoi-rich-surface { display:block; }
+body[data-twoi-rich="on"] .solo-textarea { display:none; }
+body[data-twoi-rich="on"] .line-numbers { display:none; }
+
+.twoi-rich-surface p { margin:0; min-height:1.55em; }
+.twoi-rich-surface p[data-locked="true"] {
+  background:rgba(168,44,36,.05);
+  box-shadow:inset 2px 0 0 rgba(168,44,36,.45);
+  padding-left:6px;
+}
+.twoi-rich-surface:focus-visible { outline:none; }
+.twoi-rich-surface sup, .twoi-rich-surface sub { line-height:0; }
+
+/* Formatting bar. One row, one click per action, no dialog in the way. */
+#twoiFormatBar {
+  display:none; flex-wrap:wrap; align-items:center; gap:3px;
+  padding:4px 8px; margin:0 0 2px;
+  border-bottom:1px solid var(--glass-border, rgba(0,0,0,.12));
+}
+body[data-twoi-rich="on"] #twoiFormatBar { display:flex; }
+#twoiFormatBar .fb-group { display:flex; align-items:center; gap:2px; }
+#twoiFormatBar .fb-sep { width:1px; align-self:stretch; margin:2px 4px; background:var(--glass-border, rgba(0,0,0,.14)); }
+#twoiFormatBar button {
+  min-width:30px; min-height:30px; padding:2px 6px;
+  border:1px solid transparent; border-radius:4px;
+  background:transparent; color:var(--ink, #241c12);
+  font:14px/1 'DM Sans', system-ui, sans-serif; cursor:pointer;
+}
+#twoiFormatBar button:hover { background:rgba(0,0,0,.07); }
+#twoiFormatBar button[aria-pressed="true"] {
+  background:rgba(168,138,74,.26); border-color:rgba(168,138,74,.7);
+}
+#twoiFormatBar button:disabled { opacity:.4; cursor:default; }
+#twoiFormatBar select {
+  min-height:30px; max-width:150px; padding:2px 4px;
+  border:1px solid var(--glass-border, rgba(0,0,0,.2)); border-radius:4px;
+  background:transparent; color:var(--ink, #241c12);
+  font:13px 'DM Sans', system-ui, sans-serif;
+}
+#twoiFormatBar input[type="color"] {
+  width:30px; height:30px; padding:0; border:1px solid var(--glass-border, rgba(0,0,0,.2));
+  border-radius:4px; background:transparent; cursor:pointer;
+}
+#twoiFormatBar .fb-b { font-weight:700; }
+#twoiFormatBar .fb-i { font-style:italic; }
+#twoiFormatBar .fb-u { text-decoration:underline; }
+#twoiFormatBar .fb-s { text-decoration:line-through; }
+#twoiRichToggle[aria-pressed="true"] { background:rgba(168,138,74,.26); }
+@media (max-width:760px) {
+  /* A phone keeps the marks that need a finger and drops the rest into the menu. */
+  #twoiFormatBar .fb-optional { display:none; }
+  #twoiFormatBar button { min-width:40px; min-height:40px; }
+}
