@@ -256,13 +256,45 @@ annotations, revision compare, FDX).
 tab); inserting pictures; writing `.doc`/`.docx` (2i reads `.docx` already via
 `2i/2i-assets/rich-editor.js` and the vendored engine); importing `.rtf`.
 
-Also noted and **not** built, because it is out of scope for this pass: no
-element named `#twoiTouchableTypewriter` exists anywhere in the repo, although
-Josie has said she wants the typewriter's keys to be real touch and mouse
-hotspots. The embedded console at `#twoiTypewriterConsole` does relay real key
-presses into the manuscript — that is now proven by test — so the wish may
-already be met under a different name. Worth confirming with her rather than
-building something new.
+### The dressing-room typewriter — corrected 2026-11-21
+
+An earlier draft of this note wondered whether the touchable typewriter was
+missing because no `#twoiTouchableTypewriter` exists. **It is not missing.**
+Josie: *"If you click on the typewriter in the dressing room, u see a
+typewriter."* The chain was traced and driven in Chromium:
+
+- the hotspot is `typewriter` in `static/world/world.json` (around line 7943),
+  `status: "confirmed"`, her own wording on it: *"Sitting at your type writer in
+  the first person view typing messages sending them working on scripts of
+  whatever documents you would liek"*
+- `static/2i_studio_bridge.js` `entry()` builds
+  `/2i?studio_room=dressing_room&studio_view=<view>&desk=typewriter`
+- `main.py` serves `2i/writers-room-v22.html` at `/2i`, and
+  `2i/2i-assets/studio-desk.js` reads those parameters
+
+Opened that way, verified in a real browser: `data-twoi-desk="typewriter"`, the
+live console iframe `#twoiTypewriterConsole` present, `#twoiTypewriterExpand`
+present, a "Stand up · return to room" button present, all three looks
+switchable, no page errors — **and the new formatting surface works while
+seated at it** (a word was bolded from the typewriter view).
+
+**What is genuinely not wired, and is small.** Josie described typing sounds:
+a click per key, the paper rolling on Enter, a ding after several rolls, and
+all of it mutable. The cue logic for this exists and is tested —
+`TwoiStudioBridge.cue()` returns `{click, bell}` and handles paste, composition
+and non-input correctly. It is called in exactly one place:
+`2i/preview-standalone.html` around line 6385, which synthesises the click and
+bell with an oscillator, so it needs no audio files and works offline. It is
+**not** called in `2i/writers-room-v22.html`, which is the file the dressing
+room actually opens. Wiring it across is a short change and needs no new
+assets, but it was not done in this pass because the typewriter's look and feel
+is hers in detail (painterly lapis machine, a visible row of key bars with a
+random one depressing per keypress, sound in time, audio optional) and
+`static/world/world.json` line ~8001 records the fuller behaviour as not built.
+Ask her before building it.
+
+Still genuinely absent from this pass: a draggable ruler with tab stops,
+inserting pictures, writing `.docx`, importing `.rtf`.
 
 ---
 
