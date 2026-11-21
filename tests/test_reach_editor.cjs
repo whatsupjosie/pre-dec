@@ -243,7 +243,12 @@ const deadline=setTimeout(()=>{console.error('FAIL: editor test did not finish')
   const offlineB=h.run('documentId');await h.run('showShelf()');
   const recovery=h.w.document.querySelector('#reachShelfList button[data-document-id="'+offlineA+'"][data-source="browser"]');assert(recovery);recovery.click();await pause();
   assert.equal(h.run('documentId'),offlineA);assert.equal(h.w.document.getElementById('soloTextarea').value,'Offline manuscript A');
-  assert.equal(h.run(`stored(RECOVERY_KEY+':'+${JSON.stringify(offlineB)},null).state.committed[0]`),'Offline manuscript B');
+  // What matters is that B is still recoverable after switching to A, not which
+  // key it sits under: an unsaved copy lives under this runtime's writer key
+  // (recoveryWriterKey) so that two tabs cannot overwrite each other, and only a
+  // saved one reaches RECOVERY_KEY:<id>. B was never saved here -- the server is
+  // failing on purpose -- so this asks the shelf's own reader for it.
+  assert.equal(h.run(`browserManuscripts().find(r=>r.id===${JSON.stringify(offlineB)}).state.committed[0]`),'Offline manuscript B');
   const recoveryStorage=h.storage();h.w.close();h=harness(recoveryStorage,timing);await h.w.reachStarted;await h.w.reachArtworkReady;
   assert.equal(h.w.document.getElementById('soloTextarea').value,'Offline manuscript A');assert.equal(h.errors.length,0,h.errors.join('\n'));h.w.close();
   console.log('PASS: offline manuscript copies remain separately recoverable through switching and reload');
