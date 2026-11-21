@@ -1,14 +1,49 @@
 /* One shared floor slate per top-level PubCast screen. No synthetic director voice. */
 (() => {
   'use strict';
-  if (window !== window.top || window.PubCastSlate) return;
+  if (window.PubCastSlate) return;
   const nativeFetch = window.ReachAuth?.nativeFetch || window.fetch.bind(window);
+  function token() {
+    try { return window.ReachAuth?.getToken() || sessionStorage.getItem('pubcast_token') || ''; }
+    catch (_) { return ''; }
+  }
+  async function request(method='GET', body) {
+    const headers={'Content-Type':'application/json'}; if(token())headers.Authorization='Bearer '+token();
+    const response=await nativeFetch('/api/studio/slate',{method,headers,cache:'no-store',
+      body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(4000)});
+    if(!response.ok) { let d;try{d=await response.json();}catch(_){} throw Error(d?.detail||'Slate HTTP '+response.status); }
+    return response.json();
+  }
+  const announce = slate => window.dispatchEvent(new CustomEvent('pubcast:slate-change',{detail:slate}));
+  const read = () => token() ? request() : Promise.resolve(null);
+  async function logTake(slate,id) {
+    const body={action:'log_take',data:{slate_id:slate.id,generation:slate.generation,recording_id:id}};
+    try{return await request('POST',body);}
+    catch(error){
+      if(error.name!=='TimeoutError'&&!(error instanceof TypeError))throw error;
+      return request('POST',body);
+    }
+  }
+  document.addEventListener('click',event=>{
+    if(event.target.closest?.('[data-open-production-slate]')) window.PubCastSlate.open();
+  });
+  if (window !== window.top) {
+    window.PubCastSlate={read,logTake,open:()=>window.top.PubCastSlate?.open()};
+    try{
+      const forward=event=>announce(event.detail);
+      window.top.addEventListener('pubcast:slate-change',forward);
+      window.addEventListener('pagehide',()=>window.top.removeEventListener('pubcast:slate-change',forward),{once:true});
+    }catch(_){}
+    read().then(data=>announce(data?.slate||null)).catch(()=>{});
+    return;
+  }
   let connecting=false;
   let snapshot = null, socket = null, timer, closed = false, pending = false;
   let offset = 0, bestRTT = Infinity, scheduled = '', clockUncertainty = Infinity;
   let context, micContext, micStream, micNode, micSource, muteSink, voiceUntil = 0;
   let crewDirty=false;
-  let listening = false, microphone = false, micStarting = false, dirty = false;
+  let listening = false, microphone = false, micStarting = false;
+  const dirtyFields=new Set();
   const root = document.createElement('section');
   root.id = 'pubcast-slate-floor'; root.hidden = true; root.setAttribute('aria-label','Production slate and roll call');
   root.innerHTML = `<div class="slate-wrap"><h1>Production floor · <span data-phase>standby</span></h1>
@@ -24,27 +59,26 @@
     <label>Assistant account IDs, one per line<textarea data-editors></textarea></label><button data-action="delegate">Grant / revoke editing</button></details>
     <details data-editor hidden><summary>AI crew for this production only</summary><p>These assignments stay in this session. AI execution is not enabled by saving them.</p>
     <div class="crew-brain" aria-label="Session AI crew reference"></div><div data-crew></div><button data-action="add-crew">Add crew assignment</button><button data-action="crew">Save crew assignments</button></details>
+    <details><summary>Take log</summary><ul data-take-log></ul></details>
     <button data-action="end" hidden>End production</button></div>`;
   const launcher = document.createElement('button'); launcher.id='pubcast-slate-open'; launcher.textContent='Production slate'; launcher.hidden=true;
   document.body.append(root, launcher);
   const $ = s => root.querySelector(s);
   const status = message => $('.status').textContent = message;
   const fields = {};
-  for (const name of ['production','scene','take','actors','notes']) {
-    const label=document.createElement('label'); label.textContent=name[0].toUpperCase()+name.slice(1);
-    const input=document.createElement(name==='notes'?'textarea':'input'); input.name=name;
-    input.addEventListener('input',()=>{dirty=true;}); label.append(input); $('.fields').append(label); fields[name]=input;
+  for (const [name,title] of Object.entries({production:'Production',scene:'Scene',scene_title:'Scene title',
+    studio_package:'Studio package',take:'Take',actors:'Actors',notes:'Notes'})) {
+    const label=document.createElement('label'); label.textContent=title;
+    const input=document.createElement(name==='notes'?'textarea':name==='studio_package'?'select':'input'); input.name=name;
+    input.addEventListener('input',()=>dirtyFields.add(name)); label.append(input); $('.fields').append(label); fields[name]=input;
   }
-  function token() {
-    try { return window.ReachAuth?.getToken() || sessionStorage.getItem('pubcast_token') || ''; }
-    catch (_) { return ''; }
+  fields.studio_package.add(new Option('Use stage selection',''));
+  async function loadPackages(){
+    if(!window.PubCast25D)await import('/static/production25d_core.js');
+    for(const pkg of Object.values(window.PubCast25D.PACKAGES))fields.studio_package.add(new Option(pkg.title,pkg.id));
+    if(!dirtyFields.has('studio_package'))fields.studio_package.value=snapshot?.slate?.fields.studio_package||'';
   }
-  async function request(method='GET', body) {
-    const headers={'Content-Type':'application/json'}; if(token())headers.Authorization='Bearer '+token();
-    const response=await nativeFetch('/api/studio/slate',{method,headers,body:body?JSON.stringify(body):undefined});
-    if(!response.ok) { let d;try{d=await response.json();}catch(_){} throw Error(d?.detail||'Slate HTTP '+response.status); }
-    return response.json();
-  }
+  loadPackages().catch(()=>{fields.studio_package.hidden=true;});
   function addCrew(item={label:'',role:'camera operator',profile:'',instructions:'',flight_pattern:'',enabled:false}){
     const row=document.createElement('fieldset');row.className='crew-entry';
     for(const [key,title]of [['label','Crew name'],['role','Department / job'],['profile','Configured AI profile'],['instructions','Instructions for this scene'],['flight_pattern','Flight path / movement instructions']]){
@@ -57,9 +91,16 @@
   async function command(action,data={}) {
     if(pending)return;
     pending=true;
-    try{snapshot=await request('POST',{action,data,revision:snapshot?.slate?.revision??null});dirty=false;if(action==='crew')crewDirty=false;render();status('Saved / delivered to production screens');}
+    try{const result=await request('POST',{action,data,revision:snapshot?.slate?.revision??null});if(action==='edit')dirtyFields.clear();if(action==='crew')crewDirty=false;adopt(result);status('Saved / delivered to production screens');}
     catch(error){status(error.message);await refresh();}
     finally{pending=false;}
+  }
+  function adopt(data) {
+    if(snapshot && data.server_time < snapshot.server_time)return;
+    if(snapshot?.slate?.id===data.slate?.id && data.slate?.revision<snapshot?.slate?.revision)return;
+    const changed=!snapshot||data.slate?.id!==snapshot.slate?.id||data.slate?.revision!==snapshot.slate?.revision;
+    snapshot=data;
+    if(changed){render();announce(data.slate);}
   }
   function render() {
     if(!snapshot)return;
@@ -70,12 +111,20 @@
     if(s.visible)root.hidden=false;
     else if(root.dataset.forced!=='yes')root.hidden=true;
     $('[data-phase]').textContent=s.phase==='standby'?'STATIONS / ROLL CALL':s.phase.toUpperCase();
-    for(const [name,input]of Object.entries(fields)){input.readOnly=!editor;if(!dirty)input.value=s.fields[name]||'';}
+    for(const [name,input]of Object.entries(fields)){
+      if(input.tagName==='SELECT')input.disabled=!editor;else input.readOnly=!editor;
+      if(!dirtyFields.has(name))input.value=s.fields[name]||'';
+    }
     for(const a of ['save','standby','clap','hide'])$(`[data-action="${a}"]`).hidden=!editor;
     for(const a of ['mic','delegate','end'])$(`[data-action="${a}"]`).hidden=!director;
     root.querySelectorAll('[data-editor]').forEach(e=>e.hidden=!editor);
     $('[data-action="clap"]').disabled=s.phase!=='standby'||Object.values(s.departments).some(e=>!e.ready);
     $('[data-editors]').readOnly=!director;
+    $('[data-take-log]').replaceChildren(...(snapshot.takes||[]).map(take=>{
+      const row=document.createElement('li');
+      row.textContent=[take.production,'Scene '+take.scene,take.scene_title,'Take '+take.take,new Date(take.requested_at*1000).toLocaleString()].filter(Boolean).join(' · ');
+      return row;
+    }));
     if(!root.contains(document.activeElement)||!['TEXTAREA','INPUT'].includes(document.activeElement.tagName)){
       $('[data-departments]').value=Object.entries(s.departments).map(([d,e])=>d+' = '+e.user_id).join('\n');
       $('[data-editors]').value=s.editors.join('\n');if(!crewDirty){$('[data-crew]').replaceChildren();s.crew.forEach(addCrew);crewDirty=false;}
@@ -111,7 +160,7 @@
     const t0=Date.now()/1000;
     try{const data=await request();const t1=Date.now()/1000,rtt=t1-t0;
       if(rtt<bestRTT){bestRTT=rtt;offset=data.server_time-(t0+t1)/2;clockUncertainty=rtt/2;}
-      if(!snapshot||data.slate?.revision!==snapshot.slate?.revision||!snapshot.slate){snapshot=data;render();}
+      adopt(data);
       connect();
     }catch(error){if(snapshot?.slate?.visible)status('Connection lost. Last known slate shown; readiness and voice are not confirmed.');}
   }
@@ -161,17 +210,21 @@
       if(action==='listen')return await enableAudio();
       if(action==='mic'){if(micStarting)return;micStarting=true;try{return microphone?stopMic():await startMic();}catch(error){stopMic();throw error;}finally{micStarting=false;}}
       if(action==='close'){if(snapshot.slate.visible)return status('The shared board stays on screen until the director dismisses it.');root.dataset.forced='';root.hidden=true;return;}
-      if(action==='save')return await command('edit',{fields:Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value]))});
+      if(action==='save')return await command('edit',{fields:Object.fromEntries([...dirtyFields].map(k=>[k,fields[k].value]))});
       if(action==='departments'){const entries={};for(const line of $('[data-departments]').value.split('\n').filter(v=>v.trim())){const i=line.indexOf('=');if(i<1)throw Error('Use department = account ID');entries[line.slice(0,i).trim()]=line.slice(i+1).trim();}return await command(action,{departments:entries});}
       if(action==='delegate')return await command(action,{editors:$('[data-editors]').value.split('\n').map(v=>v.trim()).filter(Boolean)});
       if(action==='add-crew'){addCrew();crewDirty=true;return;}
       if(action==='crew')return await command(action,{crew:Array.from(root.querySelectorAll('.crew-entry'),row=>Object.fromEntries(Array.from(row.querySelectorAll('[data-crew-field]'),e=>[e.dataset.crewField,e.type==='checkbox'?e.checked:e.value])))});
       if(action==='end'&&!confirm('End this production and release the shared floor?'))return;
-      if(dirty&&['standby','clap'].includes(action))throw Error('Save the slate fields first');
+      if(dirtyFields.size&&['standby','clap'].includes(action))throw Error('Save the slate fields first');
       root.dataset.forced='';await command(action);
     }catch(error){status(error.message);}
   });
   window.addEventListener('pagehide',()=>{closed=true;stopMic();socket?.close();context?.close();clearTimeout(timer);});
-  window.PubCastSlate={refresh,open:()=>launcher.click()};
+  window.PubCastSlate={refresh,read,logTake:async(slate,id)=>adopt(await logTake(slate,id)),open:async()=>{
+    if(!token()){window.location.assign('/login');return;}
+    if(!snapshot)await refresh();
+    launcher.click();
+  }};
   async function poll(){if(closed)return;await refresh();if(!closed)setTimeout(poll,1500);}poll();
 })();

@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -149,6 +150,13 @@ class EncodedTakeIngest:
     @staticmethod
     def _status(session):
         data = session.ingest
+        labels = data["spec"]["manifest"].get("archive_take")
+        labels = labels if isinstance(labels, dict) else {}
+        filename = labels.get("filename")
+        if not isinstance(filename, str) or not re.fullmatch(r'[\w][\w.-]{0,159}', filename):
+            filename = None
+        title = labels.get("title")
+        timecode = labels.get("timecode")
         return {"id": session.session_id, "owner": session.operator,
                 "state": data["state"], "take_id": data["spec"]["take_id"],
                 "production_id": data["spec"]["production_id"],
@@ -156,6 +164,9 @@ class EncodedTakeIngest:
                 "next_index": data["next_index"], "chain": data["chain"],
                 "chunk_bytes": CHUNK_BYTES, "sha256": data.get("sha256"),
                 "capture_incomplete": data["spec"]["capture_incomplete"],
+                "title": title[:300] if isinstance(title, str) else None,
+                "timecode": timecode[:20] if isinstance(timecode, str) else None,
+                "filename": filename,
                 "capture_started_at": session.started_at if data.get("capture_timing") != "unknown" else None,
                 "capture_ended_at": session.ended_at if data.get("capture_timing") != "unknown" else None,
                 "capture_timing": data.get("capture_timing"),
@@ -337,7 +348,9 @@ class EncodedTakeIngest:
         path = session.artifacts[0].file_path
         if path.is_symlink() or not path.is_file() or path.stat().st_size != data["spec"]["bytes"] or self.recording._file_digest(path) != data["sha256"]:
             raise HTTPException(409, "Saved source failed its integrity check")
-        return path, data["spec"]["mime"].split(";")[0], data["sha256"]
+        filename = self._status(session)["filename"]
+        return path, data["spec"]["mime"].split(";")[0], data["sha256"], (
+            filename + path.suffix if filename else path.name)
 
     def abandon(self, take, owner):
         self._load(take, owner)
@@ -398,8 +411,8 @@ def create_studio25d_recording_router(recording: RecordingService):
 
     @router.get("/{take_id}/media")
     async def media(take_id: str, actor=Depends(owner)):
-        path, mime, digest = await io(ingest.media, take_id, actor)
-        return FileResponse(path, media_type=mime, filename=path.name,
+        path, mime, digest, filename = await io(ingest.media, take_id, actor)
+        return FileResponse(path, media_type=mime, filename=filename,
                             headers={"Cache-Control": "private, no-store", "X-Source-SHA256": digest})
 
     @router.post("/{take_id}/abandon")

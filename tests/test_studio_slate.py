@@ -82,6 +82,28 @@ def test_crew_stays_session_local_and_bad_fields_rejected(floor):
     assert store.current()['crew']==[] and store.current()['director_id']=='next'
 
 
+def test_roll_is_logged_and_advances_even_without_upload(floor):
+    client, store = floor
+    post(client, 'create')
+    slate = post(client, 'edit', {'fields': {
+        'production': 'PubCast Pilot', 'scene': '12A', 'scene_title': 'Night Shift',
+        'studio_package': 'late_night', 'take': '07',
+    }}).json()['slate']
+    data = {'slate_id': slate['id'], 'generation': slate['take_generation'],
+            'recording_id': 'program-take-0007'}
+    assert post(client, 'log_take', data, user='camera', role='crew').status_code == 403
+    result = post(client, 'log_take', data).json()
+    assert result['slate']['fields']['take'] == '08'
+    assert result['takes'][0]['take'] == '07'
+    assert result['takes'][0]['scene_title'] == 'Night Shift'
+    assert post(client, 'log_take', data).json()['slate']['fields']['take'] == '08'
+    assert post(client, 'log_take', data | {'recording_id': 'conflicting-take'}).status_code == 409
+    post(client, 'edit', {'fields': {'scene': '13', 'take': '01'}})
+    assert post(client, 'log_take', data).json()['slate']['fields']['take'] == '01'
+    from modules.studio_slate import SlateStore
+    assert len(SlateStore(store.path).recent_takes(slate['id'])) == 1
+
+
 def test_overlay_on_html_not_json_and_head(floor):
     c,_=floor
     assert c.get('/').text.count('/static/studio_slate.js')==1

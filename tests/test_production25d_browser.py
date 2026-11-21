@@ -232,6 +232,40 @@ def record_short_take(page):
     page.wait_for_function("!PubCast25DStudio.state().recording")
 
 
+def test_slate_controls_stage_and_records_the_roll_before_any_upload(studio, production_server):
+    import re
+
+    page, _ = studio
+    _, auth, api = production_server
+    headers = {"Authorization": "Bearer " + auth["access_token"]}
+    path = "/api/studio/slate"
+    created = api.post(path, headers=headers, json={"action": "create"})
+    created.raise_for_status()
+    edited = api.post(path, headers=headers, json={
+        "action": "edit", "revision": created.json()["slate"]["revision"],
+        "data": {"fields": {"production": "Pilot", "scene": "12A", "scene_title": "Night Shift",
+                            "studio_package": "late_night", "take": "07"}},
+    })
+    edited.raise_for_status()
+    try:
+        page.wait_for_function("document.getElementById('genre').value === 'late_night'")
+        wait_for_actors(page)
+        page.click("#start")
+        record_short_take(page)
+        page.locator("#sessionList button").filter(has_text="Take 07").first.click()
+        with page.expect_download() as download:
+            page.click("#download")
+        assert re.fullmatch(r"Pilot-Scene-12A-Night-Shift-Take-07_.*Z_\d\d-\d\d-\d\d-\d\d_.*\.(webm|mp4)",
+                            download.value.suggested_filename)
+        current = api.get(path, headers=headers).json()
+        assert current["slate"]["fields"]["take"] == "08"
+        assert [take["take"] for take in current["takes"]] == ["07"]
+        assert api.get("/api/studio25d/recordings", headers=headers).json()["takes"] == []
+    finally:
+        current = api.get(path, headers=headers).json()["slate"]
+        api.post(path, headers=headers, json={"action": "end", "revision": current["revision"]})
+
+
 def test_multiple_takes_keep_original_media_bytes(studio):
     page, _ = studio
     wait_for_actors(page)

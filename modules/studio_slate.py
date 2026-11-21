@@ -8,6 +8,7 @@ import asyncio
 import copy
 import json
 import math
+import re
 import sqlite3
 import time
 import uuid
@@ -31,6 +32,8 @@ class SlateStore:
         self.path = path
         with self.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS slates (id TEXT PRIMARY KEY, state TEXT NOT NULL)')
+            db.execute('CREATE TABLE IF NOT EXISTS slate_takes (id TEXT PRIMARY KEY, slate_id TEXT NOT NULL, entry TEXT NOT NULL)')
+            db.execute('CREATE INDEX IF NOT EXISTS slate_takes_by_slate ON slate_takes(slate_id)')
         self.lock = asyncio.Lock()
 
     def connect(self):
@@ -45,6 +48,16 @@ class SlateStore:
         with self.connect() as db:
             db.execute('INSERT INTO slates VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET state=excluded.state',
                        (state['id'], json.dumps(state)))
+
+    def recent_takes(self, slate_id):
+        with self.connect() as db:
+            rows = db.execute('SELECT entry FROM slate_takes WHERE slate_id = ? ORDER BY rowid DESC LIMIT 50',
+                              (slate_id,)).fetchall()
+        entries = [json.loads(row[0]) for row in rows]
+        for entry in entries:
+            for key in ('production', 'scene', 'scene_title', 'take'):
+                entry[key] = entry.get(key, '')[:180]
+        return entries
 
     def command(self, command: SlateCommand, identity: dict):
         # Revision checks and writes share one SQLite transaction, including
@@ -64,13 +77,16 @@ class SlateStore:
             if s and s['phase'] != 'ended':
                 raise HTTPException(409, 'The current director must end the active production first')
             s = {'id': str(uuid.uuid4()), 'director_id': actor, 'editors': [], 'revision': 0,
-                 'phase': 'idle', 'visible': False, 'clap_at': None,
-                 'fields': {'production': '', 'scene': '1', 'take': '1', 'actors': '', 'notes': ''},
+                 'phase': 'idle', 'visible': False, 'clap_at': None, 'take_generation': 0,
+                 'fields': {'production': '', 'scene': '1', 'scene_title': '', 'studio_package': '',
+                            'take': '1', 'actors': '', 'notes': ''},
                  'departments': {}, 'crew': [], 'history': [], 'sync_status': 'media_alignment_unverified'}
         else:
             if not s or s['phase'] == 'ended':
                 raise HTTPException(409, 'No active production')
-            if command.revision != s['revision']:
+            s['fields'].setdefault('scene_title', '')
+            s['fields'].setdefault('studio_package', '')
+            if action != 'log_take' and command.revision != s['revision']:
                 raise HTTPException(409, 'Slate changed; refresh before retrying')
             director = actor == s['director_id']
             editor = director or actor in s['editors']
@@ -96,7 +112,31 @@ class SlateStore:
                     for key, value in fields.items():
                         if not isinstance(value, str) or len(value) > 8000:
                             raise HTTPException(422, 'Slate fields must be text up to 8000 characters')
+                    if any(key in fields and fields[key] != s['fields'][key]
+                           for key in ('production', 'scene', 'scene_title', 'studio_package', 'take')):
+                        s['take_generation'] = s.get('take_generation', 0) + 1
                     s['fields'].update(fields)
+                elif action == 'log_take':
+                    take_id = data.get('recording_id')
+                    if not isinstance(take_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{8,128}', take_id):
+                        raise HTTPException(422, 'A valid recording ID is required')
+                    if data.get('slate_id') != s['id']:
+                        raise HTTPException(409, 'A different production slate is now active')
+                    previous = db.execute('SELECT slate_id FROM slate_takes WHERE id = ?', (take_id,)).fetchone()
+                    if previous:
+                        if previous[0] != s['id']:
+                            raise HTTPException(409, 'This recording belongs to another slate')
+                        return s
+                    generation = data.get('generation')
+                    if type(generation) is not int or generation != s.get('take_generation', 0):
+                        raise HTTPException(409, 'The slate already moved on from this take')
+                    entry = {key: s['fields'][key] for key in ('production', 'scene', 'scene_title', 'studio_package', 'take')}
+                    entry.update(recording_id=take_id, requested_at=time.time(), operator=actor)
+                    db.execute('INSERT INTO slate_takes VALUES (?, ?, ?)', (take_id, s['id'], json.dumps(entry)))
+                    number = s['fields']['take'].strip()
+                    if number.isascii() and number.isdecimal() and len(number) <= 9:
+                        s['fields']['take'] = str(int(number) + 1).zfill(len(number))
+                    s['take_generation'] = generation + 1
                 elif action == 'delegate':
                     if not director:
                         raise HTTPException(403, 'Only the director can delegate editing')
@@ -162,7 +202,8 @@ def create_slate_router(path: Path):
         return identity
 
     def view(s, identity):
-        return {'slate': s, 'server_time': time.time(), 'user_id': identity['user_id'],
+        return {'slate': s, 'takes': store.recent_takes(s['id']) if s else [],
+                'server_time': time.time(), 'user_id': identity['user_id'],
                 'can_edit': bool(s and (identity['user_id'] == s['director_id'] or identity['user_id'] in s['editors'])),
                 'is_director': bool(s and identity['user_id'] == s['director_id'])}
 

@@ -69,6 +69,7 @@
     {id: 'control_room', title: 'Control Room', group: 'Studio Rooms', kind: 'page', url: '/static/control_room.html', w: 860, h: 580, minW: 560, minH: 380, shape: 'room', singleton: true},
     {id: 'studio_control', title: 'Studio Control Room', group: 'Studio Rooms', kind: 'page', url: '/static/studio_control_room.html', w: 860, h: 580, minW: 560, minH: 380, shape: 'room', singleton: true},
     {id: 'director', title: 'Director Switcher', group: 'Studio Rooms', kind: 'page', url: '/static/director_switcher.html', w: 860, h: 580, minW: 560, minH: 380, shape: 'room', singleton: true},
+    {id: 'director_mini', title: 'Director Mini Console', group: 'Studio Rooms', kind: 'page', url: '/static/mini_console.html', w: 650, h: 580, minW: 320, minH: 380, shape: 'room', singleton: true},
     {id: 'world', title: 'World', group: 'Studio Rooms', kind: 'page', url: '/static/world.html', w: 880, h: 580, minW: 520, minH: 360, shape: 'room', singleton: true},
     {id: 'pubworld_set', title: 'PubWorld Set', group: 'Studio Rooms', kind: 'page', url: '/static/pubworld_stage.html', w: 880, h: 580, minW: 520, minH: 360, shape: 'room', singleton: true},
     {id: 'bar', title: 'Bar', group: 'Studio Rooms', kind: 'page', url: '/static/bar.html', w: 780, h: 540, minW: 480, minH: 340, shape: 'room', singleton: true},

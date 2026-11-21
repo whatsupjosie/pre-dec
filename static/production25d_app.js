@@ -20,7 +20,7 @@ const state={pkg:null,performers:[],assets:{},avatarBridge:null,avatarError:"",
 programId:null,previewId:null,
 session:null,startingProduction:false,media:null,mediaError:null,recorder:null,videoStream:null,micStream:null,audioContext:null,micSource:null,
 micGain:null,micAnalyser:null,audioDest:null,recordingPromise:null,recordingComplete:null,recordingStarting:null,
-recordingStartedAt:0,recordingId:null,recovery:null,
+recordingStartedAt:0,recordingId:null,recovery:null,slate:null,recordingTitle:"",
 recordingMime:"",microphoneMuted:false,microphoneLevel:1,selected:null,playbackUrl:null,downloadUrl:null,
 lastTick:0,blackout:false,panicActive:false,lowerThird:false,lowerText:"BELLA FAUX PAS",scores:[0,0],transition:null,
 storageReady:false,assetUrls:{},assetByPackage:{},avatarChecks:0,
@@ -51,12 +51,28 @@ function emit(type,payload){
  const e=Core.event(state.session,type,payload||{},Date.now());
  return e;
 }
+function showStageSlate(slate){
+ state.slate=Core.slateTake(slate);
+ syncSlateSetup();
+}
+function syncSlateSetup(){
+ const title=Core.slateTitle(state.slate);
+ $("stageSlateTitle").textContent=title?(state.recorder?"Next slate: ":"")+title:"No active production slate";
+ const packageId=state.slate?.packageId;
+ if(Core.PACKAGES[packageId]&&!state.session&&!state.startingProduction&&!state.castingPete&&state.pkg?.id!==packageId)
+   loadGenre(packageId);
+ const details=$("stageSlateDetails");
+ details.textContent=[state.slate?.actors&&"Cast: "+state.slate.actors,state.slate?.notes,
+   Core.PACKAGES[packageId]&&state.pkg?.id!==packageId&&"Next set: "+Core.PACKAGES[packageId].title].filter(Boolean).join(" · ");
+ details.hidden=!details.textContent;
+ if(state.pkg)setControls();
+}
 async function safe(fn){
  try{await fn()}catch(e){if(e?.name==="AbortError")return;error(String(e?.message||e));console.error("PubCast 2.5D",e);}
 }
 function setControls(){
  const active=!!state.session&&!state.startingProduction,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
- el.start.disabled=!!state.session||state.startingProduction||state.castingPete;el.genre.disabled=el.start.disabled;el.stop.disabled=!active||stopping||state.endingProduction;
+ el.start.disabled=!!state.session||state.startingProduction||state.castingPete;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
  el.record.disabled=!active||state.endingProduction||state.panicActive||rec||stopping||starting||!state.storageReady;
  $("cut").disabled=$("fade").disabled=!active||!!state.endingProduction;
  for(const button of el.camera.children)button.disabled=state.startingProduction||!!state.endingProduction;
@@ -70,7 +86,7 @@ function setControls(){
  $("archiveSave").disabled=!state.selected?.take||!state.selected?.blob||rec||starting||stopping||!!selectedServer||!archive||archive.status().busy;
  $("archiveRefresh").disabled=rec||starting||stopping;
  $("archiveBundle").disabled=rec||starting||stopping||!selectedServer;
- el.recBadge.textContent=rec?"● REC "+state.recordingMime:starting?"PREPARING RECORDING":"REC OFF";
+ el.recBadge.textContent=rec?"● REC "+(state.recordingTitle||state.recordingMime):starting?"PREPARING RECORDING":"REC OFF";
  el.recBadge.style.color=rec?"#ff7070":"";
  const microphoneLive=state.micStream?.getAudioTracks().some(t=>t.readyState==='live');
  el.audioBadge.textContent=microphoneLive?"MIC "+(state.microphoneMuted?"MUTED":"ACTIVE"):"MIC OFF";
@@ -265,6 +281,7 @@ async function startProduction(){
  setControls();
  try{
   const sess=Core.makeSession(state.pkg,Date.now());state.session=sess;
+  if(state.slate)sess.slate=state.slate;
   emit("production.start",{package:state.pkg.id,program:state.programId});
   try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
   state.remoteProgram=null;state.remotePreview=null;
@@ -326,7 +343,7 @@ async function stopProduction(){
   el.switcherLink.textContent="VIDEO: LOCAL ONLY";
   el.liveMedia.textContent="REMOTE FRAMES: OFF";el.liveMedia.style.color="";
   state.session=null;log("PRODUCTION END "+sess.id);setControls();await refreshSessions();
- }finally{state.endingProduction=false;setControls();}
+ }finally{state.endingProduction=false;syncSlateSetup();setControls();}
 }
 function recordedMime(){
  if(typeof MediaRecorder==="undefined")throw Error("MediaRecorder is unavailable in this browser");
@@ -366,6 +383,8 @@ async function startRecording(){
  if(!globalThis.crypto?.subtle)throw Error("Recording integrity checks require HTTPS or localhost");
  if(typeof el.program.captureStream!=="function")throw Error("Canvas.captureStream is unsupported");
  const mime=recordedMime(),sess=state.session,media={},op={cancelled:false,media};
+ const slateApi=window.PubCastSlate;
+ const slateLookup=slateApi?.read().catch(error=>({error}));
  state.recordingStarting=op;state.mediaError=null;state.recordingHasData=false;state.recordingStopImmediate=false;setControls();
  const check=()=>{if(op.cancelled||state.recordingStarting!==op||state.session!==sess)throw new DOMException("Recording start canceled","AbortError");};
  let capture=null,adopted=false,stopLease=()=>{};
@@ -410,10 +429,25 @@ async function startRecording(){
      state.clacker=reference;
    }
    const rec=new MediaRecorder(combined,mime?{mimeType:mime,videoBitsPerSecond:3000000}:{videoBitsPerSecond:3000000});
+   const slateResponse=await slateLookup;check();
+   if(slateResponse?.error){
+     if(state.slate)throw Error("Could not confirm the active slate. Reconnect before recording this take.");
+     log("Slate unavailable. This clip will use its local take ID.");
+   }else if(slateResponse){
+     showStageSlate(slateResponse.slate);
+   }
+   const slate=Core.slateTake(slateResponse?.slate);
+   const title=Core.slateTitle(slate);
    let startedAt=Date.now();const id=sess.id+"-take-"+startedAt+"-"+Capture.id().slice(0,8);
+   if(slate){
+     if(slate.packageId&&slate.packageId!==sess.packageId)
+       throw Error("The slate has a different studio set. End this production to load it before rolling.");
+     if(!slateResponse.can_edit)throw Error("Ask the director to delegate slate editing before rolling this take.");
+     await slateApi.logTake(slate,id);check();
+   }
    capture={id,owner:captureOwner,session:structuredClone(sess),mime:rec.mimeType||mime||"video/webm",syncReferenceId:state.clacker.input.syncReferenceId,
      sourceId:"p25d_"+sess.packageId+"_"+state.programId,startedAt:new Date(startedAt).toISOString(),
-     offsetMs:startedAt-Date.parse(sess.startedAt)};
+     offsetMs:startedAt-Date.parse(sess.startedAt),...(slate?{slate,title}:{})};
    await Store.beginCapture(capture);check();
    media.sourceRecordings=new window.PubCast25DSourceRecordings({mixer:programAudio,session:sess,
      parentTakeId:id,owner:captureOwner,references:[state.clacker.input],onFailure:e=>{
@@ -427,6 +461,7 @@ async function startRecording(){
    Object.assign(state,media);adopted=true;
    state.recordingSourceId=capture.sourceId;state.recordingMime=capture.mime;
    state.recordingStartedAt=startedAt;state.recordingId=id;
+   state.recordingTitle=title;
    let resolve,reject,finishing=false;
    const completion=new Promise((a,b)=>{resolve=a;reject=b;});completion.catch(()=>{});
    state.recordingComplete=completion;
@@ -452,9 +487,9 @@ async function startRecording(){
    state.recordingStartedAt=startedAt;
    rec.start(1000);
    emit("recording.start",{mime:state.recordingMime,microphone:!!state.micStream,
-     sharedProgramMix:!!state.programMixSource,canvas:[Core.W,Core.H],journal:id});
+     sharedProgramMix:!!state.programMixSource,canvas:[Core.W,Core.H],journal:id,...(slate?{slate,title}:{})});
    $("captureStatus").textContent="Recording started; waiting for the first local checkpoint.";
-   log("REC START "+state.recordingMime+" / microphone "+(state.micStream?"ON":"OFF"));setControls();
+   log("REC START "+state.recordingMime+" / microphone "+(state.micStream?"ON":"OFF"));syncSlateSetup();setControls();
  }catch(e){
    stopLease();
    await media.sourceRecordings?.stop().catch(()=>{});
@@ -479,6 +514,7 @@ async function finishRecording(rec,writer,capture,sess){
    if(!sess.recordings)sess.recordings=sess.media?[Object.assign({id:sess.id},sess.media)]:[];
    sess.media={id:capture.id,mime:blob.type,bytes:blob.size,sourceId:capture.sourceId,syncReferenceId:capture.syncReferenceId,
      startedAt:capture.startedAt,offsetMs:capture.offsetMs,durationMs:Date.now()-Date.parse(capture.startedAt),
+     ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
      incomplete:!!captureError,journal:{chunks:record.chunks.length,bytes:record.capture.bytes}};
    sess.recordings.push(sess.media);
    state.recovery={session:sess,blob,take:sess.media,capture:{id:capture.id,owner:captureOwner}};
@@ -496,7 +532,7 @@ async function finishRecording(rec,writer,capture,sess){
    throw e;
  }finally{
    state.sourceRecordings=null;
-   cleanupMedia();state.recorder=null;state.recordingPromise=null;state.recordingComplete=null;state.captureWriter=null;setControls();
+   cleanupMedia();state.recorder=null;state.recordingPromise=null;state.recordingComplete=null;state.captureWriter=null;syncSlateSetup();setControls();
  }
 }
 // Ordinary Stop gives a short take up to three seconds to produce media.
@@ -562,6 +598,7 @@ async function recoverCapture(id){
    if(!sess.recordings)sess.recordings=sess.media?[Object.assign({id:sess.id},sess.media)]:[];
    sess.media={id,mime:blob.type,bytes:blob.size,sourceId:capture.sourceId,syncReferenceId:capture.syncReferenceId||null,startedAt:capture.startedAt,
      offsetMs:capture.offsetMs,durationMs:record.capture.durationMs,incomplete:true,recovered:true,
+     ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
      journal:{chunks:record.chunks.length,bytes:blob.size,lastCheckpointAt:record.capture.lastCheckpointAt}};
    sess.recordings.push(sess.media);
    if(!sess.endedAt){Core.event(sess,"recording.recovered",{take:id,committedBytes:blob.size},Date.now());Core.finish(sess,Date.now());}
@@ -579,7 +616,7 @@ async function refreshCaptureRecovery(){
    const button=document.createElement("button");button.type="button";button.style.cssText="width:100%;min-height:44px;text-align:left;margin:4px 0";
    button.dataset.captureId=row.id;
    const active=row.leaseUntil>Date.now();
-   button.textContent=(active?"Active in another tab / checking connection: ":"Recover incomplete take: ")+row.startedAt+" · "+row.bytes+" bytes saved";
+   button.textContent=(active?"Active in another tab / checking connection: ":"Recover incomplete take: ")+(row.title?row.title+" · ":"")+row.startedAt+" · "+row.bytes+" bytes saved";
    button.disabled=active||!row.bytes||!!state.session;
    button.onclick=()=>safe(()=>recoverCapture(row.id));list.appendChild(button);
  }
@@ -593,7 +630,9 @@ async function refreshSessions(){
   const takes=session.recordings?.length?session.recordings:[session.media||null];
   for(const [index,take] of takes.entries()){
    const btn=document.createElement("button");
-   btn.textContent=(session.endedAt?"✓ ":"● ")+session.packageId+" · "+session.startedAt.slice(0,19).replace("T"," ")+" · "+(take?.incomplete?"INCOMPLETE ":"")+"Take "+(index+1)+" · "+(take?.bytes||0)+" bytes";
+   const title=take?.title||session.packageId+" · Take "+(index+1);
+   const started=take?.startedAt||session.startedAt;
+   btn.textContent=(session.endedAt?"✓ ":"● ")+(take?.incomplete?"INCOMPLETE · ":"")+title+" · "+started.slice(0,19).replace("T"," ")+(take?.timecode?" · "+take.timecode:"")+" · "+(take?.bytes||0)+" bytes";
    btn.addEventListener("click",()=>safe(()=>selectSession(session.id,take?.id)));
    el.sessionList.appendChild(btn);
   }
@@ -629,7 +668,7 @@ async function refreshServerTakes(){
  if(!takes.length)list.textContent="No server takes for this account.";
  for(const take of takes){
   const button=document.createElement("button");button.type="button";button.style.cssText="width:100%;min-height:44px;text-align:left;margin:4px 0;overflow-wrap:anywhere";
-  button.textContent=take.take_id+" · "+take.state+" · "+take.received_bytes+" / "+take.expected_bytes+" bytes"+(Number.isFinite(take.capture_started_at)?" · captured "+new Date(take.capture_started_at*1000).toLocaleString():" · capture time unknown")+(take.capture_incomplete?" · INCOMPLETE CAPTURE":"");
+  button.textContent=(take.title||take.take_id)+" · "+take.state+" · "+take.received_bytes+" / "+take.expected_bytes+" bytes"+(Number.isFinite(take.capture_started_at)?" · captured "+new Date(take.capture_started_at*1000).toLocaleString():" · capture time unknown")+(take.timecode?" · "+take.timecode:"")+(take.capture_incomplete?" · INCOMPLETE CAPTURE":"");
   button.disabled=take.state!=="complete";
   button.onclick=()=>safe(async()=>{
    if(state.recorder||state.recordingStarting)throw Error("Finish recording before opening server media");
@@ -643,7 +682,7 @@ async function refreshServerTakes(){
    if(selectedServer!==take)return;
    if(item.sha256!==take.sha256||item.blob.size!==take.received_bytes)throw Error("Server media response does not match its saved manifest");
    if(state.playbackUrl)URL.revokeObjectURL(state.playbackUrl);
-   state.selected={blob:item.blob,takeId:take.take_id};
+   state.selected={blob:item.blob,takeId:take.take_id,filename:take.filename};
    el.download.disabled=false;
    state.playbackUrl=URL.createObjectURL(item.blob);el.playback.src=state.playbackUrl;
    $("archiveBundle").disabled=false;$("archiveStatus").textContent="Opened server take: "+item.blob.size+" verified source bytes.";
@@ -794,10 +833,7 @@ function frame(now){
  }catch(e){state.avatarError=e.message;log("RENDER ERROR "+e.message);}
  if(state.session){
   const elapsed=Math.max(0,Date.now()-Date.parse(state.session.startedAt));
-  const seconds=Math.floor(elapsed/1000);
-  el.timecode.textContent=String(Math.floor(seconds/3600)).padStart(2,"0")+":"+
-   String(Math.floor(seconds/60)%60).padStart(2,"0")+":"+
-   String(seconds%60).padStart(2,"0");
+  el.timecode.textContent=Core.stageTimecode(elapsed);
  }
  if(state.micAnalyser){
   const data=new Uint8Array(state.micAnalyser.frequencyBinCount);state.micAnalyser.getByteTimeDomainData(data);
@@ -823,7 +859,7 @@ function initializeControls(){
   if(!selectedServer)return;
   const take=selectedServer;
   const blob=await archive.bundle(take.id);
-  downloadBlob(blob,take.take_id+"-source.zip");
+  downloadBlob(blob,(take.filename||take.take_id)+"-source.zip");
  });
  window.addEventListener("pagehide",()=>archive?.close());
  for(const [id,pkg] of Object.entries(Core.PACKAGES)){
@@ -870,16 +906,19 @@ function initializeControls(){
  }));
  el.micLevel.addEventListener("input",()=>{state.microphoneLevel=Number(el.micLevel.value)/100;if(state.micHandle)window.PubcastProgramAudio.configureInput(state.micHandle.id,{volume:state.microphoneLevel});});
  el.micMute.addEventListener("click",()=>{state.microphoneMuted=!state.microphoneMuted;if(state.micHandle)window.PubcastProgramAudio.configureInput(state.micHandle.id,{muted:state.microphoneMuted});setControls();emit("audio.mic_mute",{muted:state.microphoneMuted})});
- el.download.addEventListener("click",()=>safe(()=>{if(state.selected?.blob)downloadBlob(state.selected.blob,state.selected.takeId+"."+(/mp4/.test(state.selected.blob.type)?"mp4":"webm"))}));
+ el.download.addEventListener("click",()=>safe(()=>{
+   const selected=state.selected;
+   if(selected?.blob)downloadBlob(selected.blob,(selected.filename||Core.takeFilename(selected.take,selected.takeId))+"."+(/mp4/.test(selected.blob.type)?"mp4":"webm"));
+ }));
  $("recoveryDownload").addEventListener("click",()=>safe(()=>{
-   if(state.recovery)downloadBlob(state.recovery.blob,state.recovery.take.id+"."+(/mp4/.test(state.recovery.blob.type)?"mp4":"webm"));
+   if(state.recovery)downloadBlob(state.recovery.blob,Core.takeFilename(state.recovery.take,state.recovery.take.id)+"."+(/mp4/.test(state.recovery.blob.type)?"mp4":"webm"));
  }));
  $("recoverySave").addEventListener("click",()=>safe(async()=>{
    const recovery=state.recovery;if(!recovery)return;
    await Store.save(recovery.session,recovery.blob,recovery.capture);state.recovery=null;
    el.alert.textContent="";status("ON AIR");setControls();await refreshSessions();log("RECOVERY SAVED "+recovery.take.id);
  }));
- el.manifest.addEventListener("click",()=>safe(()=>{if(state.selected?.session)downloadBlob(new Blob([JSON.stringify(state.selected.session,null,2)],{type:"application/json"}),state.selected.session.id+".json")}));
+ el.manifest.addEventListener("click",()=>safe(()=>{if(state.selected?.session)downloadBlob(new Blob([JSON.stringify(state.selected.session,null,2)],{type:"application/json"}),Core.takeFilename(state.selected.take,state.selected.takeId)+".json")}));
  window.addEventListener("pagehide",()=>{
    state.mediaPublisher?.stop().catch(()=>{});
    state.sharedSwitcher?.detach();
@@ -895,10 +934,12 @@ function initializeControls(){
 }
 async function init(){
  initializeControls();
+ window.addEventListener("pubcast:slate-change",event=>showStageSlate(event.detail));
+ window.PubCastSlate?.read().then(data=>{if(data)showStageSlate(data.slate);}).catch(()=>{});
  window.PubcastProgramAudio?.onInput((type,input)=>{emit('audio.input.'+type,{id:input.id,label:input.label,
    volume:input.volume,muted:input.muted,solo:input.solo,eq:input.eq,connectedAt:input.connectedAt});setControls();});
  try{const db=await Store.open();db.close();state.storageReady=true;}catch(e){error("Persistent recording storage unavailable: "+e.message);}
- loadGenre("news");setControls();await refreshSessions();
+ loadGenre(Core.PACKAGES[state.slate?.packageId]?state.slate.packageId:"news");setControls();await refreshSessions();
  window.requestAnimationFrame(frame);
  const cuePoll=setInterval(()=>syncServerVideoCues().catch(e=>log("CUE ERROR "+e.message)),500);
  const recoveryPoll=setInterval(()=>refreshCaptureRecovery().catch(()=>{}),3000);
