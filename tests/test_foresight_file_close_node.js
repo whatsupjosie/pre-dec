@@ -4,7 +4,11 @@ const source=fs.readFileSync(path.join(__dirname,'../2i/2i-assets/file-workspace
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const events={},messages=[];
 let resolveStartup,mounted=false,pending=false,busy=false,recovery=true,safe=true,onSave=()=>{};
-const element=()=>({style:{},setAttribute(){},getBoundingClientRect:()=>({height:30})});
+// Minimal DOM stub. file-workspace.js builds a small file toolbar, so the stub
+// needs the node methods it calls; a missing one throws before any assertion.
+const element=()=>({style:{},setAttribute(){},removeAttribute(){},getBoundingClientRect:()=>({height:30}),
+ prepend(){},append(){},appendChild(){},replaceChildren(){},remove(){},addEventListener(){},
+ classList:{add(){},remove(){},contains:()=>false,toggle(){}},dataset:{},children:[],textContent:''});
 const session={save:async()=>{onSave();return true},saveAs:async()=>{},pending:()=>pending||busy||!recovery,activity:()=>({dirty:pending,busy,recovery}),prepareClose:async()=>{onSave();return safe&&!pending&&!busy&&recovery},
  flush:async()=>{},export:async()=>({}),};
 const ctx={window:{reachStarted:new Promise(resolve=>{resolveStartup=resolve})},
@@ -14,7 +18,18 @@ const ctx={window:{reachStarted:new Promise(resolve=>{resolveStartup=resolve})},
  body:{insertBefore(){}},addEventListener(){},documentElement:{dataset:{}},dispatchEvent(){}},
  $:element,ResizeObserver:class{observe(){}disconnect(){}},markDirty(){},soloTextarea:{},
  ForesightFiles:{mount:async()=>{mounted=true;return session}},
- chatSending:false,generating:false,PP:{inflight:false},getDocState:()=>({}),render(){},console};
+ chatSending:false,generating:false,PP:{inflight:false},getDocState:()=>({}),render(){},console,
+   // file-workspace.js checks `initializing` after awaiting reachStarted: Reach can
+   // resolve startup and still be showing a sign-in dialog, which is not authenticated
+   // readiness. reach.js declares it at line 47; a vm fixture must supply it. These
+   // tests are the authenticated case, so it is false.
+   initializing:false,
+ // file-workspace.js unlocks both writing fields and reads manuscript globals after
+ // a successful mount (file-workspace.js lines 116-136). Any missing one threw inside
+ // the adapter's own try/catch, which sets foresightFileSession back to undefined --
+ // so the fixture failed as "not mounted" while the real cause was a missing stub.
+ draftArea:{}, documentTitle:'document-a', committed:['My untouched draft'],
+ coWriting:false, editingIdx:null, loadDocState(){}, crypto:{randomUUID:()=>'next-id'}};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 async function request(command){await events.message({origin:ctx.location.origin,source:ctx.parent,
  data:{type:'foresight:file-command',fileId:'document-a',requestId:command,sessionNonce:'nonce',command}});

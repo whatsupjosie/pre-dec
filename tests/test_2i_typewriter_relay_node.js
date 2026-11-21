@@ -47,7 +47,10 @@ test('original standalone typewriter still writes into its bench paper',()=>{
 });
 test('embedded keys relay to 2i rather than writing to an independent buffer',()=>{
   const x=fixture(true);
-  assert.deepEqual(x.messages[0].data,{type:'pubcast:2i-ready'});
+  // The console script runs in a vm realm, so its object literals carry that
+  // realm's Object.prototype and deepStrictEqual rejects them on prototype alone.
+  // Spreading into this realm compares the contents, extra keys included.
+  assert.deepEqual({...x.messages[0].data},{type:'pubcast:2i-ready'});
   x.key('A','a');
   assert.equal(x.paper.textContent,'');
   assert.equal(x.messages[1].data.type,'pubcast:2i-key');
