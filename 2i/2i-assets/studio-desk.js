@@ -97,6 +97,47 @@
   });
   el("figcaption",config.seated?"Type on the machine or in the manuscript":"Typewriter view · keys edit this manuscript",figure);
 
+  // ---- page zoom: the full-length sheet, standing in the machine ----------
+  // Josie, 2026-11-21: "at the bottom of the screen, you can still have the
+  // roller and the bay where the letter stamps are... and then just above that
+  // is the full page."
+  //
+  // So this is not a separate look. It is the typewriter view with the page
+  // given the whole column and the machine cropped to the band that holds the
+  // platen, the paper bail and the bank of type hammers, sitting along the
+  // bottom so the sheet rises out of it. Staying inside the typewriter view is
+  // what keeps the sidebars, the menus and the typing sound exactly as they
+  // are -- none of them has to learn about a fourth mode.
+  //
+  // The strip is the still image rather than the live console: the keys are
+  // below the band and would be cut in half, and in this view the writing is
+  // done on the real keyboard at the full page. The interactive keys stay in
+  // the ordinary typewriter view, where they are whole.
+  const machineStrip=el("div",null,$("notebookFrame"));
+  machineStrip.id="twoiPageMachine";
+  machineStrip.setAttribute("aria-hidden","true");
+  const pageZoom=el("button","Page zoom",null);
+  pageZoom.id="twoiTypewriterPage";pageZoom.type="button";
+  pageZoom.className="twoi-rich-toggle";
+  pageZoom.title="Give the page the full column, with the roller and type bars along the bottom";
+  pageZoom.setAttribute("aria-pressed","false");
+  const labelRow=$("manuscriptZone")?.querySelector(".zone-label-row");
+  const zoneLabel=labelRow?.querySelector(".zone-label");
+  if(zoneLabel)labelRow.insertBefore(pageZoom,zoneLabel);
+  else if(labelRow)labelRow.append(pageZoom);
+  function setPageZoom(on){
+    const zoomed=!!on&&document.body.dataset.twoiDesk==="typewriter";
+    if(zoomed)document.body.dataset.twoiTypewriterPage="on";
+    else delete document.body.dataset.twoiTypewriterPage;
+    pageZoom.setAttribute("aria-pressed",String(zoomed));
+    pageZoom.textContent=zoomed?"Page zoom · on":"Page zoom";
+    // One set of sound switches, moved to whichever piece of the machine is
+    // showing, rather than a second set that could disagree with the first.
+    (zoomed?machineStrip:figure).append(audioOptions);
+    if(zoomed)setExpanded(false);
+  }
+  pageZoom.onclick=()=>setPageZoom(document.body.dataset.twoiTypewriterPage!=="on");
+
   // ---- the machine's own sounds -------------------------------------------
   // Josie: "audio effects must be optional". Both are off until she turns them
   // on, and her choice is kept. The controls live on the typewriter itself, so
@@ -231,6 +272,8 @@
     const active=document.body.dataset.twoiDesk==="typewriter";
     figure.hidden=!active;
     audioOptions.style.display=active?"":"none";
+    pageZoom.hidden=!active;
+    if(!active)setPageZoom(false);
     if(!active)setExpanded(false);
     if(active)syncPaper();
   };

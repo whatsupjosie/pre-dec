@@ -345,6 +345,51 @@ is a window on the tail of the work, not a page of it.
    input event. 2i now stays quiet while it is relaying a console key: one key,
    one sound, whichever way it was typed.
 
+### Page zoom — built 2026-11-21 to her description
+
+Her words: *"at the bottom of the screen, you can still have the roller and the
+bay where the letter stamps are... and then just above that is the full page,"*
+and before that, *"we shouldn't lose the sidebars that the notebook has... we're
+just replacing the notebook with a typewriter because you're sitting at the
+typewriter."*
+
+Measured first, because her worry turned out to be already answered: at 1400
+and at 900 pixels wide, **typewriter view already shows everything notebook view
+does** — sidebar, reference archive, chat, menu bar, page — and adds the machine.
+The only look that puts the sidebars behind drawer tabs is the standard single
+page, which is her own Nov-16 design.
+
+So page zoom is **not a fourth look**. It is a toggle inside typewriter view
+(`#twoiTypewriterPage`, in the zone-label row beside Formatting) that gives the
+page the whole column and crops the machine to the band holding the platen,
+the paper bail and the bank of type hammers, laid along the bottom so the sheet
+rises out of it. Staying inside typewriter view is what keeps the sidebars, the
+menus and the typing sound working with no change to any of them — nothing has
+to learn a fourth mode, and `TwoiStudioBridge` and its tests are untouched.
+
+- The strip is the **still image**, `static/typewriter_keys.webp` cropped to
+  35.5%–64% of its height. The band starts just under the paper bail so almost
+  none of the machine's own painted sheet shows and the real page appears to
+  feed straight into the roller. The arithmetic is in the CSS comment.
+- It is the still image and not the live console on purpose: the keys are below
+  the band and would be cut in half. In this view the writing is done on the
+  real keyboard at the full page; the interactive keys stay in the ordinary
+  typewriter view, where they are whole.
+- The **one** set of sound switches moves onto whichever piece of the machine is
+  showing, rather than a second set that could disagree with the first.
+- Leaving typewriter view puts the zoom away.
+
+One bug of mine fixed on the way: `.twoi-rich-toggle` sets `display:flex`, which
+overrode the `hidden` attribute, so the toggle stayed on screen in looks that
+should not have it. `.twoi-rich-toggle[hidden]{display:none}` now says so.
+
+Five tests in `tests/test_2i_typewriter_sound_browser.py`, including that the
+sidebars survive it and that the typing can still be heard in the zoom.
+
+**Not built:** the page image Josie floated superimposing. The standard look is
+already an off-white page and the zoom now shows her real machine, so this may
+be moot — ask before drawing anything.
+
 ### Two sound controls, which is one too many — her call
 
 The console has its own toggle (`[data-typewriter-sound]`, the "Sound on"

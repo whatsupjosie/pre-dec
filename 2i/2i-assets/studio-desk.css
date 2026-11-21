@@ -72,3 +72,21 @@ body[data-twoi-desk="standard"] .solo-textarea:focus-visible,body[data-twoi-desk
 #twoiDeskScene[hidden]{display:none!important}
 /* A phone has no room for the binding or wide margins: the page takes the whole width. */
 @media(max-width:850px){body[data-twoi-desk="standard"] .notebook-frame{padding:5px}body[data-twoi-desk="standard"] .spiral-spine{display:none}body[data-twoi-desk="standard"] .page-sheets{--ring-inset:0px;--page-margin:min(var(--page-margin-chosen,14px),14px)}}
+
+/* Page zoom. The sheet gets the whole column and the machine is cropped to the
+   band carrying the platen, the paper bail and the bank of type hammers, laid
+   along the bottom so the page rises out of it.
+   The band is 35.5%-64% of static/typewriter_keys.webp (2560 x 1430), which
+   starts just under the paper bail so almost none of the machine's own painted
+   sheet shows: the real page appears to feed straight into the roller instead
+   of sitting above a second, paler one. With the image set to the strip's full
+   width, the strip's height is 28.5% of the image's drawn height -- hence the
+   aspect ratio -- and the vertical position is 0.355H / (H - 0.285H) = 50%. */
+#twoiPageMachine{display:none;flex:0 0 auto;width:100%;aspect-ratio:2560/408;background:#120f0c url("/static/typewriter_keys.webp") 50% 50%/100% auto no-repeat;border-radius:0 0 5px 5px;position:relative}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiPageMachine{display:block}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiDeskScene{display:none}
+/* The page takes everything above the machine. */
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] .manuscript-zone{flex:1 1 auto;min-height:0}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] .notebook-frame{display:flex;flex-direction:column}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiPageMachine #twoiAudioOptions{top:auto;bottom:6px;left:8px}
+@media(max-width:850px){#twoiPageMachine{aspect-ratio:2560/470;background-position:50% 48%}}

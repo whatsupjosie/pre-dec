@@ -70,6 +70,10 @@ body[data-twoi-rich="on"] #twoiFormatBar { display:flex; }
   color:var(--parchment-soft, #6b5a3e);
   transition:border-color .12s ease, color .12s ease, background .12s ease;
 }
+/* display on the class beats the hidden attribute, so say so explicitly:
+   studio-desk.js hides the page-zoom toggle with .hidden when the
+   typewriter is not the current look, and without this it stayed on screen. */
+.twoi-rich-toggle[hidden] { display:none; }
 .twoi-rich-toggle:hover { border-color:rgba(205,163,73,0.55); }
 .twoi-rich-toggle[aria-pressed="true"] {
   background:rgba(168,138,74,.26);

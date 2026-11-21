@@ -201,3 +201,77 @@ def test_a_script_typing_into_the_page_stays_silent(playwright):
     assert _tones(page) == []
     assert not errors, errors
     browser.close()
+
+
+# --------------------------------------------------------------------------
+# Page zoom: Josie, 2026-11-21 -- "at the bottom of the screen, you can still
+# have the roller and the bay where the letter stamps are... and then just
+# above that is the full page."
+# --------------------------------------------------------------------------
+
+def test_page_zoom_gives_the_page_the_column_and_keeps_the_machine_below(playwright):
+    browser, _, page, errors = _open(playwright)
+    zoom = page.locator("#twoiTypewriterPage")
+    assert zoom.is_visible()
+    assert zoom.get_attribute("aria-pressed") == "false"
+    assert not page.locator("#twoiPageMachine").is_visible()
+    zoom.click()
+    assert zoom.get_attribute("aria-pressed") == "true"
+    strip = page.locator("#twoiPageMachine")
+    assert strip.is_visible(), "the roller and type bars must still be there"
+    assert not page.locator("#twoiDeskScene").is_visible(), "the small machine steps aside"
+    box = strip.bounding_box()
+    editor = page.locator("#soloEditor").bounding_box()
+    assert box["y"] > editor["y"], "the machine sits below the page, not above it"
+    assert box["height"] < editor["height"], "the page gets the column, the machine a strip"
+    assert not errors, errors
+    browser.close()
+
+
+def test_page_zoom_does_not_cost_the_sidebars(playwright):
+    browser, _, page, errors = _open(playwright)
+    page.locator("#twoiTypewriterPage").click()
+    assert page.locator("#sidebar").is_visible()
+    assert page.locator("#chatSection").is_visible()
+    assert page.locator("#refSection").is_visible()
+    assert page.locator("#twoiMenuBar").is_visible()
+    assert not errors, errors
+    browser.close()
+
+
+def test_you_can_still_hear_the_typewriting_in_the_zoom(playwright):
+    browser, _, page, errors = _open(playwright)
+    _enable(page)
+    page.locator("#twoiTypewriterPage").click()
+    _type_in_textarea(page, "abc")
+    clicks = [t for t in _tones(page) if t["type"] == "triangle"]
+    assert len(clicks) == 3, _tones(page)
+    assert not errors, errors
+    browser.close()
+
+
+def test_one_set_of_sound_switches_follows_the_machine(playwright):
+    browser, _, page, errors = _open(playwright)
+    assert page.evaluate("document.getElementById('twoiAudioOptions').closest('figure')?.id") == "twoiDeskScene"
+    page.locator("#twoiTypewriterPage").click()
+    assert page.evaluate("document.getElementById('twoiAudioOptions').parentElement.id") == "twoiPageMachine"
+    assert page.locator("#twoiAudioOptions input").count() == 2, "one set of switches, not two"
+    page.locator("#twoiTypewriterPage").click()
+    assert page.evaluate("document.getElementById('twoiAudioOptions').closest('figure')?.id") == "twoiDeskScene"
+    assert not errors, errors
+    browser.close()
+
+
+def test_leaving_the_typewriter_puts_the_zoom_away(playwright):
+    browser, _, page, errors = _open(playwright)
+    page.locator("#twoiTypewriterPage").click()
+    assert page.evaluate("document.body.dataset.twoiTypewriterPage") == "on"
+    page.evaluate("twoiSetPresentation('notebook')")
+    assert page.evaluate("document.body.dataset.twoiTypewriterPage") is None
+    assert not page.locator("#twoiTypewriterPage").is_visible()
+    assert not page.locator("#twoiPageMachine").is_visible()
+    page.evaluate("twoiSetPresentation('typewriter')")
+    assert page.locator("#twoiTypewriterPage").is_visible()
+    assert page.locator("#twoiTypewriterPage").get_attribute("aria-pressed") == "false"
+    assert not errors, errors
+    browser.close()
