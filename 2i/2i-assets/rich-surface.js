@@ -835,6 +835,7 @@
     key:applyConsoleKey,
     refresh:renderSurface,
     selection:selectionRange,
+    caret:placeCaret,
     node:surface
   };
 })();

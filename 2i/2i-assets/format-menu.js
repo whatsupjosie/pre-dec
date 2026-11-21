@@ -228,7 +228,11 @@
   commandMenu("Insert",[["New chapter",go("newChapterBtn")],["Add bookmark",conditional(()=>annotate("bookmark"),idle)],["Add editorial comment",conditional(()=>annotate("comment"),idle)]]);
   commandMenu("Format",[["Document type / script presets",templates],["Paragraph style, alignment, indent…",paragraph],["Formatting recovery",unmapped]]);
   commandMenu("Layout",[["Page setup",page],["Formatted preview",preview]]);
-  commandMenu("References",[["Browse or search references",referenceArchive,"research notes archive"],["Add reference",go("addRefBtn")]]);
+  commandMenu("References",[["Browse or search references",referenceArchive,"research notes archive"],["Add reference",go("addRefBtn")],
+    ["Dictionary and thesaurus",conditional(()=>{
+      if(typeof window.TwoiDictionary!=="object")throw Error("The offline dictionary is not available in this window.");
+      window.TwoiDictionary.open();
+    },idle),"define definition synonym antonym word meaning wordnet"]]);
   commandMenu("Manuscript",[["Chapter and scene navigator",conditional(navigation,idle),"outline go to paragraph headings"],["Scene intelligence",go("narrativeOpen")],["Dialogue and scene review",conditional(dialogueReview,()=>idle()&&scriptProfile()),"character dialogue tuner script breakdown"],["New chapter",go("newChapterBtn")],["Generate draft",go("genBtn",()=>collabIdle()&&llmOk()&&!buffer.length)],["Commit presented draft",go("approveBtn",()=>collabIdle()&&buffer.length>0)],["Archive presented draft",go("narrativeArchiveDraft",collabIdle)]]);
   commandMenu("Review",[["Revision history",go("narrativeHistory",()=>idle()&&networked&&serverReady)],["Story versions",go("twoiVersionManage",()=>idle()&&networked&&serverReady)],["Creative contribution records",go("narrativeContribution",idle),"authorship provenance evidence disclosure"],["Private creative session",go("narrativeSession",idle),"recording capture session milestone"],["Bookmarks and comments",conditional(annotationManager,idle),"resolve archive reattach editorial annotations"],["Lock scene",go("lockSceneBtn")],["Lock all",go("lockAllBtn")],["Unlock",go("unlockBtn")]]);
   const present=mode=>()=>window.twoiSetPresentation(mode);

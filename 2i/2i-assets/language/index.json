@@ -1,0 +1,143 @@
+{
+ "source": "WordNet 3.1, Princeton University (wordnet-db 3.1)",
+ "built": "2026-11-21",
+ "words": 147478,
+ "senses": 207235,
+ "shards": {
+  "_": {
+   "file": "dict-other.js",
+   "words": 333,
+   "bytes": 30854
+  },
+  "a": {
+   "file": "dict-a.js",
+   "words": 10100,
+   "bytes": 1253798
+  },
+  "b": {
+   "file": "dict-b.js",
+   "words": 8563,
+   "bytes": 1101892
+  },
+  "c": {
+   "file": "dict-c.js",
+   "words": 14199,
+   "bytes": 1894975
+  },
+  "d": {
+   "file": "dict-d.js",
+   "words": 6907,
+   "bytes": 903331
+  },
+  "e": {
+   "file": "dict-e.js",
+   "words": 5242,
+   "bytes": 671304
+  },
+  "f": {
+   "file": "dict-f.js",
+   "words": 6902,
+   "bytes": 881992
+  },
+  "g": {
+   "file": "dict-g.js",
+   "words": 8805,
+   "bytes": 967659
+  },
+  "h": {
+   "file": "dict-h.js",
+   "words": 5808,
+   "bytes": 743359
+  },
+  "i": {
+   "file": "dict-i.js",
+   "words": 4482,
+   "bytes": 564264
+  },
+  "j": {
+   "file": "dict-j.js",
+   "words": 1775,
+   "bytes": 245117
+  },
+  "k": {
+   "file": "dict-k.js",
+   "words": 1591,
+   "bytes": 213847
+  },
+  "l": {
+   "file": "dict-l.js",
+   "words": 5610,
+   "bytes": 711596
+  },
+  "m": {
+   "file": "dict-m.js",
+   "words": 8094,
+   "bytes": 1032268
+  },
+  "n": {
+   "file": "dict-n.js",
+   "words": 3514,
+   "bytes": 425791
+  },
+  "o": {
+   "file": "dict-o.js",
+   "words": 3715,
+   "bytes": 437495
+  },
+  "p": {
+   "file": "dict-p.js",
+   "words": 11443,
+   "bytes": 1486963
+  },
+  "q": {
+   "file": "dict-q.js",
+   "words": 567,
+   "bytes": 80141
+  },
+  "r": {
+   "file": "dict-r.js",
+   "words": 6118,
+   "bytes": 864165
+  },
+  "s": {
+   "file": "dict-s.js",
+   "words": 15853,
+   "bytes": 2114617
+  },
+  "t": {
+   "file": "dict-t.js",
+   "words": 7330,
+   "bytes": 950801
+  },
+  "u": {
+   "file": "dict-u.js",
+   "words": 3287,
+   "bytes": 331262
+  },
+  "v": {
+   "file": "dict-v.js",
+   "words": 2342,
+   "bytes": 295359
+  },
+  "w": {
+   "file": "dict-w.js",
+   "words": 3793,
+   "bytes": 509471
+  },
+  "x": {
+   "file": "dict-x.js",
+   "words": 196,
+   "bytes": 23178
+  },
+  "y": {
+   "file": "dict-y.js",
+   "words": 512,
+   "bytes": 68637
+  },
+  "z": {
+   "file": "dict-z.js",
+   "words": 397,
+   "bytes": 49523
+  }
+ }
+}

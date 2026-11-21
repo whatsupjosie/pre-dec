@@ -432,3 +432,80 @@ advanced manuscript and co writing helping stuff."* Before that, she has two
 open questions above (per-device backup slots; whether the live surface becomes
 the default and whether the textarea path gets the same optimisation). Ask;
 do not assume.
+
+## Dictionary and thesaurus (done, verified)
+
+What is built, and what Josie asked for: "We have to find a free-to-use spell-checking
+program. It has to work offline... So goddamn right we have to have a spell check. And a
+dictionary. And a thesaurus." then "Get a dictionary."
+
+**The dictionary and thesaurus are built and passing. The spell check is NOT built yet.**
+It is the next job. Nothing in 2i checks spelling today.
+
+Data: WordNet 3.1 (Princeton). Its licence became OSI-approved in July 2025; free for
+commercial use with attribution. The attribution is shown in the panel footer and the
+licence text is committed at `2i/2i-assets/language/WORDNET_LICENSE`.
+
+- Generator: `tools/language/build_language_data.mjs`. Run it only to rebuild; the output
+  is already committed, so a fresh clone needs no build step and no network.
+- Output: 27 shards, `2i/2i-assets/language/dict-a.js` through `dict-z.js` plus
+  `dict-other.js`, and `index.json`.
+- Measured, not estimated: 147,478 words, 207,235 senses, 17.98MB on disk,
+  **6.11MB zlib-compressed** -- that compressed figure is what a clone actually costs.
+- Line format: `word \t pos^definition^syn,syn | ... [\t antonym,antonym]`. Senses are
+  ordered by the tag counts in WordNet's own `index.sense`, so the common meaning is first.
+- Shards are loaded with `<script>` tags, NOT `fetch()`. This is deliberate: `fetch()` is
+  blocked on `file://`, and 2i has to work opened straight off disk. Each shard calls
+  `window.TwoiLanguageShard(letter, text)`.
+- The loader builds its tables in a `Map`, not a plain object, because WordNet genuinely
+  contains the words "constructor", "toString" and "__proto__". With a plain object
+  `out["constructor"]` is truthy, so `||=` never assigns and those entries vanish.
+
+API (`2i/2i-assets/language.js`): `TwoiLanguage = {lookup, synonyms, antonyms, forms,
+normalise, loadedLetters, size, credit}`. `lookup` returns
+`{word, typed, senses, antonyms, root}`. `root` carries a different stem's senses, so
+typing "stopped" offers both the adjective and the verb "stop".
+
+Panel (`2i/2i-assets/language-panel.js`): dialog `#twoiDictionary`, opened from
+References > "Dictionary and thesaurus". Synonyms are chips; each chip has a "use" button
+that puts that word into the manuscript in place of the one being looked up.
+
+### The modal-inert trap -- read this before touching the panel
+
+`dialog.showModal()` makes the rest of the document inert and drops the selection. Two
+things therefore MUST be read before `showModal()` is called, and were not at first:
+
+1. the word being looked up (`currentWord()`), and
+2. where it sits (`targetNow()`).
+
+Both are captured as the first statements of `open()`. The replacement then happens only
+after `dialog.close()` returns, via `replaceAt(target, replacement)`. On the plain page
+that is `setSelectionRange` plus `insertText` with a `setRangeText` fallback; on the
+formatting surface it calls `surface.caret(paragraph, start, end)` to put the selection
+back over the word first, otherwise the synonym lands beside the word instead of replacing
+it. `surface.caret` was added to `window.twoiRichSurface` for exactly this.
+
+A caret merely sitting inside a word counts as that word, on both the plain page and the
+surface. With no usable target the panel says "Put the cursor in a word in the manuscript,
+then press use." and changes nothing -- it never guesses.
+
+### Tests
+
+- `tests/test_2i_language_node.js` -- 11, loader and data integrity. Includes a test that
+  every irregular-form target is a real headword; that is what caught `stole:'stolen'`
+  (should be `steal`) and stray keys `gotten_` and `wrote_`.
+- `tests/test_2i_dictionary_browser.py` -- 11, the panel end to end, including both
+  replacement paths and the two caret-only cases.
+
+Full suites at the time of this commit: Node 245 assertions across all
+`tests/test_*_node.js`, nothing failing. Python `tests/test_2i_*.py` 200 collected, 212
+passed with the wider `-k 2i` filter, nothing failing.
+
+### Still open (Josie has not answered these)
+
+- American or British spelling.
+- Whether the spell check should ship its own word list or reuse these shards. nspell (MIT)
+  plus dictionary-en (MIT AND BSD, SCOWL) is the intended stack and is not installed yet.
+- Whether the live formatting surface becomes the default.
+- Whether the console's own "Sound on" or 2i's switches should be the single sound control.
+- Whether she wants a page image behind the text in page zoom.

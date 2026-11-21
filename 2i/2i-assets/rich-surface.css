@@ -98,3 +98,48 @@ body[data-twoi-rich="on"] #twoiFormatBar { display:flex; }
 }
 .twoi-rich-surface p[data-list="bullet"]::before { content:"\2022"; }
 .twoi-rich-surface p[data-list="number"]::before { content:attr(data-ordinal); }
+
+/* Dictionary and thesaurus panel. */
+#twoiDictionary {
+  max-width:min(680px, 92vw); max-height:86dvh;
+  border:1px solid rgba(205,163,73,.45); border-radius:7px;
+  background:#1b1712; color:#f1e3c6;
+  font:14px/1.5 'DM Sans', system-ui, sans-serif;
+  padding:16px 18px;
+}
+#twoiDictionary::backdrop { background:rgba(12,9,6,.62); }
+#twoiDictionary h2 { margin:0 0 10px; font-size:16px; letter-spacing:.02em; }
+#twoiDictionary h3 { margin:16px 0 4px; font-size:13px; opacity:.8; font-weight:600; }
+#twoiDictionary input[type="search"] {
+  width:100%; min-height:38px; padding:6px 10px; margin-bottom:8px;
+  border:1px solid rgba(205,163,73,.4); border-radius:5px;
+  background:rgba(0,0,0,.25); color:#f7ecd4; font:15px 'DM Sans', system-ui, sans-serif;
+}
+#twoiDictionary [role="status"] { margin:0 0 10px; font-size:13px; opacity:.85; }
+#twoiDictionaryBody { max-height:52dvh; overflow:auto; }
+.twoi-dictionary-senses { margin:0; padding-left:1.3em; }
+.twoi-dictionary-senses li { margin-bottom:9px; }
+.twoi-dictionary-pos { font-style:italic; opacity:.7; font-size:12px; }
+.twoi-dictionary-synonyms { margin-top:3px; display:flex; flex-wrap:wrap; gap:5px; }
+.twoi-dictionary-chip {
+  display:inline-flex; align-items:center; gap:3px;
+  border:1px solid rgba(205,163,73,.3); border-radius:999px; padding:1px 3px 1px 8px;
+  background:rgba(205,163,73,.08);
+}
+.twoi-dictionary-word {
+  background:none; border:0; padding:0; cursor:pointer;
+  color:#f3dfae; font:13px 'DM Sans', system-ui, sans-serif; text-decoration:underline dotted;
+}
+.twoi-dictionary-use {
+  border:0; border-radius:999px; cursor:pointer; padding:2px 7px;
+  background:rgba(205,163,73,.28); color:#fdf3dc; font:11px 'DM Sans', system-ui, sans-serif;
+}
+.twoi-dictionary-use:hover { background:rgba(205,163,73,.5); }
+.twoi-dictionary-antonyms { margin:4px 0 8px; font-size:13px; opacity:.9; }
+.twoi-dictionary-credit { margin:12px 0 8px; font-size:11px; opacity:.6; }
+#twoiDictionary > button:last-child {
+  min-height:36px; padding:6px 14px; cursor:pointer;
+  border:1px solid rgba(205,163,73,.45); border-radius:5px;
+  background:rgba(205,163,73,.16); color:#f7ecd4; font:13px 'DM Sans', system-ui, sans-serif;
+}
+@media (max-width:760px) { .twoi-dictionary-use { padding:6px 10px; } .twoi-dictionary-word { font-size:14px; } }
