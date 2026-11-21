@@ -43,3 +43,91 @@ def test_studio_preflight_and_emergency_save_routes_work():
         emergency_body = emergency.json()
         assert emergency_body['ok'] is True
         assert emergency_body['result']['ok'] is True
+
+
+def test_studio_emergency_save_finalizes_capture_and_publishes_panic(tmp_path):
+    from tests.host_lifespan_helpers import run_isolated_host
+
+    run_isolated_host("""
+from pathlib import Path
+from fastapi.testclient import TestClient
+import main
+from modules.capture import FFmpegCaptureEngine
+
+active = {}
+
+async def start(self, session_id, sources, profile, session_dir):
+    path = session_dir / 'test-camera.mp4'
+    active[session_id] = path
+    return [path]
+
+async def stop(self, session_id):
+    path = active.pop(session_id)
+    path.write_bytes(b'capture finalized')
+    return [path]
+
+FFmpegCaptureEngine.start = start
+FFmpegCaptureEngine.stop = stop
+FFmpegCaptureEngine.is_capturing = lambda self, session_id: session_id in active
+FFmpegCaptureEngine.available = property(lambda self: True)
+
+with TestClient(main.app) as client:
+    start_response = client.post('/api/studio/actions/recording.start', json={
+        'session_id': 'emergency-check', 'sources': ['wide_shot'],
+        'profile_id': 'broadcast_mp4', 'countdown_seconds': 0, 'confirm': True,
+    })
+    assert start_response.status_code == 200, start_response.text
+    assert active
+    response = client.post('/api/studio/emergency-save')
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result['ok'], result
+    assert result['production_stop']['sessions_stopped'] == ['emergency-check']
+    assert not active
+    session = next(s for s in client.get('/api/recording/sessions').json()
+                   if s['session_id'] == 'emergency-check')
+    assert session['state'] == 'stopped'
+    assert Path(session['artifacts'][0]['file_path']).read_bytes() == b'capture finalized'
+    state = client.get('/api/state/production').json()
+    assert state['blackout'] is True and state['panic_seq'] > 0
+    assert client.get('/api/program-audio/status').json()['status']['master_volume'] == 0
+    assert client.post('/api/studio/emergency-save').json()['ok']
+""", tmp_path)
+
+
+def test_recovered_floor_slate_is_connected_to_the_host(tmp_path):
+    from tests.host_lifespan_helpers import run_isolated_host
+
+    run_isolated_host("""
+from fastapi.testclient import TestClient
+from modules.auth import create_access_token, WS_SESSION_COOKIE
+import main
+
+director = create_access_token({'sub': 'director', 'role': 'mod'})
+crew = create_access_token({'sub': 'camera', 'role': 'crew'})
+director_headers = {'Authorization': 'Bearer ' + director}
+crew_headers = {'Authorization': 'Bearer ' + crew}
+
+with TestClient(main.app) as client:
+    for path in ['/studio-control', '/director-switcher', '/static/production25d.html']:
+        response = client.get(path)
+        assert response.status_code == 200, (path, response.status_code)
+        assert response.text.count('/static/studio_slate.js') == 1, path
+    assert client.get('/static/control_room_assets/crew_reference.png').status_code == 200
+    assert client.get('/api/studio/slate').status_code == 401
+    with client.websocket_connect('/studio/slate/live',
+                                  headers={'Cookie': WS_SESSION_COOKIE + '=' + crew}) as floor:
+        response = client.post('/api/studio/slate', headers=director_headers,
+                               json={'action': 'create'})
+        assert response.status_code == 200, response.text
+        assert floor.receive_json()['type'] == 'slate_changed'
+        revision = response.json()['slate']['revision']
+        response = client.post('/api/studio/slate', headers=director_headers,
+                               json={'action': 'standby', 'revision': revision})
+        assert response.status_code == 200, response.text
+        assert floor.receive_json()['type'] == 'slate_changed'
+        observed = client.get('/api/studio/slate', headers=crew_headers).json()
+        assert observed['slate']['phase'] == 'standby'
+        assert observed['slate']['visible']
+        assert not observed['can_edit']
+""", tmp_path)

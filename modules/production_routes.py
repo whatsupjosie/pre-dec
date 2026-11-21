@@ -24,7 +24,7 @@ import logging
 import os
 import time
 from zipfile import BadZipFile
-from typing import Any, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import FileResponse
@@ -132,6 +132,7 @@ def create_production_router(
     blackbox: Optional[BlackBoxRuntimeWitness] = None,
     program_audio_state: Optional[ProgramAudioState] = None,
     include_overlapping_compat_routes: bool = True,
+    emergency_snapshot: Optional[Callable[[], Awaitable[Dict[str, Any]]]] = None,
 ) -> APIRouter:
     """Create the production API router."""
     async def protect_encoded_take(request: HTTPConnection):
@@ -190,7 +191,9 @@ def create_production_router(
         paths = await capture_engine.start(session.session_id, source_objects, profile, session_dir)
         return [str(path) for path in paths]
 
-    async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
+    capture_stop_tasks: Dict[str, asyncio.Task] = {}
+
+    async def _collect_capture_artifacts(session_id: str) -> List[Dict[str, Any]]:
         if capture_engine is None or not getattr(capture_engine, "available", False):
             return []
         if not capture_engine.is_capturing(session_id):
@@ -210,6 +213,14 @@ def create_production_router(
                 "size_bytes": artifact.size_bytes,
             })
         return artifacts
+
+    async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
+        task = capture_stop_tasks.get(session_id)
+        if task is None:
+            task = asyncio.create_task(_collect_capture_artifacts(session_id))
+            capture_stop_tasks[session_id] = task
+            task.add_done_callback(lambda _: capture_stop_tasks.pop(session_id, None))
+        return await asyncio.shield(task)
 
     # —
     # CAMERAS
@@ -695,17 +706,23 @@ def create_production_router(
         now = time.time()
         stopped, capture_errors = [], []
         for session in recording.list_sessions():
-            if session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED):
+            session_id = session.session_id
+            capturing = bool(capture_engine and capture_engine.is_capturing(session_id))
+            finalizing = session_id in capture_stop_tasks
+            if (session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED)
+                    and not capturing and not finalizing):
                 continue
             try:
-                recording.stop_session(session.session_id)
-                stopped.append(session.session_id)
                 try:
-                    await _stop_capture_for_session(session.session_id)
+                    artifacts = await _stop_capture_for_session(session_id)
+                    if capturing and not artifacts:
+                        capture_errors.append({"session_id": session_id, "error": "Capture produced no registered media"})
                 except Exception as exc:
-                    capture_errors.append({"session_id": session.session_id, "error": str(exc)})
+                    capture_errors.append({"session_id": session_id, "error": str(exc)})
+                recording.stop_session(session_id)
+                stopped.append(session_id)
             except Exception as exc:
-                capture_errors.append({"session_id": session.session_id, "error": str(exc)})
+                capture_errors.append({"session_id": session_id, "error": str(exc)})
         apply_audio_event(program_audio_state, {"action": "stop_all"})
         program_audio_state.publish({"action": "stop_all"})
         apply_audio_event(program_audio_state, {"action": "set_volume", "bus": "master", "volume": 0})
@@ -734,6 +751,19 @@ def create_production_router(
         return {"ok": not capture_errors, "sessions_stopped": stopped,
                 "capture_errors": capture_errors, "audio_muted": True,
                 "blackout_cued": bool(hub), "panic_seq": now}
+
+    if emergency_snapshot is not None:
+        @router.post("/api/studio/emergency-save")
+        async def studio_emergency_save(identity: Dict[str, Any] = Depends(require_role("mod"))):
+            """Stop production and save the studio control state."""
+            stop = await production_panic(identity)
+            try:
+                snapshot = await emergency_snapshot()
+            except Exception:
+                logger.exception("Emergency studio state could not be saved")
+                snapshot = {"ok": False, "error": "Studio state could not be saved"}
+            return {"ok": stop["ok"] and bool(snapshot.get("ok")),
+                    "result": snapshot, "production_stop": stop}
 
     return router
 

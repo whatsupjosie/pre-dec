@@ -61,6 +61,7 @@ from modules.recording import RecordingService, create_recording_service
 from modules.blackbox_runtime import BlackBoxRuntimeWitness, create_blackbox_witness
 from modules.blackbox_routes import create_blackbox_router
 from modules.production_routes import create_production_router
+from modules.studio_slate import SlateOverlayMiddleware, create_slate_router
 from modules.program_audio import ProgramAudioState, apply_audio_event
 from modules.studio25d_media_routes import create_studio25d_media_router
 from modules.governance import GovernanceEngine
@@ -1158,9 +1159,14 @@ async def lifespan(application: FastAPI):
     application.include_router(create_blackbox_router(blackbox_witness))
     recording = create_recording_service(DATA_DIR, cameras, blackbox_witness=blackbox_witness)
     program_audio_state = ProgramAudioState()
-    application.include_router(create_production_router(cameras, recording, hub, blackbox=blackbox_witness, program_audio_state=program_audio_state, include_overlapping_compat_routes=False))
+    application.include_router(create_production_router(
+        cameras, recording, hub, blackbox=blackbox_witness,
+        program_audio_state=program_audio_state, include_overlapping_compat_routes=False,
+        emergency_snapshot=_studio_emergency_snapshot,
+    ))
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
+    application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
     from modules.pubcast_vision_integration import PubcastVisionManager
     from modules.pubcast_vision_routes import create_vision_router
     vision_manager = PubcastVisionManager(camera_manager=cameras, data_dir=DATA_DIR)
@@ -1980,6 +1986,7 @@ _cors_origins, _cors_credentials = _resolve_cors_origins()
 app.add_middleware(CORSMiddleware,
     allow_origins=_cors_origins, allow_credentials=_cors_credentials,
     allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(SlateOverlayMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(BodySizeLimitMiddleware)
 from modules.unicode_guard import UnicodeGuardMiddleware  # noqa: E402
@@ -3376,16 +3383,11 @@ async def studio_preflight(request: Request, identity: Dict[str, Any] = Depends(
     except Exception as exc:
         raise HTTPException(500, str(exc))
 
-@app.post("/api/studio/emergency-save")
-async def studio_emergency_save(request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
-    """Trigger the dead man's switch emergency save."""
+async def _studio_emergency_snapshot() -> Dict[str, Any]:
+    """Persist the console state after the production router stops capture."""
     if studio_control is None:
-        raise HTTPException(503, "Studio Control not available")
-    try:
-        result = await studio_control.emergency_save()
-        return {"ok": bool(result.get("ok")), "result": result}
-    except Exception as exc:
-        raise HTTPException(500, str(exc))
+        return {"ok": False, "error": "Studio Control not available"}
+    return await studio_control.emergency_save()
 
 
 # —

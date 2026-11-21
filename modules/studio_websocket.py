@@ -141,6 +141,7 @@ class StudioWebSocketHandler:
             'type': 'command_response',
             'command': 'emergency_save',
             'success': success,
+            'scope': 'control_state',
             'timestamp': datetime.now().isoformat()
         })
     

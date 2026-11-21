@@ -552,6 +552,7 @@
           <span>EMERGENCY SAVE</span>
         </button>
       </div>
+      <p id="emergencySaveStatus" role="status"></p>
     </div>
 
     <!-- ── PREFLIGHT CHECKS ── -->
@@ -634,6 +635,7 @@ const StudioEngine = {
   currentProgramSource: 'wide_shot',
   recordingStartTime: null,
   recordingInterval: null,
+  emergencySavePending: false,
   
   audioMatrix: {
     mic_inputs:   { name: 'Microphone Inputs',       active: true, signal_db: null, status: 'NO_DATA' },
@@ -761,7 +763,7 @@ const StudioEngine = {
     
     switch (message.type) {
       case 'state_update':
-        this.setState(message.state);
+        if (!this.emergencySavePending) this.setState(message.state);
         break;
       case 'audio_update':
         this.updateAudioMatrix(message.audio_matrix);
@@ -900,6 +902,7 @@ const StudioEngine = {
   // ─────────────────────────────────────────────
   
   startPreflight: async function() {
+    if (this.emergencySavePending) return;
     console.log("🎬 Starting preflight countdown...");
     this.preflightChecks = [];
     this.setState('PREFLIGHT');
@@ -940,9 +943,11 @@ const StudioEngine = {
     }
 
     for (let i = 5; i > 0; i--) {
+      if (this.state !== 'PREFLIGHT') return;
       this.updateCountdown(i);
       await this.sleep(1000);
     }
+    if (this.state !== 'PREFLIGHT') return;
 
     const sessionId = `studio_${Date.now()}`;
     const started = await this.runStudioAction('recording.start', {
@@ -1041,6 +1046,7 @@ const StudioEngine = {
   },
   
   stopRecording: async function() {
+    if (this.emergencySavePending) return;
     console.log("⏹️ Stopping recording...");
     if (this.activeRecordingSessionId) {
       const stopped = await this.runStudioAction('recording.stop', {
@@ -1060,14 +1066,35 @@ const StudioEngine = {
   // EMERGENCY SAVE
   // ─────────────────────────────────────────────
   
-  emergencySave: function() {
-    console.error("🚨 EMERGENCY SAVE TRIGGERED");
-    this.sendCommand('emergency_save', { reason: 'Manual trigger' });
+  emergencySave: async function() {
+    if (this.emergencySavePending) return;
+    this.emergencySavePending = true;
+    const button = document.getElementById('btnEmergencySave');
+    const status = document.getElementById('emergencySaveStatus');
+    const previousState = this.state;
+    button.disabled = true;
+    status.textContent = 'Stopping production and saving studio state…';
     this.setState('EMERGENCY');
-    
-    setTimeout(() => {
-      this.setState('IDLE');
-    }, 2000);
+
+    try {
+      const response = await fetch('/api/studio/emergency-save', { method: 'POST' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+      const stop = result.production_stop;
+      const sessionId = this.activeRecordingSessionId;
+      const sessionStopped = !sessionId || stop?.sessions_stopped?.includes(sessionId);
+      if (sessionStopped) this.activeRecordingSessionId = '';
+      this.setState(sessionStopped ? 'IDLE' : previousState);
+      status.textContent = result.ok && sessionStopped
+        ? 'Server stop completed and studio state saved.'
+        : 'Emergency save incomplete. Check the recorder and studio state.';
+    } catch (error) {
+      this.setState(previousState);
+      status.textContent = `Emergency save unconfirmed (${error.message}). Check the recorder.`;
+    } finally {
+      button.disabled = false;
+      this.emergencySavePending = false;
+    }
   },
   
   // ─────────────────────────────────────────────
@@ -1114,8 +1141,8 @@ const StudioEngine = {
     document.getElementById('btnMuteAll').onclick = () => this.muteAllButDialogue();
     document.getElementById('btnUnmuteAll').onclick = () => this.unmuteAll();
     document.getElementById('btnEmergencySave').onclick = async () => {
-      if (await this.confirmDanger('Emergency Save', 'Trigger emergency save and flush the studio buffers?')) {
-        this.emergencySave();
+      if (await this.confirmDanger('Emergency Save', 'Stop production, finalize server recordings, and save studio state?')) {
+        await this.emergencySave();
       }
     };
     
@@ -1127,8 +1154,8 @@ const StudioEngine = {
       }
       if (e.code === 'Escape' && this.state === 'LIVE') {
         e.preventDefault();
-        if (await this.confirmDanger('Emergency Stop', 'Emergency stop recording and enter emergency save state?')) {
-          this.emergencySave();
+        if (await this.confirmDanger('Emergency Stop', 'Stop production, finalize server recordings, and save studio state?')) {
+          await this.emergencySave();
         }
       }
     });
