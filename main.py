@@ -1999,6 +1999,8 @@ from modules.control_plane_guard import ControlPlaneGuardMiddleware  # noqa: E40
 app.add_middleware(ControlPlaneGuardMiddleware)
 from modules.guest_session_guard import GuestSessionGuardMiddleware  # noqa: E402
 app.add_middleware(GuestSessionGuardMiddleware)
+from modules.airlock_guard import AirlockGuardMiddleware  # noqa: E402
+app.add_middleware(AirlockGuardMiddleware)
 app.mount("/2i-assets", StaticFiles(directory=str(Path(__file__).resolve().parent / "2i" / "2i-assets")), name="writers-room-assets")
 
 if STATIC_DIR.exists() and any(STATIC_DIR.iterdir()):
@@ -3664,6 +3666,11 @@ async def pub_manager_issue_report():
         return {"available": False, "error": "Pub Manager recovery scaffold unavailable"}
     snapshot = build_snapshot(_pub_manager_raw_status())
     return {"available": True, "report": issue_report(snapshot)}
+
+
+@app.get("/host-events", include_in_schema=False)
+async def host_events_page():
+    return FileResponse(STATIC_DIR / "host_events.html")
 
 
 @app.get("/general-chat", include_in_schema=False)

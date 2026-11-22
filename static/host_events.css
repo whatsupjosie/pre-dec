@@ -1,0 +1,24 @@
+.host-events-page {
+  margin:0;padding:20px; background:#16120d;color:#f6eadb;
+  color-scheme:dark;font:16px/1.45 system-ui,sans-serif;
+}
+.host-events-page main { max-width:850px;margin:auto; }
+.host-events a { color:#ffd285; }
+.host-events summary {
+  cursor:pointer;color:#ffd285;font:700 14px ui-monospace,monospace;
+}
+.host-events[open] [data-event-list] { max-height:180px;overflow:auto; }
+.host-event {
+  margin:8px 0;padding:10px;border:1px solid #a8783e;border-left:4px solid #ffcc78;
+  background:#2b2217;border-radius:5px;color:#fff1d9;
+}
+.host-event strong { display:block;color:#ffd285;font:700 14px/1.45 ui-monospace,monospace; }
+.host-event[data-urgent="true"] { border-left-color:#ff9caf; }
+.host-event[data-urgent="true"] strong { color:#ffbace; }
+.host-event p { margin:5px 0;overflow-wrap:anywhere;white-space:pre-wrap; }
+.host-event time { font-size:12px; }
+.host-event-actions { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:7px; }
+.host-events button { cursor:pointer;padding:5px 9px;color:inherit;background:#32271b;border:1px solid #a8783e;border-radius:4px;font:inherit; }
+.host-events form { margin:20px 0; }
+.host-events form label { display:block;margin:8px 0; }
+.host-events form textarea { display:block;max-width:100%;width:460px;min-height:70px; }

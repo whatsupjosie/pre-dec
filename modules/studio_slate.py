@@ -288,7 +288,8 @@ class SlateOverlayMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope['type'] != 'http' or scope.get('method') == 'HEAD':
+        if (scope['type'] != 'http' or scope.get('method') == 'HEAD'
+                or scope['path'] in {'/login', '/airlock', '/static/waiting_room.html', '/static/human_visits.html'}):
             return await self.app(scope, receive, send)
         if scope.get('path', '').endswith('.html') or any(k == b'accept' and b'text/html' in v for k, v in scope.get('headers', [])):
             scope = dict(scope, headers=[(k, v) for k, v in scope.get('headers', []) if k not in {b'if-none-match', b'if-modified-since'}])

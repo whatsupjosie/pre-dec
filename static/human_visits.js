@@ -2,7 +2,7 @@
 'use strict';
 const $=id=>document.getElementById(id),query=new URLSearchParams(location.search),mode=query.get('mode')||'join';
 const message=value=>{$('status').textContent=value;};
-let prepared=null,popup=null,homeOrigin=null,pollTimer=null,polling=false,waitingHost=null;
+let prepared=null,popup=null,homeOrigin=null,pollTimer=null,polling=false,waitingHost=null,arrivalTimer=null,staffTimer=null;
 const consent={tos:true,recording:true,ai_disclosure:true,data_processing:true};
 async function api(path,body){
  const response=await fetch('/api/guests/'+path.replace(/^\//,''),{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000),cache:'no-store'});
@@ -26,9 +26,50 @@ async function submit(proof){
  if(!received||Object.keys(received).length!==Object.keys(prepared.challenge).length||Object.keys(prepared.challenge).some(key=>received[key]!==prepared.challenge[key]))throw Error('This card belongs to a different visit request');
  await api('/request',proof);prepared.submitted=true;sessionStorage.setItem('pubcast.visit.pending',JSON.stringify(prepared));await poll();
 }
-$('prepare').onsubmit=async event=>{event.preventDefault();$('prepareButton').disabled=true;
- try{const {data}=await api('/challenge',{invite_code:$('invite').value.trim()});prepared=data;sessionStorage.setItem('pubcast.visit.pending',JSON.stringify(data));$('challengeOut').value=JSON.stringify(data.challenge);$('prepared').hidden=false;$('enter').hidden=true;message('Open your own copy to approve this visit.');}
+async function prepareVisit(code){
+ const {data}=await api('/challenge',{invite_code:code});
+ prepared=data;sessionStorage.setItem('pubcast.visit.pending',JSON.stringify(data));
+ $('challengeOut').value=JSON.stringify(data.challenge);$('prepared').hidden=false;$('enter').hidden=true;
+ $('knock').hidden=true;
+ message('Open your own copy to review the contract and sign your visiting card.');
+}
+$('prepare').onsubmit=async event=>{
+ event.preventDefault();$('prepareButton').disabled=true;
+ try{await prepareVisit($('invite').value.trim());}
  catch(e){message(e.message);}finally{$('prepareButton').disabled=false;}
+};
+const arrivalKey='pubcast.airlock.ticket';
+async function pollArrival(ticket){
+ clearTimeout(arrivalTimer);
+ try{
+  const {data}=await api('/arrival/status',{ticket});
+  if(data.status==='waiting'){
+   $('arrival-status').textContent='The door staff have been paged. Please wait here.';
+   arrivalTimer=setTimeout(()=>pollArrival(ticket),2500);
+  }else if(data.status==='invited'){
+   await prepareVisit(data.invite_code);
+   sessionStorage.removeItem(arrivalKey);
+   $('arrival-status').textContent='Door staff invited you to sign in and present your card.';
+  }else{
+   sessionStorage.removeItem(arrivalKey);$('knock-button').disabled=false;
+   $('arrival-status').textContent=data.status==='denied'?'Door staff declined this arrival.':'This arrival ticket expired.';
+  }
+ }catch(error){
+  $('arrival-status').textContent=error.message+' Retrying…';
+  arrivalTimer=setTimeout(()=>pollArrival(ticket),5000);
+ }
+}
+$('knock').onsubmit=async event=>{
+ event.preventDefault();$('knock-button').disabled=true;
+ try{
+  let ticket=sessionStorage.getItem(arrivalKey);
+  if(!ticket){
+   ticket=Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
+   sessionStorage.setItem(arrivalKey,ticket);
+  }
+  await api('/arrival',{screen_name:$('arrival-name').value,ticket});
+  await pollArrival(ticket);
+ }catch(error){$('arrival-status').textContent=error.message;$('knock-button').disabled=false;}
 };
 $('openHome').onclick=()=>{try{
  if(!prepared)throw Error('Prepare your visit first');homeOrigin=origin($('homeOrigin').value.trim());
@@ -55,7 +96,26 @@ $('signCard').onclick=async()=>{if(!$('consent').checked){message('Review and ac
  }catch(e){message(e.message);}finally{$('signCard').disabled=false;}
 };
 async function pending(){
- const {data}=await api('/pending');$('pending').replaceChildren();
+ const [{data}, arrivals]=await Promise.all([api('/pending'),api('/arrivals')]);
+ const identity=JSON.stringify([data.pending,arrivals.data.arrivals]);
+ if(pending.snapshot===identity)return;
+ pending.snapshot=identity;
+ $('pending').replaceChildren();$('arrivals').replaceChildren();
+ for(const guest of arrivals.data.arrivals){
+  const box=document.createElement('article'), heading=document.createElement('h3');
+  heading.textContent=guest.name+' · Unverified arrival';box.append(heading);
+  for(const allow of [true,false]){
+   const button=document.createElement('button');button.type='button';
+   button.textContent=allow?'Invite to sign in':'Decline arrival';
+   button.onclick=async()=>{button.disabled=true;try{
+    await api('/arrivals/'+encodeURIComponent(guest.arrival_id)+'/decision',{allow});
+    await pending();message(allow?'Invitation sent to the visitor in the Airlock.':'Arrival declined.');
+   }catch(error){message(error.message);button.disabled=false;}};
+   box.append(button);
+  }
+  $('arrivals').append(box);
+ }
+ if(!arrivals.data.arrivals.length)$('arrivals').textContent='No unverified arrivals are waiting.';
  for(const person of data.pending){
   const box=document.createElement('article'),heading=document.createElement('h3');heading.textContent=person.card.display_name+' · Human';box.append(heading);
   const id=document.createElement('p');id.className='key';id.textContent=person.card.user_id+' · Visit '+person.entry_id;box.append(id);
@@ -69,8 +129,8 @@ async function pending(){
  if(!data.pending.length)$('pending').textContent='No verified guests are waiting.';
 }
 $('refresh').onclick=()=>pending().catch(e=>message(e.message));
-$('createInvite').onclick=async()=>{try{const {data}=await api('/invites',{});$('inviteOut').value=data.invite_code;$('inviteLabel').hidden=false;message('Share this invitation with the person you want to invite.');}catch(e){message(e.message);}};
-async function settings(){const {data}=await api('/settings');$('doorState').textContent=(data.locked?'Door: owner approval required.':'Door: verified invitations may enter.')+' Host '+data.host_id;}
+$('createInvite').onclick=async()=>{try{const {data}=await api('/invites',{returning_auto:$('returning-auto').checked});$('inviteOut').value=data.invite_code;$('inviteLabel').hidden=false;message('Share this invitation with the person you want to invite.');}catch(e){message(e.message);}};
+async function settings(){const {data}=await api('/settings');$('doorState').textContent=(data.locked?'Airlock closed · Door staff review new visitors.':'Airlock open · Verified invitations may enter.')+' Host '+data.host_id;}
 for(const [id,locked]of [['lockDoor',true],['unlockDoor',false]])$(id).onclick=async()=>{try{await api('/door',{locked});await settings();message(locked?'New guests will wait for approval.':'Verified guests with valid invitations can enter.');}catch(e){message(e.message);}};
 $('revoke').onsubmit=async e=>{e.preventDefault();try{await api('/entries/'+encodeURIComponent($('revokeId').value.trim())+'/revoke',{});message('Visit access revoked.');}catch(error){message(error.message);}};
 async function loadEvent(){
@@ -90,19 +150,29 @@ $('event-form').onsubmit=async event=>{
  }catch(error){message(error.message);}
  finally{field.disabled=button.disabled=false;}
 };
-window.addEventListener('pagehide',()=>clearTimeout(pollTimer));
+window.addEventListener('pagehide',()=>{clearTimeout(pollTimer);clearTimeout(arrivalTimer);clearInterval(staffTimer);});
 if(mode==='sign'){
  $('sign').hidden=false;$('challengeIn').value=query.get('challenge')||'';showTarget();
  ReachAuth.requireSession(location.pathname+location.search).catch(e=>message(e.message));
 }else if(mode==='host'){
- $('host').hidden=false;ReachAuth.requireSession(location.pathname+location.search).then(session=>{if(session)return Promise.all([pending(),settings(),loadEvent()]);}).catch(e=>message(e.message));
+ $('host').hidden=false;
+ ReachAuth.requireSession(location.pathname+location.search).then(async session=>{
+  if(!session)return;
+  const isOwner=ReachAuth.getUser()?.role==='owner';
+  $('owner-door-controls').hidden=$('revoke').hidden=!isOwner;
+  await pending();
+  staffTimer=setInterval(()=>{if(!document.hidden)pending().catch(e=>message(e.message));},3000);
+  if(isOwner)await Promise.all([settings(),loadEvent()]);
+ }).catch(e=>message(e.message));
 }else{
- $('join').hidden=false;
+ $('join').hidden=false;$('visit-nav').hidden=true;
+ if(ReachAuth.getToken())ReachAuth.verify().then(identity=>{if(!identity)ReachAuth.clearSession();}).catch(()=>{});
  if(location.hash==='#entry-contract')$('entry-contract').open=true;
  waitingHost=window.PubcastWaitingRoomHost.mount({
   line:$('guest-host-line'),terms:$('guest-contract'),
   faq:{container:$('guest-faq'),contract:$('entry-contract'),invited:true}
  });
- restorePrepared();if(prepared?.submitted)poll();
+ restorePrepared();if(prepared){$('knock').hidden=true;if(prepared.submitted)poll();}
+ else if(sessionStorage.getItem(arrivalKey)){$('knock-button').disabled=true;pollArrival(sessionStorage.getItem(arrivalKey));}
 }
 })();
