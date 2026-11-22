@@ -44,7 +44,7 @@ body{
   color:var(--teal);opacity:0.7;margin-top:4px;
 }
 .airlock-body{padding:24px 32px}
-.host-faq{margin:0 0 20px;color:var(--cream)}
+.host-faq{margin:20px 0 0;color:var(--cream)}
 .host-faq h2{font-size:1.1rem;margin:0 0 8px}
 .host-faq p{margin:0 0 10px}
 .host-faq details{margin:6px 0}
@@ -188,10 +188,6 @@ body{
 
     <!-- STEP 1: Terms -->
     <div class="step active" id="step1">
-      <section class="host-faq" aria-labelledby="host-faq-title">
-        <h2 id="host-faq-title">Waiting Room FAQ</h2>
-        <div id="host-faq"></div>
-      </section>
       <div class="step-label">â—† Step 1 â€” Terms &amp; Consent â—†</div>
       <div class="consent-box" id="termsBox">Loading the host’s entry contract…</div>
       <div class="check-row">
@@ -218,6 +214,10 @@ body{
       <div class="btn-row">
         <button class="btn primary" id="btnStep1" onclick="nextStep(2)" disabled>CONTINUE</button>
       </div>
+      <section class="host-faq" aria-labelledby="host-faq-title">
+        <h2 id="host-faq-title">Waiting Room FAQ</h2>
+        <div id="host-faq"></div>
+      </section>
     </div>
 
     <!-- STEP 2: Identity -->
