@@ -122,6 +122,8 @@ html, body {
 }
 .top-icon-btn:hover { border-color:var(--gold); color:var(--gold-bright); background:rgba(205,163,73,0.12); }
 
+.top-right .chat-mode-link { width:auto; padding:0 10px; border-radius:5px; text-decoration:none; }
+
 /* --- MAIN AREA --- */
 .main-area {
   display:grid;
@@ -1153,6 +1155,7 @@ body[data-twoi-desk="standard"] .solo-textarea { border-radius:0 0 3px 0; }
       </div>
       <button class="save-btn" id="saveBtn">Save</button>
       <button class="mode-badge write" id="modeBadge" title="Toggle between Write (solo) and Collab (co-writing) mode">Write</button>
+      <a class="top-icon-btn chat-mode-link" href="/2i/chat">Chat</a>
       <button class="top-icon-btn" id="shelfBtn" title="My manuscripts">My manuscripts</button>
       <button class="top-icon-btn" id="sidebarToggle" title="Toggle sidebar">☰</button>
       <button class="top-icon-btn" id="menuToggle" title="Menu">⚙</button>

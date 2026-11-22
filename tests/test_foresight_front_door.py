@@ -35,7 +35,7 @@ def test_foresight_uses_canonical_absolute_portal_targets_and_auth_boot():
     text = (STATIC / "foresight.html").read_text(encoding="utf-8")
     assert '<script src="/static/reach_auth.js"></script>' in text
     assert '<script src="/static/foresight.config.js"></script>' in text
-    assert "url:'/static/world_chat.html'" in text
+    assert "url:'/2i/chat'" in text
     assert "url:'/pub-partner-chat'" in text
     assert "twoIUi: '/writers-room'" in text
     assert "await window.ReachAuth.requireSession('/foresight')" in text
@@ -47,7 +47,7 @@ def test_neighbor_portals_share_the_reach_auth_adapter():
     missing = []
     for name in PORTAL_PAGES:
         text = (STATIC / name).read_text(encoding="utf-8")
-        if '<script src="/static/reach_auth.js"></script>' not in text:
+        if '<script src="/static/reach_auth.js"' not in text:
             missing.append(name)
     assert not missing, f"missing auth adapter: {missing}"
     assert '<script src="/static/reach_auth.js"></script>' in (ROOT / "2i" / "index.html").read_text(encoding="utf-8")

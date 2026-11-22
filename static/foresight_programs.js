@@ -50,7 +50,7 @@
     {id:'human_profile',title:'Your PubCast profile',group:'Chat & Collaboration',kind:'page',url:'/static/human_profile.html',
      w:720,h:640,minW:320,minH:400,shape:'wide',singleton:true},
     // conversation and collaboration
-    {id: 'world_chat', title: 'World Chat', group: 'Chat & Collaboration', kind: 'page', url: '/static/world_chat.html',
+    {id: 'world_chat', title: 'World Chat', group: 'Chat & Collaboration', kind: 'page', url: '/2i/chat',
      w: 440, h: 520, minW: 320, minH: 360, shape: 'chat', singleton: true},
     {id: 'pubpartner_workspace', title: 'PubPartner · Alex & Cartridges', short: 'PubPartner', group: 'Programs', kind: 'page', url: '/pubpartner',
      w: 1000, h: 640, minW: 640, minH: 440, shape: 'wide', singleton: true},

@@ -98,7 +98,7 @@ def test_ui_shared_api_and_deliberate_collab_commit():
     foresight=(ROOT/'static/foresight.html').read_text()
     writer=(ROOT/'2i/index.html').read_text()
     world=(ROOT/'static/world_chat_widget.js').read_text()
-    assert "url:'/static/world_chat.html'" in foresight
+    assert "url:'/2i/chat'" in foresight
     assert '/api/chat/rooms/world?limit=100' in world
     assert '/api/chat/rooms/world/send' in world
     assert 'data-world-chat' in writer and 'Your PubPartner' in writer

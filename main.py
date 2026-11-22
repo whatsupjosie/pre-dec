@@ -3711,6 +3711,11 @@ async def writers_room_page():
     return FileResponse(Path(__file__).resolve().parent / "2i" / "writers-room-v22.html")
 
 
+@app.get("/2i/chat", include_in_schema=False)
+async def two_i_chat_page():
+    return FileResponse(STATIC_DIR / "world_chat.html")
+
+
 @app.get("/pubpartner", include_in_schema=False)
 async def pubpartner_page():
     return FileResponse(STATIC_DIR / "pubpartner.html")

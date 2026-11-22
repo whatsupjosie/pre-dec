@@ -18,6 +18,8 @@
     const form = root.querySelector('[data-world-form]');
     const input = root.querySelector('[data-world-input]');
     const send = root.querySelector('[data-world-send]');
+    const mic = root.querySelector('[data-world-mic]');
+    window.PubcastSpeech?.bindDictation(mic, input);
     let previous = '', inflight = false, sending = false, socket = null, pendingSend = null;
     function visible() { return root.getClientRects().length > 0 && (!root.closest('details') || root.closest('details').open); }
     async function refresh() {
@@ -126,7 +128,7 @@
       finally { sending = false; send.disabled = false; }
     });
     input.addEventListener('keydown', event => {
-      if (event.key === 'Enter' && !event.shiftKey) {event.preventDefault(); form.requestSubmit();}
+      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {event.preventDefault(); form.requestSubmit();}
     });
     refresh();
     ensureSocket();
