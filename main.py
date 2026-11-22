@@ -1189,6 +1189,8 @@ async def lifespan(application: FastAPI):
     application.state.camera_pool = camera_pool
     application.include_router(create_camera_pool_router(camera_pool))
     application.include_router(create_studio25d_media_router(cameras, pool=camera_pool))
+    from modules.studio25d_voxel_props import create_voxel_placement_router
+    application.include_router(create_voxel_placement_router(DATA_DIR))
     # Every program/preview change, from any route, reaches the stage pages.
     from modules.camera_broadcast import CameraBroadcastBridge
     camera_broadcast = CameraBroadcastBridge(cameras, hub)
@@ -2339,8 +2341,45 @@ async def register_bot(request: Request, identity: Dict[str, Any] = Depends(requ
         raise HTTPException(503, "BotManager not initialized")
     body   = await _json_dict(request)
     config = BotConfig(**body)
-    bot_manager.upsert_config(config)
+    if identity.get("authenticated"):
+        from modules.auth import role_gte
+
+        existing = bot_manager.get_config(config.bot_id)
+        admin = role_gte(identity["role"], "admin")
+        if existing is not None:
+            if existing.owner_id != identity["user_id"] and not admin:
+                raise HTTPException(403, "Only the bot owner or an administrator can edit this bot")
+            config.owner_id = existing.owner_id
+        elif not admin or not config.owner_id:
+            config.owner_id = identity["user_id"]
+    try:
+        bot_manager.upsert_config(config)
+    except PermissionError as exc:
+        raise HTTPException(403, "Bot ID is already owned by another user") from exc
     return {"ok": True, "bot_id": config.bot_id}
+
+
+@app.delete("/api/bots/{bot_id}")
+async def delete_bot(bot_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
+    from modules.auth import role_gte
+
+    if not identity.get("authenticated") or not role_gte(identity["role"], "mod"):
+        raise HTTPException(403, "Authenticated moderator required")
+    if bot_manager is None:
+        raise HTTPException(503, "BotManager not initialized")
+    if "/" in bot_id or "\\" in bot_id or "\x00" in bot_id:
+        raise HTTPException(400, "Invalid bot ID")
+    try:
+        removed = bot_manager.delete_config(
+            bot_id, owner_id=None if role_gte(identity["role"], "admin") else identity["user_id"],
+        )
+    except PermissionError as exc:
+        raise HTTPException(403, "Only the bot owner or an administrator can remove this bot") from exc
+    except OSError as exc:
+        raise HTTPException(500, "Unable to remove the bot configuration") from exc
+    if not removed:
+        raise HTTPException(404, "Bot not found")
+    return {"ok": True}
 
 
 @app.post("/api/bots/{bot_id}/chat")
@@ -2463,9 +2502,6 @@ async def bot_status(bot_id: str, identity: Dict[str, Any] = Depends(current_ide
     if identity.get("authenticated") and identity.get("role") in {"mod", "admin", "owner"}:
         metadata.update({"has_key": has_key, "key_env": cfg.api_key_env})
     return metadata
-    if bot_manager:
-        bot_manager.delete_config(bot_id)
-    return {"ok": True}
 
 
 @app.get("/api/rooms")

@@ -65,7 +65,8 @@ def _build_ffmpeg_input(transport: str, endpoint: str) -> List[str]:
         return ["-f", "libndi_newtek", "-i", endpoint]
 
     if t == "voxel_3d":
-        # TCP stream from the Rust/Voxel renderer
+        if endpoint.startswith("rust://"):
+            raise ValueError("Native voxel camera is registered for pose control only")
         return ["-i", endpoint]
 
     # Unknown — try as raw input and hope for the best

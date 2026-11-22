@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED, ZIP_STORED
 
-from .cameras import CameraManager, CameraSource
+from .cameras import CameraManager, CameraSource, CameraTransport
 from .persistence import write_json
 
 logger = logging.getLogger(__name__)
@@ -229,6 +229,8 @@ class RecordingService:
                     f"2.5D source '{source_id}' provides confidence images only; "
                     "use the local full-resolution recorder until media ingest is connected"
                 )
+            if camera.transport == CameraTransport.VOXEL_3D and camera.endpoint.startswith("rust://"):
+                raise ValueError(f"Native voxel source '{source_id}' has pose control only and no recordable media.")
             policy = self.room_policy(camera.location)
             rule = policy.get("recording", "allowed")
             if rule == "never" and not host_override:

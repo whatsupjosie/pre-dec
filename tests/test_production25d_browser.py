@@ -412,3 +412,85 @@ def test_remote_panic_stops_real_capture_blacks_program_and_silences_audio(studi
     assert "PANIC" in page.locator("#state").inner_text()
     assert page.evaluate("async () => ((await PubCast25DStore.list())[0].media.bytes > 1000)")
     page.evaluate("panicTone.stop()")
+
+
+def test_approved_voxel_prop_reaches_cut_and_decoded_take(studio, production_server, tmp_path):
+    import shutil
+
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        pytest.skip("FFmpeg is needed to decode the captured frame")
+    page, _ = studio
+    _, auth, api = production_server
+    headers = {"Authorization": "Bearer " + auth["access_token"]}
+    # The preceding panic test leaves a shared blackout on this module's host.
+    api.post("/api/production/video-cue", headers=headers,
+             json={"cue": "blackout", "enabled": False}).raise_for_status()
+    approved = api.post("/api/visual-patch/approve", headers=headers, json={
+        "scene_id": "pubworld_stage", "label": "Voxel camera acceptance prop",
+        "approval": {"state": "approved"}, "patch_kind": "visual_patch",
+        "proposal": {"patch_id": "voxel_browser_test", "dimensions": [4, 4, 4], "color_hint": "skin"},
+    })
+    approved.raise_for_status()
+    prop_id = approved.json()["prop"]["prop_id"]
+    package = "/api/studio25d/voxel-props/news"
+    page.evaluate("""() => {
+      window.propPixel = id => {
+        const canvas = document.getElementById(id);
+        const ctx = canvas.getContext('2d');
+        const pixels = ctx.getImageData(360, 180, 310, 340);
+        for (let y=4; y<pixels.height-4; y+=2) for (let x=4; x<pixels.width-4; x+=2) {
+          const hasColor=(dx,dy)=>{
+            const i=((y+dy)*pixels.width+x+dx)*4;
+            return pixels.data[i]===197&&pixels.data[i+1]===143&&pixels.data[i+2]===114;
+          };
+          if(hasColor(0,0)&&hasColor(4,0)&&hasColor(-4,0)&&hasColor(0,4)&&hasColor(0,-4))
+            return [360+x,180+y];
+        }
+        return null;
+      };
+    }""")
+    try:
+        page.click("#refreshVoxelProps")
+        page.wait_for_function("id => Array.from(voxelProp.options).some(o=>o.value===id)", arg=prop_id)
+        assert page.evaluate("propPixel('program')") is None
+        page.select_option("#voxelProp", prop_id)
+        page.fill("#voxelX", "40")
+        page.fill("#voxelY", "67")
+        page.fill("#voxelSize", "23")
+        page.locator("#voxelPlacement button[type=submit]").click()
+        page.wait_for_function("voxelStatus.textContent.includes('Placed:')")
+        page.wait_for_function("propPixel('program') !== null")
+        page.click("#start")
+        page.wait_for_function("document.querySelector('#switcherLink').textContent === 'VIDEO: SHARED SWITCHER'")
+        page.click("#cut")
+        page.wait_for_function("PubCast25DStudio.state().program === 'anchor'")
+        page.locator('[data-shot="wide"]').click()
+        page.wait_for_function("PubCast25DStudio.state().preview === 'wide'")
+        page.wait_for_function("propPixel('preview') !== null")
+        page.click("#cut")
+        page.wait_for_function("PubCast25DStudio.state().program === 'wide'")
+        coord = page.wait_for_function("propPixel('program')").json_value()
+        record_short_take(page)
+        page.locator("#sessionList button").first.click()
+        page.wait_for_function("playback.readyState >= 2 && playback.videoWidth === 1280")
+        with page.expect_download() as take:
+            page.click("#download")
+        video = tmp_path / take.value.suggested_filename
+        take.value.save_as(video)
+        raw = subprocess.run([ffmpeg, "-v", "error", "-i", str(video), "-frames:v", "1",
+                              "-pix_fmt", "rgb24", "-threads", "1", "-f", "rawvideo", "-"],
+                             check=True, capture_output=True).stdout
+        assert len(raw) == 1280 * 720 * 3
+        x, y = coord
+        rgb = raw[(y * 1280 + x) * 3:(y * 1280 + x) * 3 + 3]
+        assert all(abs(actual - expected) < 17 for actual, expected in zip(rgb, (197, 143, 114))), rgb
+        with page.expect_download() as manifest:
+            page.click("#manifest")
+        import json
+        session = json.loads(manifest.value.path().read_text())
+        assert session["voxelPlacement"]["prop_id"] == prop_id
+        assert session["voxelPlacement"]["block_count"] == 56
+        assert not page.problems
+    finally:
+        api.put(package, headers=headers, json={"placement": None}).raise_for_status()

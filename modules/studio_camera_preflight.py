@@ -33,6 +33,9 @@ def camera_visibility_report(camera: CameraSource, status: Optional[CameraStatus
     warnings: List[Dict[str, str]] = []
     online = bool(status.online) if status is not None else True
 
+    native_control = camera.transport == CameraTransport.VOXEL_3D and camera.endpoint.startswith("rust://")
+    if native_control:
+        issues.append(_issue("native_media_unavailable", "Native voxel camera is registered for pose control only. No media stream is available."))
     if not online:
         issues.append(_issue("camera_offline", "Camera status is offline."))
     if "studio25d" in camera.tags and str(camera.endpoint).startswith("virtual://"):
@@ -51,7 +54,9 @@ def camera_visibility_report(camera: CameraSource, status: Optional[CameraStatus
         warnings.append(_issue("private_source", "Camera is marked private; recording needs policy approval.", "warning"))
 
     confidence = "status_only"
-    if camera.transport in {CameraTransport.VIRTUAL, CameraTransport.VOXEL_3D}:
+    if native_control:
+        confidence = "control_only"
+    elif camera.transport == CameraTransport.VIRTUAL:
         confidence = "synthetic_virtual_frame"
     elif camera.transport == CameraTransport.FILE:
         confidence = "file_endpoint"

@@ -16,7 +16,7 @@ playback:$("playback"),sessionList:$("sessionList"),manifest:$("manifest"),downl
 assetInfo:$("assetInfo"),avatarStatus:$("avatarStatus"),switcherLink:$("switcherLink"),liveMedia:$("liveMedia")};
 const world=document.createElement("canvas");world.width=Core.W;world.height=Core.H;
 const lastFrame=document.createElement("canvas");lastFrame.width=Core.W;lastFrame.height=Core.H;
-const state={pkg:null,performers:[],assets:{},avatarBridge:null,avatarError:"",
+const state={pkg:null,voxelProp:null,performers:[],assets:{},avatarBridge:null,avatarError:"",
 programId:null,previewId:null,
 session:null,startingProduction:false,media:null,mediaError:null,recorder:null,videoStream:null,micStream:null,audioContext:null,micSource:null,
 micGain:null,micAnalyser:null,audioDest:null,recordingPromise:null,recordingComplete:null,recordingStarting:null,
@@ -72,13 +72,14 @@ async function safe(fn){
 }
 function setControls(){
  const active=!!state.session&&!state.startingProduction,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
- el.start.disabled=!!state.session||state.startingProduction||state.castingPete;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
+ el.start.disabled=!!state.session||state.startingProduction||state.castingPete||!!state.voxelSaving;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
  el.record.disabled=!active||state.endingProduction||state.panicActive||rec||stopping||starting||!state.storageReady;
  $("cut").disabled=$("fade").disabled=!active||!!state.endingProduction;
  for(const button of el.camera.children)button.disabled=state.startingProduction||!!state.endingProduction;
  el.recordStop.disabled=(!rec&&!starting)||stopping;
  el.recordStop.textContent=starting?"CANCEL RECORDING START":"STOP RECORDING";
  el.record.disabled=el.record.disabled||!!state.recovery;
+ $("voxelPlacementControls").disabled=!!state.session||state.startingProduction||!!state.voxelSaving;
  $("castPete").disabled=el.start.disabled||!!state.castingPete||!!state.peteActor;
  $("speakPete").disabled=!active||!state.peteActor||!!state.peteSpeaking||state.panicActive||state.endingProduction;
  $("stopPete").disabled=!state.peteSpeaking;
@@ -119,8 +120,68 @@ function refreshCameraUI(){
  el.programShot.textContent="PGM: "+(camera(state.programId)?.label||"—");
  el.previewShot.textContent="PVW: "+(camera(state.previewId)?.label||"—");
 }
+function voxelPlacementReceipt(placement){
+ const {blocks,...receipt}=placement;
+ return receipt;
+}
+async function voxelRequest(endpoint,options){
+ const response=await fetch("/api/studio25d/voxel-props/"+endpoint,{
+   signal:globalThis.AbortSignal?.timeout?.(5000),...options,
+ });
+ if(!response.ok){
+   const {detail}=await response.json().catch(()=>({}));
+   const error=Error(typeof detail==="string"?detail:`Voxel request failed (HTTP ${response.status})`);
+   error.status=response.status;throw error;
+ }
+ return response.json();
+}
+function showVoxelPlacement(placement){
+ state.voxelProp=placement;
+ $("voxelProp").value=placement?.prop_id||"";
+ $("voxelX").value=placement?Math.round(placement.x*100):35;
+ $("voxelY").value=placement?Math.round(placement.y*100):76;
+ $("voxelSize").value=placement?Math.round(placement.size*100):15;
+ $("voxelAngle").value=placement?.angle??0;
+ $("voxelStatus").textContent=placement?`Placed: ${placement.label}`:"No voxel prop placed.";
+}
+let voxelRequestGeneration=0;
+async function loadVoxelPlacement(pkg){
+ const generation=++voxelRequestGeneration;
+ const status=$("voxelStatus");
+ const [assets,saved]=await Promise.allSettled([voxelRequest("assets"),voxelRequest(pkg.id)]);
+ if(pkg!==state.pkg||generation!==voxelRequestGeneration||state.session)return;
+ if(assets.status==="fulfilled"){
+   const select=$("voxelProp");
+   select.replaceChildren(new Option("None",""));
+   for(const prop of assets.value.props)select.add(new Option(prop.label,prop.prop_id));
+ }
+ if(saved.status==="fulfilled"){
+   showVoxelPlacement(saved.value.placement);
+   return;
+ }
+ status.textContent=saved.reason.message;
+ // Static/offline use has no shared placement. A known placement must be resolved.
+ if(state.voxelProp||saved.reason.status===422||saved.reason.status>=500)throw saved.reason;
+}
+async function saveVoxelPlacement(){
+ if(state.session||state.startingProduction||state.voxelSaving)return;
+ const pkg=state.pkg, prop_id=$("voxelProp").value;
+ const placement=prop_id?{prop_id,x:Number($("voxelX").value)/100,y:Number($("voxelY").value)/100,
+   size:Number($("voxelSize").value)/100,angle:Number($("voxelAngle").value)}:null;
+ ++voxelRequestGeneration;
+ state.voxelSaving=true;setControls();
+ try{
+   const saved=await voxelRequest(pkg.id,{method:"PUT",headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({placement})});
+   if(pkg===state.pkg)showVoxelPlacement(saved.placement);
+ }finally{state.voxelSaving=false;setControls();}
+}
+function refreshVoxelPlacement(){
+ loadVoxelPlacement(state.pkg).catch(error=>log("VOXEL PREFLIGHT: "+error.message));
+}
+
 function loadGenre(id){
- if(state.session||state.castingPete)throw Error("Finish production or casting before changing the set");
+ if(state.session||state.startingProduction||state.castingPete||state.voxelSaving)throw Error("Finish production, casting, or set setup before changing the set");
  const pkg=Core.PACKAGES[id];if(!pkg)throw Error("Unknown package "+id);
  Core.validate(pkg);
  // All GLB actor instances belong to ONE current production package.
@@ -132,6 +193,7 @@ function loadGenre(id){
  if(state.avatarBridge?.clear)for(const id of state.loadedActorIds)state.avatarBridge.clear(id);
  state.loadedActorIds.clear();
  state.pkg=pkg;
+ state.voxelProp=null;refreshVoxelPlacement();
  state.performers=pkg.performers.map(p=>({id:"p25d-"+pkg.id+"-"+p.id,slot:p.slot,position:p.position.slice(),
  avatar:p.avatar,moving:false,vx:0,vy:0,motionUntil:0}));
  state.programId=pkg.cameras[0].id;state.previewId=pkg.cameras[1].id;
@@ -275,12 +337,14 @@ function reset(){
  cue("blocking.reset",{});log("Stage blocking reset");
 }
 async function startProduction(){
- if(state.session||state.startingProduction||state.castingPete)throw Error("Production or casting is already underway");
+ if(state.session||state.startingProduction||state.castingPete||state.voxelSaving)throw Error("Production, casting, or set setup is already underway");
  state.startingProduction=true;
  el.alert.textContent="";
  setControls();
  try{
+  await loadVoxelPlacement(state.pkg);
   const sess=Core.makeSession(state.pkg,Date.now());state.session=sess;
+  if(state.voxelProp)sess.voxelPlacement=voxelPlacementReceipt(state.voxelProp);
   if(state.slate)sess.slate=state.slate;
   emit("production.start",{package:state.pkg.id,program:state.programId});
   try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
@@ -389,6 +453,11 @@ async function startRecording(){
  const check=()=>{if(op.cancelled||state.recordingStarting!==op||state.session!==sess)throw new DOMException("Recording start canceled","AbortError");};
  let capture=null,adopted=false,stopLease=()=>{};
  try{
+   if(sess.voxelPlacement){
+     const {placement}=await voxelRequest(sess.packageId);check();
+     if(!placement||JSON.stringify(voxelPlacementReceipt(placement))!==JSON.stringify(sess.voxelPlacement))
+       throw Error("The saved voxel placement changed. End production and reload the set before recording.");
+   }
    media.videoStream=el.program.captureStream(30);
    if(!media.videoStream.getVideoTracks().length)throw Error("No video track from program canvas");
    const combined=new MediaStream([...media.videoStream.getVideoTracks()]);
@@ -801,7 +870,7 @@ function frame(now){
   state.actorFrameStamp=now;
   Render.renderCamera(pr,pkg,Core.shot(pkg,state.programId),state,world,dt);
   const previewState=Object.assign({},state,{blackout:false,lowerThird:false,reuseActorFrame:true});
-  const pooledPreview=window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
+  const pooledPreview=!state.voxelProp&&window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
   if(pooledPreview)pv.drawImage(pooledPreview,0,0,Core.W,Core.H);
   else Render.renderCamera(pv,pkg,Core.shot(pkg,state.previewId),previewState,world,0);
   if(state.previewBars)drawPreviewBars(pv);
@@ -898,6 +967,8 @@ function initializeControls(){
  }));
  $("scoreLeft").addEventListener("click",()=>safe(()=>{state.scores[0]++;cue("score",{contestant:0,value:state.scores[0]})}));
  $("scoreRight").addEventListener("click",()=>safe(()=>{state.scores[1]++;cue("score",{contestant:1,value:state.scores[1]})}));
+ $("voxelPlacement").addEventListener("submit",event=>{event.preventDefault();safe(saveVoxelPlacement);});
+ $("refreshVoxelProps").addEventListener("click",refreshVoxelPlacement);
  $("backFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"back")));
  $("frontFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"front")));
  $("midFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"mid")));
@@ -948,7 +1019,7 @@ async function init(){
  window.PubCast25DStudio={state:()=>({package:state.pkg?.id,program:state.programId,preview:state.previewId,recording:!!state.recorder,recordingStarting:!!state.recordingStarting,journal:state.captureWriter?.status()||null,session:state.session?.id||null,storage:state.storageReady}),
  loadGenre,choosePreview,cut,startProduction,stopProduction,startRecording,stopRecording,recoverCapture,
  poolSnapshot:()=>{
-  if(Object.values(state.assets).some(Boolean))throw Error("Shared camera previews currently require the bundled set assets");
+  if(state.voxelProp||Object.values(state.assets).some(Boolean))throw Error("Pooled camera jobs require the bundled set assets. This set is rendered locally.");
   for(const p of state.performers){
    const expected=new URL("./world/test_avatars/MakeHuman_"+(p.avatar==="female"?"Female":"Male")+".glb",location.href).href;
    if(state.avatarBridge?.info?.(p.id)?.sourceUrl!==expected)throw Error("Shared camera previews currently require the bundled performers to finish loading");
