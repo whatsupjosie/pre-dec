@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Optional
 
-from ..event_bus import EventBus
+from ..event_bus import EventBus, FrozenDict
 from ..performers.visual_patch import VisualPatchCoordinator, parse_visual_patch_request
 
 
@@ -146,7 +146,7 @@ class VisualPatchUpKit:
             elif action_type == "set_dressing":
                 self.event_bus.emit("set:style_adjustment", action_payload, source="visual_patch_up_kit")
 
-    def _on_style_request(self, event: Mapping[str, Any]):
+    def _on_style_request(self, event: FrozenDict):
         data = _plain_dict(event.get("data", {}))
         request = parse_styling_request(
             str(data.get("description") or data.get("text") or data.get("hint") or ""),
@@ -217,6 +217,8 @@ def _makeup_region(description: str) -> str:
 
 
 def _plain_dict(value: Any) -> Dict[str, Any]:
-    if isinstance(value, Mapping):
+    if isinstance(value, FrozenDict):
+        return value.to_dict()
+    if isinstance(value, dict):
         return dict(value)
     return {}

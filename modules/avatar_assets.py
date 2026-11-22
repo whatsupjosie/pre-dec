@@ -22,6 +22,10 @@ class AvatarManifest(BaseModel):
     packs:       List[AssetPack] = Field(default_factory=list)
     generated_at: float = Field(default_factory=time.time)
 
+    def pack_by_id(self, pack_id: str) -> Optional[AssetPack]:
+        """The pack with this id, or None."""
+        return next((pack for pack in self.packs if pack.pack_id == pack_id), None)
+
 _manifest_cache: Optional[AvatarManifest] = None
 
 def load_manifest(data_dir: Path) -> AvatarManifest:
