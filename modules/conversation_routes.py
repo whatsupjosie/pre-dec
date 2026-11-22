@@ -7,15 +7,19 @@ from __future__ import annotations
 
 import re
 import json
+import os
 import sqlite3
 from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 from .character_service import CharacterTranscriptStore
+from .chat_rooms import ROOM_REGISTRY, dm_room_id, get_dm_manager, role_can_access
+from .writers_room import export_writer_chats
 from .conversation_archive import ConversationArchive
 from .general_chat_service import GeneralChatProviderError, run_general_chat_turn
 from .package_service import PackageService
@@ -58,12 +62,14 @@ def _id(value: str, label: str = "id") -> str:
     return value
 
 
-def create_conversation_router(data_dir: Path) -> APIRouter:
+def create_conversation_router(data_dir: Path, get_hub=lambda: None, get_spine=lambda: None) -> APIRouter:
     root = Path(data_dir) / "conversation_archive"
     archive = ConversationArchive(root / "conversations.sqlite3")
     packager = PackageService(archive)
     export_root = Path(data_dir) / "exports" / "conversation_ownership"
-    export_root.mkdir(parents=True, exist_ok=True)
+    export_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if os.name == "posix":
+        export_root.chmod(0o700)
 
     router = APIRouter(prefix="/api/conversations", tags=["conversation-ownership"])
 
@@ -107,18 +113,68 @@ def create_conversation_router(data_dir: Path) -> APIRouter:
     def owned_conversation_ids(owner: str) -> list[str]:
         return [row["conversation_id"] for row in archive.list_conversations_for_owner(owner)]
 
-    def _private_character_export(owner: str) -> dict[str, bytes]:
-        store = CharacterTranscriptStore(data_dir)
-        records = store.owner_export(owner)
-        return {'PrivateCharacters/transcripts.json':
-                (json.dumps(records, ensure_ascii=False, indent=2) + '\n').encode('utf-8')}
+    def json_export(data):
+        return (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+    def pubpartner_chats(owner):
+        spine = get_spine()
+        return spine.export_chats(user_id=owner) if spine is not None else []
+
+    private_exports = {
+        "characters": ("PrivateCharacters/transcripts.json",
+                       lambda owner: CharacterTranscriptStore(data_dir).owner_export(owner)),
+        "writers-room": ("WritersRoom/transcripts.json", lambda owner: export_writer_chats(data_dir, owner)),
+        "pubpartner": ("PubPartner/transcripts.json", pubpartner_chats),
+    }
+
+    def library_attachments(identity):
+        owner = identity["user_id"]
+        if not identity.get("authenticated"):
+            # The unauthenticated development mode keeps its existing General Chat exports.
+            return {}
+        files = {path: json_export(load(owner)) for path, load in private_exports.values()}
+        hub = get_hub()
+        if hub is None:
+            return files
+
+        for room_id in ROOM_REGISTRY:
+            if role_can_access(identity["role"], room_id):
+                path = hub._log_path(room_id)
+                if path.is_file():
+                    files[f"Rooms/{room_id}.jsonl"] = path.read_bytes()
+
+        dm = get_dm_manager(hub.data_dir)
+        contacts = {}
+        for grant in dm.active_for_user(owner):
+            room_id = dm_room_id(grant.from_user, grant.to_user)
+            peer = dm.peer_for_room(room_id, owner)
+            if peer and len(room_id) <= 160:
+                path = hub._log_path(room_id)
+                if path.is_file():
+                    files[f"DirectMessages/{room_id}.jsonl"] = path.read_bytes()
+                    contacts[room_id] = peer
+        files["DirectMessages/index.json"] = json_export(contacts)
+        return files
+
+    @router.get("/exports/private/{collection}")
+    async def export_private_collection(collection: str, identity=Depends(current_identity)):
+        if not identity.get("authenticated"):
+            raise HTTPException(401, "Sign in to export private chats")
+        if collection not in private_exports:
+            raise HTTPException(404, "Chat collection not found")
+        _, load = private_exports[collection]
+        records = await run_in_threadpool(load, identity["user_id"])
+        return Response(json_export(records), media_type="application/json",
+                        headers={"Content-Disposition": f'attachment; filename="PubCast_{collection}_chats.json"',
+                                 "Cache-Control": "no-store"})
 
     @router.post("/exports/all/raw")
     async def export_all_raw(identity=Depends(current_identity)):
         owner = identity["user_id"]
         ids = owned_conversation_ids(owner)
-        result = packager.save_library_raw(ids, export_root / "Library", owner_id=owner,
-                                           extra_files=_private_character_export(owner))
+        files = await run_in_threadpool(library_attachments, identity)
+        result = await run_in_threadpool(packager.save_library_raw, ids, export_root / "Library",
+                                         owner_id=owner, extra_files=files)
         return {
             "ok": True,
             "format": "raw",
@@ -131,14 +187,15 @@ def create_conversation_router(data_dir: Path) -> APIRouter:
     async def export_all_zip(identity=Depends(current_identity)):
         owner = identity["user_id"]
         ids = owned_conversation_ids(owner)
-        result = packager.save_library_zip(ids, export_root, owner_id=owner,
-                                           extra_files=_private_character_export(owner))
+        files = await run_in_threadpool(library_attachments, identity)
+        result = await run_in_threadpool(packager.save_library_zip, ids, export_root,
+                                         owner_id=owner, extra_files=files)
         path = result["zip"]
         return FileResponse(
             path,
             filename=path.name,
             media_type="application/zip",
-            headers={"X-PubCast-SHA256": result["sha256"]},
+            headers={"X-PubCast-SHA256": result["sha256"], "Cache-Control": "no-store"},
         )
 
     @router.get("/{conversation_id}")

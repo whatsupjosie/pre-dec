@@ -30,3 +30,12 @@
 .twoi-chat-page [data-dictation-review] button + button { margin-left:5px; }
 .twoi-chat-page [data-world-mic].listening { border-color:#e8a07d; }
 .twoi-chat-page #pubcast-slate-open { position:static; align-self:flex-end; }
+
+.twoi-chat-archive main { width:min(100%, 620px); margin:0 auto; }
+.twoi-chat-archive label { display:block; margin:8px 0 4px; }
+.twoi-chat-archive select, .twoi-chat-archive button {
+  max-width:100%; border:1px solid #8f7858; border-radius:5px;
+  padding:8px; background:#251d13; color:#f0e5d4; font:inherit;
+}
+.chat-archive-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.chat-archive-actions[hidden] { display:none; }

@@ -395,7 +395,7 @@ def create_chat_router(hub: Any, get_identity_fn: Any) -> APIRouter:
         if not path.is_file():
             raise HTTPException(404, "No recorded messages in this room")
         return FileResponse(path, media_type="application/x-ndjson",
-                            filename=f"PubCast_{room_id}_chat.jsonl")
+                            filename=f"PubCast_{room_id}_chat.jsonl", headers={"Cache-Control": "no-store"})
 
     @router.post("/rooms/{room_id}/send")
     async def send_message(room_id: str, request: Request,
@@ -577,6 +577,18 @@ def create_chat_router(hub: Any, get_identity_fn: Any) -> APIRouter:
             raise HTTPException(400,str(exc)) from exc
         await hub.close_room_connections(dm_room_id(identity['user_id'],body['other_user']))
         return {'blocked':body.get('blocked',True)}
+
+    @router.get("/dm/{room_id}/export")
+    async def export_dm_log(room_id: str, identity: Dict[str, Any] = Depends(get_identity_fn)):
+        if not identity.get("authenticated"):
+            raise HTTPException(401, "Sign in to export direct messages")
+        if len(room_id) > 160 or not dm.peer_for_room(room_id, identity["user_id"]):
+            raise HTTPException(404, "Conversation not accessible")
+        path = hub._log_path(room_id)
+        if not path.is_file():
+            raise HTTPException(404, "No recorded messages in this conversation")
+        return FileResponse(path, media_type="application/x-ndjson",
+                            filename="PubCast_direct_chat.jsonl", headers={"Cache-Control": "no-store"})
 
     @router.get("/dm/pending")
     async def pending_dms(identity: Dict[str, Any] = Depends(get_identity_fn)):

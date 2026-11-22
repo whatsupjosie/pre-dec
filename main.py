@@ -2010,7 +2010,8 @@ app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 # Conversation Ownership is a separate transcript/archive authority. It is
 # intentionally mounted outside the 2i manuscript and PubPartner memory seams.
 from modules.conversation_routes import create_conversation_router
-app.include_router(create_conversation_router(DATA_DIR))
+app.include_router(create_conversation_router(DATA_DIR, lambda: hub,
+                                                     lambda: getattr(app.state, "pubpartner_spine", None)))
 
 # Foresight is the unified same-origin entry point for characters and distinct
 # optional 2i utilities. It calls the authoritative managers; no copies.
@@ -3714,6 +3715,11 @@ async def writers_room_page():
 @app.get("/2i/chat", include_in_schema=False)
 async def two_i_chat_page():
     return FileResponse(STATIC_DIR / "world_chat.html")
+
+
+@app.get("/2i/chat/archive", include_in_schema=False)
+async def two_i_chat_archive_page():
+    return FileResponse(STATIC_DIR / "twoi_chat_archive.html")
 
 
 @app.get("/pubpartner", include_in_schema=False)
