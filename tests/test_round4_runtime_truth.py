@@ -191,3 +191,59 @@ def test_studio_control_html_never_synthesizes_audio_meter_data():
     assert "NO METER DATA" in html
     assert "All inputs verified" not in html
     assert "No unexpected signals" not in html
+
+
+@pytest.mark.asyncio
+async def test_mocap_udp_waits_for_real_frames_and_refuses_an_unavailable_port():
+    import json
+    import socket
+
+    hub = _Hub()
+    manager = MocapStreamManager(hub=hub)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as source:
+        source.bind(("127.0.0.1", 0))
+        taken_port = source.getsockname()[1]
+        assert not await manager.start_stream(f"udp://127.0.0.1:{taken_port}")
+        assert manager.get_status()["status"] == "error"
+
+        assert await manager.start_stream("udp://127.0.0.1:0")
+        try:
+            assert manager.get_status()["status"] == "connected"
+            address = manager.receiver.socket.getsockname()
+            payload = {"rigId": "loopback-rig", "joints": {"hips": {"x": 0, "y": 1, "z": 0}}}
+            source.sendto(json.dumps(payload).encode("utf-8"), address)
+            for _ in range(50):
+                if hub.events:
+                    break
+                await asyncio.sleep(.01)
+            assert manager.get_status()["status"] == "streaming"
+            assert hub.events[-1]["frame"]["rigId"] == "loopback-rig"
+        finally:
+            await manager.stop_stream()
+        assert manager.get_status()["status"] == "disconnected"
+        assert manager.get_status()["rig_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_mocap_websocket_stops_reporting_streaming_after_peer_disconnects():
+    import json
+    import websockets
+
+    async def send_one(socket):
+        await socket.send(json.dumps({"rigId": "wire-rig", "joints": {"head": {"x": 0, "y": 2, "z": 0}}}))
+        await socket.close()
+
+    hub = _Hub()
+    manager = MocapStreamManager(hub=hub)
+    async with websockets.serve(send_one, "127.0.0.1", 0) as server:
+        port = server.sockets[0].getsockname()[1]
+        assert await manager.start_stream(f"ws://127.0.0.1:{port}")
+        try:
+            for _ in range(100):
+                if hub.events and manager.get_status()["status"] == "disconnected":
+                    break
+                await asyncio.sleep(.01)
+            assert hub.events[-1]["frame"]["rigId"] == "wire-rig"
+            assert manager.get_status()["status"] == "disconnected"
+        finally:
+            await manager.stop_stream()
