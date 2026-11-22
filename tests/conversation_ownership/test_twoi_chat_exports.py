@@ -1,6 +1,7 @@
 import asyncio
 import io
 import json
+import re
 import zipfile
 
 from fastapi import FastAPI
@@ -113,7 +114,7 @@ def test_2i_archive_download_save_and_share_preparation(tmp_path):
     import httpx
     import pytest
 
-    from tests.test_data_checkpoint_host_recovery import Host
+    from tests.test_data_checkpoint_host_recovery import GL_ARGS, Host
 
     playwright = pytest.importorskip("playwright.sync_api")
     data = tmp_path / "data"
@@ -132,8 +133,9 @@ def test_2i_archive_download_save_and_share_preparation(tmp_path):
                               headers={"Authorization": "Bearer " + setup.json()["access_token"]})
             assert seeded.is_success
 
-        with playwright.sync_playwright() as runtime, runtime.chromium.launch() as browser:
+        with playwright.sync_playwright() as runtime, runtime.chromium.launch(args=GL_ARGS) as browser:
             page = browser.new_page(viewport={"width": 390, "height": 844}, accept_downloads=True)
+            page.set_default_timeout(10000)
             page.goto(host.base + "/login?next=/2i/chat")
             page.fill("#loginUser", "chat-owner")
             page.fill("#loginPass", password)
@@ -170,5 +172,26 @@ def test_2i_archive_download_save_and_share_preparation(tmp_path):
             page.get_by_role("button", name="Save all on host", exact=True).click()
             playwright.expect(page.locator("#archive-status")).to_contain_text("Archive saved on the PubCast host")
             assert list((data / "exports" / "conversation_ownership" / "Library").glob("*/Rooms/world.jsonl"))
+
+            for path in ("/general-chat", "/pub-partner-chat", "/pubpartner", "/static/human_contacts.html"):
+                page.goto(host.base + path)
+                page.get_by_role("link", name="Chat Archive", exact=True).click()
+                page.wait_for_url("**/2i/chat/archive")
+                playwright.expect(page.get_by_role("heading", name="Chat Archive")).to_be_visible()
+
+            page.set_viewport_size({"width": 1050, "height": 720})
+            errors = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(host.base + "/foresight-counter?fresh")
+            assert page.locator("#menubar .menu-btn").count(), errors
+            page.get_by_role("button", name=re.compile(r"^Me(?:$|:)")).click()
+            page.get_by_role("menuitem", name="Chat Archive", exact=True).click()
+            frame_selector = 'iframe[src="/2i/chat/archive"]'
+            archive = page.frame_locator(frame_selector)
+            playwright.expect(archive.get_by_role("heading", name="Chat Archive")).to_be_visible()
+            archive.get_by_label("Conversation").select_option(label="World")
+            with page.expect_download() as tray_download:
+                archive.get_by_role("button", name="Download export", exact=True).click()
+            assert json.loads(tray_download.value.path().read_text(encoding="utf-8"))["text"] == exact
     finally:
         host.stop()

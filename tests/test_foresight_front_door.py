@@ -36,6 +36,8 @@ def test_foresight_uses_canonical_absolute_portal_targets_and_auth_boot():
     assert '<script src="/static/reach_auth.js"></script>' in text
     assert '<script src="/static/foresight.config.js"></script>' in text
     assert "url:'/2i/chat'" in text
+    assert "url:'/2i/chat/archive'" in text
+    assert "'pubpartner_chat','twoi_chat_archive','care_eq'" in text
     assert "url:'/pub-partner-chat'" in text
     assert "twoIUi: '/writers-room'" in text
     assert "await window.ReachAuth.requireSession('/foresight')" in text
