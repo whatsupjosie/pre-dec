@@ -22,7 +22,7 @@ DATA_PATH = (
     / "sir_purfluous_waiting_room.json"
 )
 
-ARRIVAL_INTRO = "Welcome to PubCast, Sancho! I’m Sir Purfluous, your host here at the door. PubCast is a studio where people and AI characters write, rehearse, and make shows together. I’ll get you oriented while the host gets ready to receive you. Here’s the entry contract for your review."
+ARRIVAL_INTRO = "Welcome to PubCast! I’m Sir Purfluous, your host here at the door. PubCast is a studio where people and AI characters write, rehearse, and make shows together. I’ll get you oriented while the host gets ready to receive you. Here’s the entry contract for your review."
 
 FALLBACK_PROFILE: Dict[str, Any] = {
     "arrival_intro": ARRIVAL_INTRO,
@@ -33,7 +33,7 @@ FALLBACK_PROFILE: Dict[str, Any] = {
     "voice_notes": ["Warm, theatrical, concise, and protective of the studio."],
     "host_duties": ["Greet arrivals.", "Explain admission status."],
     "state_lines": {
-        "arrival": ["Welcome to the threshold, Sancho."],
+        "arrival": ["Welcome to the threshold."],
         "pending": ["We wait. A noble art, rarely credited and almost always necessary."],
         "approved": ["The door opens. Enter with care."]
     },
@@ -74,7 +74,7 @@ def line_for_state(state: str = "pending") -> str:
         return intro if isinstance(intro, str) and intro.strip() else ARRIVAL_INTRO
     lines = _state_lines(profile, normalized_state) or _idle_lines(profile)
     if not lines:
-        return "Welcome to the threshold, Sancho."
+        return "Welcome to the threshold."
     index = int(time.time() // 45) % len(lines)
     return lines[index]
 
