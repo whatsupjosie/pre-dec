@@ -80,4 +80,19 @@ Run `git apply --check PATH_TO_PATCH`, then `git apply PATH_TO_PATCH`. Do not ap
 
 Install runtime dependencies with `python -m pip install -r requirements.txt` during setup; normal application use does not run an installer. Launch `python run_reach.py --start-page foresight-counter`. First-run local account setup uses /login. In a blank tray choose Import, or use File > Open. Saved files includes both working copies and local folder files. Development > Host shell opens the console; Python files also expose Check Python and Run Python.
 
-For development verification only, install requirements-dev.txt and the local browser needed by the test runner. Those tools are not runtime prerequisites.
+### Run Chromium tests locally
+
+Install the test dependencies and Playwright’s matching Chromium once per checkout.
+
+```sh
+python -m pip install -r requirements.txt -r requirements-dev.txt
+python tools/test_chromium.py --install --check
+```
+
+Run the 2.5D studio browser suite with `python tools/test_chromium.py`, or pass pytest options and test paths after `--`.
+
+```sh
+python tools/test_chromium.py -- tests/test_production25d_browser.py -k approved_voxel
+```
+
+The runner uses the ignored `.pubcast-browsers/` cache. Set `PLAYWRIGHT_BROWSERS_PATH` to reuse a populated cache from another checkout. Test runs reuse installed binaries without downloading them. If Chromium fails to launch, the runner exits before pytest. Linux needs Chromium’s system libraries, and tests that decode recordings use FFmpeg on PATH.
