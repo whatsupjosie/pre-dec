@@ -82,7 +82,10 @@ if(mode==='sign'){
 }else{
  $('join').hidden=false;
  if(location.hash==='#entry-contract')$('entry-contract').open=true;
- waitingHost=window.PubcastWaitingRoomHost.mount({line:$('guest-host-line'),terms:$('guest-contract')});
+ waitingHost=window.PubcastWaitingRoomHost.mount({
+  line:$('guest-host-line'),terms:$('guest-contract'),
+  faq:{container:$('guest-faq'),contract:$('entry-contract'),invited:true}
+ });
  restorePrepared();if(prepared?.submitted)poll();
 }
 })();
