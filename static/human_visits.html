@@ -6,7 +6,11 @@
 </style></head><body><main>
 <h1>PubCast visits</h1><nav><a href="?mode=join">Join a production</a><a href="?mode=host">Host guests</a><a href="?mode=sign">My visiting card</a><a href="/foresight">Foresight</a></nav>
 <p id="status" role="status" aria-live="polite"></p>
-<section id="join" hidden><h2>Bring your own PubCast identity</h2>
+<section id="join" hidden><h2>Waiting Room</h2>
+<h3>Sir Purfluous</h3>
+<p id="guest-host-line" aria-live="polite">Welcome to PubCast, Sancho!</p>
+<details id="entry-contract"><summary>Read the entry contract</summary><p id="guest-contract" style="white-space:pre-wrap">Loading the host’s entry contract…</p></details>
+<h3>Bring your own PubCast identity</h3>
 <p>Use your invitation, then open your own copy to approve your visiting card. Your host decides when you enter.</p>
 <form id="prepare"><label>Invitation code<input id="invite" required maxlength="128" autocomplete="off"></label><button id="prepareButton">Prepare my visit</button></form>
 <div id="prepared" hidden><label>Your own PubCast address<input id="homeOrigin" type="url" placeholder="http://localhost:8000"></label><button type="button" id="openHome">Open my copy</button>
@@ -29,4 +33,4 @@
 <button type="button" id="refresh">Refresh waiting room</button><div id="pending"></div>
 <h3>Revoke a visit</h3><form id="revoke"><label>Visit ID<input id="revokeId" maxlength="128" required></label><button>Revoke access</button></form>
 </section>
-</main><script src="/static/human_visits.js"></script></body></html>
+</main><script src="/static/waiting_room_host.js"></script><script src="/static/human_visits.js"></script></body></html>

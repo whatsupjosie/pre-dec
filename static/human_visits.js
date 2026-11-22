@@ -2,7 +2,7 @@
 'use strict';
 const $=id=>document.getElementById(id),query=new URLSearchParams(location.search),mode=query.get('mode')||'join';
 const message=value=>{$('status').textContent=value;};
-let prepared=null,popup=null,homeOrigin=null,pollTimer=null,polling=false;
+let prepared=null,popup=null,homeOrigin=null,pollTimer=null,polling=false,waitingHost=null;
 const consent={tos:true,recording:true,ai_disclosure:true,data_processing:true};
 async function api(path,body){
  const response=await fetch('/api/guests/'+path.replace(/^\//,''),{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000),cache:'no-store'});
@@ -14,9 +14,9 @@ function restorePrepared(){try{prepared=JSON.parse(sessionStorage.getItem('pubca
 async function poll(){
  if(!prepared||polling)return;polling=true;clearTimeout(pollTimer);
  try{const {data}=await api('/status',{poll_token:prepared.poll_token});
-  if(data.access_token){ReachAuth.saveSession(data);sessionStorage.removeItem('pubcast.visit.pending');prepared=null;$('enter').hidden=false;message('Your host approved your visit. You can enter the studio.');}
-  else if(['denied','expired'].includes(data.status)){sessionStorage.removeItem('pubcast.visit.pending');prepared=null;message(data.status==='denied'?'Your host declined this visit.':'This visit expired. Ask for a new invitation.');}
-  else {message('Your card is verified. Waiting for your host to open the door.');pollTimer=setTimeout(poll,2000);}
+  if(data.access_token){waitingHost?.show('approved');ReachAuth.saveSession(data);sessionStorage.removeItem('pubcast.visit.pending');prepared=null;$('enter').hidden=false;message('Your host approved your visit. You can enter the studio.');}
+  else if(['denied','expired'].includes(data.status)){if(data.status==='denied')waitingHost?.show('denied');sessionStorage.removeItem('pubcast.visit.pending');prepared=null;message(data.status==='denied'?'Your host declined this visit.':'This visit expired. Ask for a new invitation.');}
+  else {waitingHost?.show('pending');message('Your card is verified. Waiting for your host to open the door.');pollTimer=setTimeout(poll,2000);}
  }catch(e){message(e.message+' You can retry by sending your card again.');}
  finally{polling=false;}
 }
@@ -42,7 +42,7 @@ window.addEventListener('message',event=>{
 $('submitProof').onclick=async()=>{try{await submit(JSON.parse($('proofIn').value));}catch(e){message(e.message);}};
 function showTarget(){
  try{const challenge=JSON.parse($('challengeIn').value);const target=origin(challenge.origin);
- $('target').textContent='Visiting '+target+' · Host '+challenge.host_id;$('terms').href=target+'/static/waiting_room.html';$('terms').hidden=false;
+ $('target').textContent='Visiting '+target+' · Host '+challenge.host_id;$('terms').href=target+'/static/human_visits.html?mode=join#entry-contract';$('terms').hidden=false;
  }catch(_){$('target').textContent='Paste a valid visit request to see its host.';$('terms').hidden=true;}
 }
 $('challengeIn').oninput=showTarget;
@@ -79,5 +79,10 @@ if(mode==='sign'){
  ReachAuth.requireSession(location.pathname+location.search).catch(e=>message(e.message));
 }else if(mode==='host'){
  $('host').hidden=false;ReachAuth.requireSession(location.pathname+location.search).then(session=>{if(session)return Promise.all([pending(),settings()]);}).catch(e=>message(e.message));
-}else{$('join').hidden=false;restorePrepared();if(prepared?.submitted)poll();}
+}else{
+ $('join').hidden=false;
+ if(location.hash==='#entry-contract')$('entry-contract').open=true;
+ waitingHost=window.PubcastWaitingRoomHost.mount({line:$('guest-host-line'),terms:$('guest-contract')});
+ restorePrepared();if(prepared?.submitted)poll();
+}
 })();

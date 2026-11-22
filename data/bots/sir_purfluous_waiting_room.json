@@ -7,6 +7,7 @@
   "host_id": "sir_purfluous_waiting_room",
   "character_id": "sir_purfluous",
   "display_name": "Sir Purfluous",
+  "arrival_intro": "Welcome to PubCast, Sancho! I’m Sir Purfluous, your host here at the door. PubCast is a studio where people and AI characters write, rehearse, and make shows together. I’ll get you oriented while the host gets ready to receive you. Here’s the entry contract for your review.",
   "source": "C:/Users/hardc/Downloads/pubcastnewfiles428.zip::pubcast_waiting_room_handoff.zip",
   "status": "onboarded_reference",
   "canonical_name_note": "Source notes sometimes say Sir Perfluous or Superfluous; PubCast canonical spelling remains Sir Purfluous.",

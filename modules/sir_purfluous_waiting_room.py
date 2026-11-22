@@ -22,7 +22,10 @@ DATA_PATH = (
     / "sir_purfluous_waiting_room.json"
 )
 
+ARRIVAL_INTRO = "Welcome to PubCast, Sancho! I’m Sir Purfluous, your host here at the door. PubCast is a studio where people and AI characters write, rehearse, and make shows together. I’ll get you oriented while the host gets ready to receive you. Here’s the entry contract for your review."
+
 FALLBACK_PROFILE: Dict[str, Any] = {
+    "arrival_intro": ARRIVAL_INTRO,
     "host_id": "sir_purfluous_waiting_room",
     "character_id": "sir_purfluous",
     "display_name": "Sir Purfluous",
@@ -66,6 +69,9 @@ def line_for_state(state: str = "pending") -> str:
     """Return a deterministic rotating line for a waiting-room state."""
     profile = load_profile()
     normalized_state = (state or "pending").strip().lower().replace("-", "_")
+    if normalized_state == "arrival":
+        intro = profile.get("arrival_intro")
+        return intro if isinstance(intro, str) and intro.strip() else ARRIVAL_INTRO
     lines = _state_lines(profile, normalized_state) or _idle_lines(profile)
     if not lines:
         return "Welcome to the threshold, Sancho."
