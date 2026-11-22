@@ -133,3 +133,19 @@ def test_challenge_and_admitted_lease_expiry_are_enforced(rig):
         db.execute('UPDATE guest_sessions SET expires=0 WHERE entry_id=?', (entry,))
     assert not host.validate_claims(claims(host, entry))
     assert host.status(fresh['poll_token'])['status'] == 'expired'
+
+
+def test_waiting_room_event_is_host_local_and_can_be_cleared(tmp_path):
+    host_dir = tmp_path / 'host'
+    host = GuestAdmission(GovernanceEngine(host_dir))
+    assert host.event_description() == ''
+    assert host.set_event_description('  The Snow Day table read.  ') == 'The Snow Day table read.'
+    restarted = GuestAdmission(GovernanceEngine(host_dir))
+    assert restarted.event_description() == 'The Snow Day table read.'
+    assert GuestAdmission(GovernanceEngine(tmp_path / 'other')).event_description() == ''
+    for invalid in (None, 10, 'x' * 1001):
+        with pytest.raises(ValueError, match='1,000'):
+            restarted.set_event_description(invalid)
+    assert restarted.event_description() == 'The Snow Day table read.'
+    assert restarted.set_event_description('  ') == ''
+    assert host.event_description() == ''

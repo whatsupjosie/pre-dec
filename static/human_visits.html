@@ -34,6 +34,12 @@
 <button type="button" id="lockDoor">Require approval</button><button type="button" id="unlockDoor">Let valid invitations enter</button>
 <p id="doorState" role="status"></p>
 <p class="muted">Requiring approval holds new visitors in the waiting room. Letting invitations enter applies to future verified requests.</p>
+<form id="event-form">
+<label for="event-description">What is the event tonight?</label>
+<textarea id="event-description" maxlength="1000" rows="3" disabled aria-describedby="event-help"></textarea>
+<p id="event-help" class="muted">This answer is visible to arrivals. Leave it blank to use Sir Purfluous’s usual welcome.</p>
+<button id="event-save" disabled>Save tonight’s answer</button>
+</form>
 <button type="button" id="refresh">Refresh waiting room</button><div id="pending"></div>
 <h3>Revoke a visit</h3><form id="revoke"><label>Visit ID<input id="revokeId" maxlength="128" required></label><button>Revoke access</button></form>
 </section>

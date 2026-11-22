@@ -10,13 +10,22 @@
     return text;
   }
 
+  const eventQuestion = 'What is the event tonight?';
+  const usualEvent = 'Tonight is another one of our fearless leader’s soirées. They’re truly a sight to behold.';
+
   function renderFaq({container, contract, invited}) {
     const questions = [
       ['What is PubCast?', 'It’s a studio where people and AI characters can write, rehearse, and make shows together.'],
+      [eventQuestion, usualEvent],
+      ['Do you have questions about your avatar?', invited
+        ? 'One must be dressed appropriately, you know. If you’re unsure what to bring or how to get your avatar ready, ask the person who invited you.'
+        : 'One must be dressed appropriately, you know. When you continue, you can set the name and color your avatar will use.'],
       ['Where do I start?', invited
         ? 'Start with the entry contract. Then enter the invitation code your host gave you and prepare your visit.'
         : 'Start with the entry contract and the consent choices below. Then choose a display name and avatar color.'],
-      ['What am I agreeing to?', 'The contract explains how guests are expected to behave, where recording may happen, and how AI characters participate. Read it before accepting.'],
+      ['What am I agreeing to?', invited
+        ? 'The contract covers guest conduct, recording, and AI participation. Review it and accept it when you sign your visiting card.'
+        : 'The contract covers guest conduct, recording, and AI participation. Review it and accept the required terms before you ask to enter.'],
       [invited ? 'What is a visiting card?' : 'How do I ask to come in?', invited
         ? 'Your visiting card confirms who you are to the host. Approve it on your own copy of PubCast, then send the signed card back here.'
         : 'After entering your display name and choosing a color, select Enter Airlock. That sends your entry request to the host.'],
@@ -35,6 +44,24 @@
       title.textContent = question;
       explanation.textContent = answer;
       item.append(title, explanation);
+      if (question === eventQuestion) {
+        explanation.style.whiteSpace = 'pre-wrap';
+        const next = document.createElement('p');
+        next.textContent = 'If you’re here, you must be eager, so let’s get you ready. First things first. Do you have any questions about your avatar? One must be dressed appropriately, you know. And have you signed our contract? You’re not allowed to enter without it.';
+        item.append(next);
+        let revision = 0;
+        item.addEventListener('toggle', async () => {
+          const request = ++revision;
+          if (!item.open) return;
+          let description = usualEvent;
+          try {
+            description = await load('/api/guests/event', 'description');
+          } catch {
+            // Keep the usual answer if the host hasn't posted an update.
+          }
+          if (request === revision && item.open) explanation.textContent = description;
+        });
+      }
       if (question === 'What am I agreeing to?') {
         const link = document.createElement('a');
         link.href = '#' + contract.id;

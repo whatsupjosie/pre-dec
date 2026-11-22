@@ -118,6 +118,7 @@ class GuestAdmission:
         with self.connect() as db:
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS guest_host (singleton INTEGER PRIMARY KEY CHECK(singleton=1), host_id TEXT NOT NULL, locked INTEGER NOT NULL DEFAULT 1);
+                CREATE TABLE IF NOT EXISTS guest_welcome (singleton INTEGER PRIMARY KEY CHECK(singleton=1), event_description TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS guest_invites (code_hash TEXT PRIMARY KEY, room TEXT NOT NULL, expires REAL NOT NULL, max_uses INTEGER NOT NULL, uses INTEGER NOT NULL DEFAULT 0, revoked INTEGER NOT NULL DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS guest_challenges (nonce TEXT PRIMARY KEY, challenge_json TEXT NOT NULL, invite_hash TEXT NOT NULL, poll_hash TEXT NOT NULL UNIQUE, expires REAL NOT NULL, proof_hash TEXT, entry_id TEXT);
                 CREATE TABLE IF NOT EXISTS guest_sessions (entry_id TEXT PRIMARY KEY REFERENCES waiting_entries(entry_id), poll_hash TEXT NOT NULL UNIQUE, user_id TEXT NOT NULL, card_json TEXT NOT NULL, public_key TEXT NOT NULL, expires REAL NOT NULL, revoked INTEGER NOT NULL DEFAULT 0);
@@ -158,6 +159,21 @@ class GuestAdmission:
         with self.connect() as db:
             row = db.execute('SELECT * FROM guest_host WHERE singleton=1').fetchone()
         return {'host_id': self.host_id, 'locked': bool(row['locked'])}
+
+    def event_description(self):
+        with self.connect() as db:
+            row = db.execute('SELECT event_description FROM guest_welcome WHERE singleton=1').fetchone()
+        return row['event_description'] if row else ''
+
+    def set_event_description(self, description):
+        if not isinstance(description, str) or len(description) > 1000:
+            raise ValueError('Enter up to 1,000 characters for tonight’s event')
+        description = description.strip()
+        with self.connect() as db:
+            db.execute('''INSERT INTO guest_welcome(singleton,event_description) VALUES(1,?)
+                          ON CONFLICT(singleton) DO UPDATE SET event_description=excluded.event_description''',
+                       (description,))
+        return description
 
     @staticmethod
     def _invite(db, code_hash):

@@ -73,12 +73,29 @@ $('createInvite').onclick=async()=>{try{const {data}=await api('/invites',{});$(
 async function settings(){const {data}=await api('/settings');$('doorState').textContent=(data.locked?'Door: owner approval required.':'Door: verified invitations may enter.')+' Host '+data.host_id;}
 for(const [id,locked]of [['lockDoor',true],['unlockDoor',false]])$(id).onclick=async()=>{try{await api('/door',{locked});await settings();message(locked?'New guests will wait for approval.':'Verified guests with valid invitations can enter.');}catch(e){message(e.message);}};
 $('revoke').onsubmit=async e=>{e.preventDefault();try{await api('/entries/'+encodeURIComponent($('revokeId').value.trim())+'/revoke',{});message('Visit access revoked.');}catch(error){message(error.message);}};
+async function loadEvent(){
+ const {data}=await api('/event');
+ $('event-description').value=data.description;
+ $('event-description').disabled=$('event-save').disabled=false;
+}
+$('event-form').onsubmit=async event=>{
+ event.preventDefault();
+ const field=$('event-description'), button=$('event-save');
+ if(button.disabled)return;
+ field.disabled=button.disabled=true;
+ try{
+  const {data}=await api('/event',{description:field.value});
+  field.value=data.description;
+  message(data.description?'Tonight’s answer is published.':'Sir Purfluous’s usual answer is restored.');
+ }catch(error){message(error.message);}
+ finally{field.disabled=button.disabled=false;}
+};
 window.addEventListener('pagehide',()=>clearTimeout(pollTimer));
 if(mode==='sign'){
  $('sign').hidden=false;$('challengeIn').value=query.get('challenge')||'';showTarget();
  ReachAuth.requireSession(location.pathname+location.search).catch(e=>message(e.message));
 }else if(mode==='host'){
- $('host').hidden=false;ReachAuth.requireSession(location.pathname+location.search).then(session=>{if(session)return Promise.all([pending(),settings()]);}).catch(e=>message(e.message));
+ $('host').hidden=false;ReachAuth.requireSession(location.pathname+location.search).then(session=>{if(session)return Promise.all([pending(),settings(),loadEvent()]);}).catch(e=>message(e.message));
 }else{
  $('join').hidden=false;
  if(location.hash==='#entry-contract')$('entry-contract').open=true;

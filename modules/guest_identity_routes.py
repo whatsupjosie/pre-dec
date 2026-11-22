@@ -75,6 +75,19 @@ def create_guest_identity_router(admission, vault):
     async def settings(profile=Depends(owner)):
         return await call(admission.settings)
 
+    @router.get('/event')
+    async def public_event(response: Response):
+        response.headers['Cache-Control'] = 'no-store'
+        return {'description': await call(admission.event_description)}
+
+    @router.post('/event')
+    async def update_event(request: Request, profile=Depends(owner)):
+        body = await _body(request)
+        description = await call(admission.set_event_description, body.get('description'))
+        admission.governance._audit('GUEST_EVENT', profile['user_id'], None,
+                                    'updated' if description else 'cleared')
+        return {'description': description}
+
     @router.post('/challenge')
     async def challenge(request: Request):
         body = await _body(request)
