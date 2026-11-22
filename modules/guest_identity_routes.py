@@ -111,7 +111,32 @@ def create_guest_identity_router(admission, vault):
     async def arrival_status(request: Request, response: Response):
         response.headers['Cache-Control'] = 'no-store'
         body = await _body(request)
-        return await call(admission.arrival_status, body.get('ticket'))
+        result = await call(admission.arrival_status, body.get('ticket'))
+        if result['status'] != 'session_pass':
+            return result
+        user_id = result['user_id']
+        claims = {'sub': user_id, 'role': 'guest', 'guest_host': admission.host_id, 'guest_entry': result['entry_id']}
+        if not await call(admission.validate_claims, claims):
+            return {'status': 'expired'}
+        profile = {'user_id': user_id, 'username': user_id, 'display_name': result['display_name'],
+                   'details': {'discoverable': False, 'public_fields': [], 'about': {}, 'onboarding_complete': True}}
+        await run_in_threadpool(userdb._sync_save_visiting_profile, profile, result['issued_at'])
+        token = auth.create_access_token(claims, expires_minutes=math.ceil(max(1, result['expires'] - time.time()) / 60))
+        _set_ws_session_cookie(response, request, token)
+        return dict(result, access_token=token, username=user_id, role='guest', token_type='bearer')
+
+    @router.post('/arrivals/{arrival_id}/session-pass', status_code=201)
+    async def issue_pass(arrival_id: str, profile=Depends(owner)):
+        return {'pass_id': await call(admission.issue_session_pass, arrival_id, profile['user_id'])}
+
+    @router.get('/pass-session')
+    async def pass_session(response: Response, profile=Depends(owner)):
+        response.headers['Cache-Control'] = 'no-store'
+        return await call(admission.pass_session)
+
+    @router.post('/pass-session/end')
+    async def end_pass_session(profile=Depends(owner)):
+        return {'ended': await call(admission.end_pass_session, profile['user_id'])}
 
     @router.get('/arrivals')
     async def arrivals(identity=Depends(door_staff)):

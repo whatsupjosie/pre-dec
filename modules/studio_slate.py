@@ -193,6 +193,7 @@ class SlateStore:
 def create_slate_router(path: Path):
     router = APIRouter()
     store = SlateStore(path)
+    router.store = store
     peers: set[WebSocket] = set()
     peer_locks: dict[WebSocket, asyncio.Lock] = {}
 

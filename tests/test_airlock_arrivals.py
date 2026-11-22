@@ -104,3 +104,46 @@ def test_closed_airlock_and_host_alerts_in_chromium(tmp_path):
             assert outsider.get('/api/auth/verify',headers=guest_headers).status_code == 401
     finally:
         host.stop()
+
+
+def test_owner_pass_lets_named_arrival_enter_without_signing_until_production_ends(tmp_path):
+    playwright = pytest.importorskip("playwright.sync_api")
+    data = tmp_path / 'data'
+    data.mkdir()
+    with httpx.Client(trust_env=False) as api:
+        host = Host(data, tmp_path / 'session-pass-host.log')
+        host.start()
+        try:
+            password = secrets.token_urlsafe(20) + 'Aa9!'
+            setup = api.post(host.base + '/api/auth/setup', json={
+                'username':'host-owner', 'password':password, 'confirm_password':password,
+            })
+            owner = {'Authorization':'Bearer ' + setup.json()['access_token']}
+            slate = api.post(host.base + '/api/studio/slate', headers=owner, json={'action':'create'}).json()['slate']
+            with playwright.sync_playwright() as runtime, runtime.chromium.launch() as browser:
+                staff, visitor = browser.new_page(), browser.new_page()
+                staff.goto(host.base + '/login?next=/static/human_visits.html?mode=host')
+                staff.fill('#loginUser', 'host-owner')
+                staff.fill('#loginPass', password)
+                staff.click('#loginBtn')
+                staff.wait_for_url('**/human_visits.html?mode=host')
+                visitor.goto(host.base + '/walk')
+                visitor.get_by_label('Screen name').fill('Guest of the owner')
+                visitor.get_by_role('button', name='Page the door staff').click()
+                playwright.expect(visitor.locator('#enter')).to_be_hidden()
+                staff.once('dialog', lambda dialog: dialog.accept())
+                staff.get_by_role('button', name='Issue session pass').click()
+                playwright.expect(visitor.locator('#enter')).to_be_visible(timeout=10000)
+                playwright.expect(visitor.locator('#prepared')).to_be_hidden()
+                playwright.expect(staff.locator('#active-passes')).to_contain_text('Guest of the owner')
+                token = visitor.evaluate("sessionStorage.getItem('pubcast_token')")
+                guest = {'Authorization':'Bearer ' + token}
+                assert api.get(host.base + '/api/auth/verify', headers=guest).status_code == 200
+                ended = api.post(host.base + '/api/studio/slate', headers=owner,
+                                 json={'action':'end','revision':slate['revision']})
+                assert ended.status_code == 200, ended.text
+                assert api.get(host.base + '/api/auth/verify', headers=guest).status_code == 401
+                visitor.goto(host.base + '/walk')
+                visitor.wait_for_url('**/human_visits.html?mode=join')
+        finally:
+            host.stop()

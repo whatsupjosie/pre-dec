@@ -113,8 +113,9 @@ def sign_visit(vault: CredentialStore, profile: dict, challenge: dict, consents:
 
 
 class GuestAdmission:
-    def __init__(self, governance: GovernanceEngine):
+    def __init__(self, governance: GovernanceEngine, active_production=lambda: None):
         self.governance = governance
+        self.active_production = active_production
         self.path = governance._db_path
         with self.connect() as db:
             db.executescript('''
@@ -132,6 +133,14 @@ class GuestAdmission:
                 CREATE TABLE IF NOT EXISTS host_event_reads (
                     event_id INTEGER NOT NULL REFERENCES host_events(event_id), user_id TEXT NOT NULL,
                     PRIMARY KEY(event_id,user_id)
+                );
+                CREATE TABLE IF NOT EXISTS guest_pass_sessions (
+                    session_id TEXT PRIMARY KEY, production_id TEXT, expires REAL NOT NULL, ended INTEGER NOT NULL DEFAULT 0
+                );
+                CREATE TABLE IF NOT EXISTS guest_session_passes (
+                    pass_id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES guest_pass_sessions(session_id),
+                    ticket_hash TEXT NOT NULL UNIQUE, user_id TEXT NOT NULL UNIQUE, name TEXT NOT NULL,
+                    issued_at REAL NOT NULL, revoked INTEGER NOT NULL DEFAULT 0
                 );
                 CREATE TABLE IF NOT EXISTS guest_welcome (singleton INTEGER PRIMARY KEY CHECK(singleton=1), event_description TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS guest_invites (code_hash TEXT PRIMARY KEY, room TEXT NOT NULL, expires REAL NOT NULL, max_uses INTEGER NOT NULL, uses INTEGER NOT NULL DEFAULT 0, revoked INTEGER NOT NULL DEFAULT 0);
@@ -238,8 +247,14 @@ class GuestAdmission:
         if not isinstance(ticket, str) or not re.fullmatch(r'[a-f0-9]{64}', ticket):
             raise ValueError('Invalid waiting room ticket')
         with self.connect() as db:
+            key = digest(ticket)
+            passed = db.execute('''SELECT p.*, s.production_id,s.expires,s.ended
+                                   FROM guest_session_passes p JOIN guest_pass_sessions s USING(session_id)
+                                   WHERE p.ticket_hash=?''', (key,)).fetchone()
+            if passed:
+                return self._pass_status(passed)
             row = db.execute('SELECT decision,invite_code,expires FROM door_arrivals WHERE ticket_hash=?',
-                             (digest(ticket),)).fetchone()
+                             (key,)).fetchone()
         if not row or row['expires'] <= time.time():
             return {'status': 'expired'}
         return {'status': row['decision'], 'invite_code': row['invite_code']}
@@ -271,6 +286,64 @@ class GuestAdmission:
             self._record_event(db, 'door_decision', row['name'], room='airlock', detail=status, user_id=actor,
                                reference=arrival_id)
         return status
+
+    def _pass_status(self, row):
+        if (row['revoked'] or row['ended'] or row['expires'] <= time.time()
+                or row['production_id'] != self.active_production()
+                or self.governance.is_banned(row['user_id'])[0]):
+            return {'status': 'expired'}
+        return {'status': 'session_pass', 'entry_id': row['pass_id'], 'user_id': row['user_id'],
+                'display_name': row['name'], 'issued_at': row['issued_at'], 'expires': row['expires']}
+
+    @staticmethod
+    def _pass_session(db, production_id, now):
+        return db.execute('SELECT * FROM guest_pass_sessions WHERE ended=0 AND expires>? '
+                          'AND production_id IS ? ORDER BY rowid DESC LIMIT 1', (now, production_id)).fetchone()
+
+    def issue_session_pass(self, arrival_id, actor):
+        """Permit this waiting browser to enter for one session without asserting consent."""
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            now = time.time()
+            arrival = db.execute("SELECT * FROM door_arrivals WHERE arrival_id=? AND decision='waiting' AND expires>?",
+                                 (arrival_id, now)).fetchone()
+            if not arrival:
+                raise ValueError('This visitor is no longer waiting')
+            production_id = self.active_production()
+            session = self._pass_session(db, production_id, now)
+            if session is None:
+                session_id = secrets.token_hex(16)
+                db.execute('INSERT INTO guest_pass_sessions(session_id,production_id,expires) VALUES(?,?,?)',
+                           (session_id, production_id, now + 8 * 3600))
+            else:
+                session_id = session['session_id']
+            pass_id = 'pass_' + secrets.token_hex(12)
+            user_id = 'u_' + secrets.token_hex(10)
+            db.execute('INSERT INTO guest_session_passes(pass_id,session_id,ticket_hash,user_id,name,issued_at) '
+                       'VALUES(?,?,?,?,?,?)', (pass_id, session_id, arrival['ticket_hash'], user_id, arrival['name'], now))
+            db.execute("UPDATE door_arrivals SET decision='session_pass' WHERE arrival_id=?", (arrival_id,))
+            db.execute("UPDATE host_events SET acknowledged=1 WHERE kind='arrival' AND reference=?", (arrival_id,))
+            self._record_event(db, 'door_decision', arrival['name'], room='airlock', user_id=actor,
+                               detail='Owner issued a session pass without contract signature', reference=pass_id)
+            return pass_id
+
+    def pass_session(self):
+        with self.connect() as db:
+            session = self._pass_session(db, self.active_production(), time.time())
+            if not session:
+                return {'passes': [], 'expires': None}
+            rows = db.execute('SELECT pass_id,name,issued_at FROM guest_session_passes '
+                              'WHERE session_id=? AND revoked=0 ORDER BY issued_at', (session['session_id'],)).fetchall()
+        return {'passes': [dict(row) for row in rows], 'expires': session['expires']}
+
+    def end_pass_session(self, actor):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            updated = db.execute('UPDATE guest_pass_sessions SET ended=1 WHERE ended=0').rowcount
+            if updated:
+                self._record_event(db, 'door_decision', 'Temporary guest passes', room='airlock',
+                                   user_id=actor, detail='Owner ended the temporary-pass session')
+        return bool(updated)
 
     def set_locked(self, locked: bool):
         if type(locked) is not bool:
@@ -388,6 +461,12 @@ class GuestAdmission:
         if self.governance.is_banned(claims.get('sub'))[0]:
             return False
         with self.connect() as db:
+            entry = claims.get('guest_entry')
+            if isinstance(entry, str) and entry.startswith('pass_'):
+                passed = db.execute('''SELECT p.*,s.production_id,s.expires,s.ended
+                                       FROM guest_session_passes p JOIN guest_pass_sessions s USING(session_id)
+                                       WHERE p.pass_id=? AND p.user_id=?''', (entry, claims.get('sub'))).fetchone()
+                return bool(passed and self._pass_status(passed)['status'] == 'session_pass')
             row = db.execute('''SELECT s.*, e.status FROM guest_sessions s JOIN waiting_entries e USING(entry_id)
                                 JOIN guest_pins p ON p.user_id=s.user_id AND p.public_key=s.public_key
                                 WHERE s.entry_id=?''', (claims.get('guest_entry'),)).fetchone()
@@ -396,7 +475,10 @@ class GuestAdmission:
 
     def revoke(self, entry_id: str):
         with self.connect() as db:
-            db.execute('UPDATE guest_sessions SET revoked=1 WHERE entry_id=?', (entry_id,))
+            if entry_id.startswith('pass_'):
+                db.execute('UPDATE guest_session_passes SET revoked=1 WHERE pass_id=?', (entry_id,))
+            else:
+                db.execute('UPDATE guest_sessions SET revoked=1 WHERE entry_id=?', (entry_id,))
 
     def pending(self):
         with self.connect() as db:

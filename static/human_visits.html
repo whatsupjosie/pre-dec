@@ -41,6 +41,10 @@
 <button type="button" id="lockDoor">Close Airlock</button><button type="button" id="unlockDoor">Open Airlock</button>
 <p id="doorState" role="status"></p>
 <p class="muted">Requiring approval holds new visitors in the waiting room. Letting invitations enter applies to future verified requests.</p>
+<h3>Temporary guest passes</h3>
+<p class="muted">Only the owner can issue a pass to someone waiting at the door. Each pass ends with this session. Issuing a pass does not record a contract signature.</p>
+<div id="active-passes"></div>
+<button type="button" id="end-pass-session" disabled>End temporary-pass session</button>
 <form id="event-form">
 <label for="event-description">What is the event tonight?</label>
 <textarea id="event-description" maxlength="1000" rows="3" disabled aria-describedby="event-help"></textarea>

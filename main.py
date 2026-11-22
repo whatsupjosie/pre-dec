@@ -1168,7 +1168,14 @@ async def lifespan(application: FastAPI):
     ))
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
-    application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
+    slate_router = create_slate_router(DATA_DIR / "production_slates.sqlite3")
+    application.include_router(slate_router)
+
+    def production_pass_scope():
+        slate = slate_router.store.current()
+        if slate is None:
+            return None
+        return slate['id'] + (':ended' if slate['phase'] == 'ended' else ':active')
     from modules.pubcast_vision_integration import PubcastVisionManager
     from modules.pubcast_vision_routes import create_vision_router
     vision_manager = PubcastVisionManager(camera_manager=cameras, data_dir=DATA_DIR)
@@ -1246,7 +1253,7 @@ async def lifespan(application: FastAPI):
     governance = GovernanceEngine(DATA_DIR)
     from modules.guest_identity import GuestAdmission
     from modules.guest_identity_routes import create_guest_identity_router
-    application.state.guest_admission = GuestAdmission(governance)
+    application.state.guest_admission = GuestAdmission(governance, production_pass_scope)
     auth_module.set_guest_admission(application.state.guest_admission)
     application.include_router(create_guest_identity_router(application.state.guest_admission, cred_store))
     application.include_router(create_governance_router(governance, hub, authority_bridge=alex_bridge, authority_store=pub_manager_authority))
