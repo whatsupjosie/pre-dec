@@ -758,6 +758,7 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
         # Production notes: up to 25 MB of attachments (modules/production_notes.py FILES_TOTAL_MAX) plus multipart overhead.
         # The route itself enforces the per-file and per-note ceilings while reading.
         ("/api/notes", 26 * 1024 * 1024),
+        ("/api/studio/slate/takes/", 128 * 1024 * 1024),
         ("/api/avatars/imports", 210 * 1024 * 1024),  # avatar GLBs; the route caps the file at 200 MB
     )
 
