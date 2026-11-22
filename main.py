@@ -325,6 +325,8 @@ except ImportError:
     VoxelStudioIntegration = None
     save_voxel_set = None
 
+from modules.visual_patch_proposals import VisualProposalRequest, propose_visual_patch
+
 try:
     from modules.visual_patch_approval_bridge import VisualPatchApprovalError, submit_approved_visual_patch
     _HAS_VISUAL_PATCH_BRIDGE = True
@@ -3043,6 +3045,15 @@ async def pw_recognize_prop(request: Request):
         raise HTTPException(400, "blocks required")
     match = recognize_prop(blocks, list_prototypes(DATA_DIR))
     return {"ok": True, "match": match}
+
+
+@app.post("/api/visual-patch/propose")
+async def visual_patch_propose(
+    body: VisualProposalRequest,
+    identity: Dict[str, Any] = Depends(require_role("mod")),
+):
+    """Evaluate a selected stage region or prop fit for director review."""
+    return propose_visual_patch(body, actor=str(identity.get("user_id") or "director"))
 
 
 @app.post("/api/visual-patch/approve")

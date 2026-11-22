@@ -22,6 +22,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);cursor:non
 #cur.hover{width:24px;height:24px;background:rgba(0,229,204,.1)}
 
 canvas#c{position:fixed;inset:0;display:block}
+#patch-picker{position:fixed;inset:0;z-index:100;touch-action:none;cursor:crosshair}
+#patch-region{position:absolute;pointer-events:none;border:1px solid var(--accent);background:rgba(0,229,204,.12)}
+#patch-form fieldset{border:0;min-width:0;padding:0;margin:8px 0 0}
+#patch-form .mini-btn{color:var(--text)}
+#patch-form .mini-btn:disabled{opacity:.5}
+#patch-status{color:var(--text);margin-top:6px}
 
 /* ── TOP BAR ── */
 #top-bar{
@@ -126,6 +132,7 @@ select:focus{outline:none;border-color:var(--accent)}
 <body>
 <div id="cur"></div>
 <canvas id="c"></canvas>
+<div id="patch-picker" hidden aria-hidden="true"><div id="patch-region" hidden></div></div>
 
 <!-- TOP BAR -->
 <div id="top-bar">
@@ -238,6 +245,56 @@ select:focus{outline:none;border-color:var(--accent)}
     <input type="file" id="vox-file" accept=".json" style="display:none" onchange="importVoxelSet(event)"/>
   </div>
 
+  <details class="panel-section" id="visual-patch">
+    <summary class="ps-title">Visual Patch Kit</summary>
+    <form id="patch-form">
+      <fieldset>
+        <label class="ctrl">Patch type
+          <select name="patch_kind">
+            <option value="visual_patch">Costume patch</option>
+            <option value="adaptive_extension">Chair or desk fit</option>
+          </select>
+        </label>
+        <label class="ctrl">Performer ID
+          <input class="prompt-input" name="performer_id" required maxlength="80">
+        </label>
+        <fieldset id="patch-costume">
+          <label class="ctrl">Describe the issue
+            <input class="prompt-input" name="description" required maxlength="500" placeholder="Left shoulder clips through jacket">
+          </label>
+          <div class="btn-row">
+            <button class="mini-btn" id="patch-pick" type="button" aria-pressed="false">Select region</button>
+            <button class="mini-btn" id="patch-full-frame" type="button">Use full view</button>
+          </div>
+        </fieldset>
+        <fieldset id="patch-fit" hidden disabled>
+          <label class="ctrl">Prop ID <input class="prompt-input" name="object_id" required maxlength="80"></label>
+          <label class="ctrl">Prop type
+            <select name="object_type"><option value="chair">Chair</option><option value="desk">Desk</option></select>
+          </label>
+          <label class="ctrl">Performer height (m)
+            <input class="prompt-input" name="performer_height" type="number" required min=".01" max="8" step=".01">
+          </label>
+          <label class="ctrl">Seat or work surface height (m)
+            <input class="prompt-input" name="prop_height" type="number" required min=".01" max="8" step=".01">
+          </label>
+          <label class="ctrl">Width (m)
+            <input class="prompt-input" name="prop_width" type="number" required min=".01" max="8" step=".01">
+          </label>
+          <label class="ctrl">Depth (m)
+            <input class="prompt-input" name="prop_depth" type="number" required min=".01" max="8" step=".01">
+          </label>
+        </fieldset>
+        <div class="btn-row">
+          <button class="mini-btn on" type="submit">Propose</button>
+          <button class="mini-btn" id="patch-save" type="button" disabled>Approve and save</button>
+        </div>
+      </fieldset>
+      <p class="prompt-status" id="patch-status" role="status" aria-live="polite">Select the area that needs repair.</p>
+    </form>
+    <div id="patch-library" aria-label="Saved patch previews"></div>
+  </details>
+
 </div>
 
 <!-- RIGHT PANEL: Lighting -->
@@ -308,6 +365,7 @@ select:focus{outline:none;border-color:var(--accent)}
 </div>
 
 <script src="/static/vendor/three-0.128.0/build/three.min.js"></script>
+<script src="/static/pubworld_visual_patch.js" defer></script>
 <script>
 'use strict';
 
@@ -845,6 +903,18 @@ async function summonVoxelSet(idx) {
   await _flyInVoxels(item.voxels, item.color);
   setVoxStatus(`${item.name} — on stage`);
   _assembling = false;
+}
+
+async function showVisualPatchPreview(prop) {
+  if (_assembling) throw new Error('Wait for the current voxel assembly to finish.');
+  _assembling = true;
+  try {
+    const voxels = prop.blocks.map(({x, y, z}) => [x, y, z]);
+    await _flyInVoxels(voxels, prop.blocks[0]?.color);
+    setVoxStatus(`${prop.label} — voxel preview`);
+  } finally {
+    _assembling = false;
+  }
 }
 
 function _flyInVoxels(voxelList, colorHex) {
