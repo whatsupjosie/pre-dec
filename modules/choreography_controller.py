@@ -302,7 +302,7 @@ class ChoreoController:
         try:
             while self._running and self._choreo:
                 start = time.perf_counter()
-                self._choreo.update(self._avatars)
+                self._choreo.update()
                 elapsed = time.perf_counter() - start
                 dt = max(interval, elapsed, 1e-3)
                 self._apply_constraints(prev_states, dt)
