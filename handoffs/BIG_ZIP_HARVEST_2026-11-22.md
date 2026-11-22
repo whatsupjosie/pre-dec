@@ -235,6 +235,71 @@ Nothing was pushed. Nothing on main changed. Nothing was deleted from any repo.
 - What to do about The-Prime (item 1).
 - Whether the room-code server should ask for the current code before replacing it.
 
+## Second pass: every repo, every branch, zips opened (same day, later)
+
+Josie's instruction, her words: "as you are checking repos make sure that you are re ggoing at least five folders deep if needed reading enough of everything so you can difinitivly identify what they are and if we have it and if it is good. and open zips to see wht is inside and check the contence".
+
+**Status: partly done. Read the "Not done" list below before trusting this section as complete.**
+
+### Method
+
+- The Drive "big zip" tree also holds 22 GitHub repos Josie keeps, plus Saturday and The-Prime. They were cloned as blobless bare repos and each file's git blob SHA was compared with every blob in pre-dec's whole history, then by path and file name. Missing blobs were fetched on demand.
+- **Every branch was compared, not only HEAD.** A HEAD-only comparison misses finished work on side branches (the airlock below was on one).
+- Zips were opened recursively to five levels, refusing any entry whose path escapes the folder. Tools are in /home/claude/bigzip/tools on the machine that did this (unzip_all.py, hash_vs_predec.py, branch_tips.py, gap_ident.py, and earlier ones); that folder is session scratch, so if you need them again, ask for them to be rebuilt.
+- For each file not in pre-dec: read its docstring and classes, and checked whether pre-dec defines the same classes under any name.
+
+### What was ported — four more branches, each tested, none pushed
+
+All based on pre-dec origin/main (538a40f) unless stated. Each carries its own handoff in handoffs/.
+
+1. **claude/airlock-port-2026-11-22** (4a096e2; bundle airlock-port-2026-11-22.bundle). Josie's Airlock, found on an unmerged side branch: waiver signed by the owner and the AI, avatar check, detention, ladder warning, timeout, booted; sealed thought records opened only through an incident. Added modules/airlock.py, airlock_routes.py, 39 tests. Small edits to governance.py (an admission gate hook), governance_routes.py (409 when blocked), recording.py (privacy table: guest_foundry never, detention expected) and main.py (mounts the router). **The gate is deliberately not installed**: it needs a waiver step in waiting_room.html first; main.py has a comment saying exactly which line to add. Pre-dec's hardened black-box recorder refuses to reopen a damaged log, so the original tamper test was changed to expect refusal after damage; the handoff says so. Option for Josie: a continuation log so evidence continues after a tamper. Verified: 39 airlock tests; the neighbouring suites 279 passed, 1 skipped; three failures that are identical on baseline.
+2. **claude/peq-engine-port-2026-11-22** (3d55ab2; bundle peq-engine-port-2026-11-22.bundle). The PEQ emotional engine and cre_eq (critical reasoning) from August and September builds, with their tests and docs, plus an adapter (modules/peq_orchestrator_adapter.py) that turns a PEQ reading into the signal the Alex emotional orchestrator accepts. Never marked clinical; a failed reading publishes nothing; private_, vault_, sanctuary_ and therapy_ profile keys are stripped. Verified: 100 PEQ tests; 127 with the orchestrator tests; 15 adapter tests; five adapter mutations each caught. **Not wired anywhere.** The state-to-number tables (PEQ_STATE_VALENCE, PEQ_STATE_TENSION) are my draft numbers and need Josie's design. Found, not fixed: cre_eq's alias table lacks "excited", "worried", "tired" and similar (so "excited" reads inconclusive); sarcasm detection is narrow; a claimed "99 tests" build was not found, only 85. PEQ's own priority in the orchestrator is the lowest (30), and selection is by credibility first, so it cannot override a stronger source. Pre-existing and identical on baseline: test_alex_routes_bridge::test_alex_routes_message_and_recent_memory fails when run after four other test files and passes alone.
+3. **claude/pubpartner-base-horizon-link-2026-11-22** (5a983b1; bundle pubpartner-base-horizon-link-2026-11-22.bundle). Josie's design: PubPartner Base is built into PubCast and Horizon is the portable version. Adds companion_mode.py, link.py, avatar_preference.py on pre-dec's federation engine. 28 tests, eight mutations caught. Not wired. NEVER_ON_HORIZON is a constant nothing uses yet.
+4. **claude/recorded-takes-2026-11-22** (fd4e300; bundle recorded-takes-2026-11-22.bundle). Recorded stage takes and the take editor from Codex commit 086420d. Full detail in handoffs/RECORDED_TAKES_PORT_2026-11-22.md. This branch sits on the spine branch, and **it also carries this handoff file**.
+
+The earlier branches still exist: claude/2i-wordpad-parity-2026-11-21, claude/spine-consolidation-2026-11-22, claude/dressing-room-lock-2026-11-22, claude/bridge-file-heartbeat-2026-11-22, claude/recording-fidelity-lock-2026-11-22, claude/vdi-shot-smoothing-2026-11-22. Bundles are in the out folder.
+
+**Merge note.** The recording-fidelity and VDI branches both edit the same get_status line in main.py; land one, then the other will need a hand merge.
+
+### Identified and deliberately not ported — my judgments, Josie may overrule
+
+- **LittleMode V2 (DREAMS):** identical to pre-dec's modules/littlemode_protocol.py once line endings are ignored. We have it.
+- **DREAMS bridge_final_review:** an ancestor of pre-dec's bridge_raw and bridge_bulletproof. Superseded.
+- **DREAMS distributed_engine_node_close_loop.py (1,593 lines):** 46 definitions pre-dec's 782-line modules/evo/distributed_engine.py lacks (VideoEncoder, MeshGenerator, AudioProcessor, VoxelRenderer, RustRendererBridge). **Identified by names; not read in depth. Undecided.**
+- **Thursday avatar_motion_spine, avatar_motion_bridge, avatar_performance_cues (May 9):** a catalog of task and prop cues (dance, carry, push a cart, drive, operate a camera rig, etiquette). It targets an older skeleton schema and needs an adapter to pre-dec's motion stack; pre-dec has 53 conversational gestures. A content library, not code we lack. Josie's call whether she wants the cue catalog.
+- **Wednesday-@Dinner runtime/*.py (22 files, the May "continuous spine job"):** an earlier, parallel design to pre-dec's runtime/spine and pub_manager_authority. Porting would create a second authority.
+- **vault_store.py (NowCurtsey Hubcast-Security-Reach-10-2-26, Spark-Assignment, Pubcast-Reach):** a content-addressed, hash-chained SQLite vault whose triggers refuse UPDATE or DELETE of locked rows, with only humans able to lock. Pre-dec's vault_engine_hardened uses OS file locking instead. Weaknesses I saw: unbounded recursion in verify_chain, author_type not part of the hash, lock() logs "ok" even when no row changed. Nothing in pre-dec would call it. An option, not a gap.
+- **Iteration Wallet and BlackBox** (6.0-, Iteration-Wallet, The-Prime zips): a separate product (oubliette_transaction and others). Pre-dec has docs only. Josie is deciding its place; see her memory notes on the wallet.
+
+### Identified by docstring only — NOT assessed
+
+NowCurtsey branch claude/nowcurtsey-repo-audit-rlsqkc: pubcast_take_manager, virtual_camera_bus, camera_engine_bridge, capture_routes, media_router, pubcast_clip_upload_route, purfluous.py (559 lines), voxel_renderer, greedy_mesh, load_theater_asset. Pubcast-AI-3-20-26-Agent-Pass branch "2nd": extractors/conversation.py (452 lines), conversation_server.py, tools/build_extension_bundle.py, export_plain_files.py (chat extraction; related to Josie's OmniVault idea). October-24 codespaces start_pubcast.py; 6.0- quarantine.py; the pub-experiment "Practice" "(2)" duplicate copies.
+
+### Not done — be clear about this
+
+1. The non-.py content in each repo (md, html, json, jsonl, .bbx, .cs, zips and so on) is not classified.
+2. The 2,276 Drive-only items (not in any repo) are not classified.
+3. Drive zips over 10 MB that the connector refuses and that were not found on GitHub are not opened: Ring Me Jeeves Parts 61126-526 PM.zip (134.94 MB); friday-Lunch (1).zip and friday-whatsupjosie-further-better.zip (about 41.5 MB each); pucastpy and pub.zip (38.2 MB); the codex_construction_pubcast_20260614 zip and its _beefed and _pubblocks variants (about 60 MB each); pubcast_complete_debugged_2026-05-08.zip (68 MB). Some are probably copies of repos already compared, but that is a guess until they are opened.
+4. The Saturday mirror on GitHub has two commits; the Drive repo's commit d0f47aa is not in it. Contents not compared.
+5. The NowCurtsey capture and take modules, the DREAMS engine node and the conversation extractors are identified but not read in depth.
+6. The Beyond-October side branches were not all read.
+
+## Open questions for Josie
+
+- American or British spelling (needed for the 2i spell check).
+- Whether to land Codex's codex/studio-integration; the spine branch depends on it.
+- The-Prime: private, rewrite its history, rotate the BYOK key (items 1 under "Found, not fixed").
+- Whether the room-code server should ask for the current code before replacing it.
+- Alex crisis detection: options 1 and 2 recommended, option 3 is the real fix.
+- The predictive_insight engine (files49.zip): wanted or not.
+- Whether automatic camera cutting locks while recording.
+- Airlock: add the waiver step to the waiting room, then install the admission gate?
+- PEQ: the state-to-number tables, and where PEQ is called from.
+- The cre_eq alias fix ("excited", "worried", "tired").
+- Whether to wire Base and Horizon heartbeats.
+- vault_store: wanted as an option? The Thursday cue catalog: wanted?
+- Land recorded takes now, or after the on-set camera console (df9d30f)?
+
 ## Next step
 
-Josie decides on items 1 and 5 first: both touch things that are hers and private.
+Josie decides on The-Prime and the test-data pollution first (both touch things that are hers and private). Then the unfinished classification above continues; it needs the over-10 MB zips from her machine or from GitHub.
