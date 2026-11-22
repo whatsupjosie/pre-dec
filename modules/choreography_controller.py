@@ -120,7 +120,9 @@ class MotionConstraints:
                 setattr(self, key, bool(value))
             else:
                 try:
-                    setattr(self, key, float(value))
+                    number = float(value)
+                    if math.isfinite(number):
+                        setattr(self, key, number)
                 except (TypeError, ValueError):
                     continue
         # Keep bounds sane even when patches arrive out of order.
@@ -299,13 +301,31 @@ class ChoreoController:
     async def _runner(self) -> None:
         interval = 1.0 / self._tick_hz
         prev_states: Dict[str, Dict[str, List[float]]] = {}
+        final_targets = None
+        previous_tick = time.perf_counter() - interval
         try:
             while self._running and self._choreo:
                 start = time.perf_counter()
+                dt = max(start - previous_tick, 1e-3)
+                previous_tick = start
                 self._choreo.update()
-                elapsed = time.perf_counter() - start
-                dt = max(interval, elapsed, 1e-3)
+                done = bool(self._choreo.steps) and all(step.completed for step in self._choreo.steps)
+                if done and self._constraints.enabled:
+                    if final_targets is None:
+                        final_targets = {
+                            a.id: (self._bounded_position(a.position), a.rotation[1]) for a in self._avatars
+                        }
+                    for avatar in self._avatars:
+                        position, yaw = final_targets[avatar.id]
+                        avatar.position = position.copy()
+                        avatar.rotation[1] = yaw
                 self._apply_constraints(prev_states, dt)
+                if final_targets is not None:
+                    done = all(
+                        math.dist(a.position, final_targets[a.id][0]) <= 1e-6
+                        and abs(self._wrap_angle(a.rotation[1] - final_targets[a.id][1])) <= 1e-6
+                        for a in self._avatars
+                    )
                 prev_states = {
                     a.id: {"position": list(a.position), "rotation": list(a.rotation)}
                     for a in self._avatars
@@ -327,7 +347,6 @@ class ChoreoController:
                 await self._hub.broadcast_system_event({"type": "choreo_frame", "payload": payload})
                 self._last_frame_ts = time.time()
 
-                done = bool(self._choreo.steps) and all(step.completed for step in self._choreo.steps)
                 if done:
                     await self._hub.broadcast_system_event(
                         {"type": "choreo_complete", "payload": {"room": self._room, "time": self._choreo.current_time}}
@@ -335,7 +354,7 @@ class ChoreoController:
                     self._running = False
                     break
 
-                await asyncio.sleep(max(0.0, interval - elapsed))
+                await asyncio.sleep(max(0.0, interval - (time.perf_counter() - start)))
         except asyncio.CancelledError:
             pass
         except Exception as exc:
@@ -345,6 +364,14 @@ class ChoreoController:
             )
         finally:
             self._running = False
+
+    def _bounded_position(self, position: List[float]) -> List[float]:
+        c = self._constraints
+        return [
+            self._clamp(position[0], c.x_min, c.x_max),
+            self._clamp(position[1], c.y_min, c.y_max),
+            self._clamp(position[2], c.z_min, c.z_max),
+        ]
 
     def _apply_constraints(self, prev_states: Dict[str, Dict[str, List[float]]], dt: float) -> None:
         c = self._constraints
@@ -358,9 +385,7 @@ class ChoreoController:
             prev = prev_states.get(avatar.id)
             if not prev:
                 # First frame: only hard bounds.
-                avatar.position[0] = self._clamp(avatar.position[0], c.x_min, c.x_max)
-                avatar.position[1] = self._clamp(avatar.position[1], c.y_min, c.y_max)
-                avatar.position[2] = self._clamp(avatar.position[2], c.z_min, c.z_max)
+                avatar.position = self._bounded_position(avatar.position)
                 continue
 
             px, py, pz = prev["position"]

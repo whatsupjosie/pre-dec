@@ -494,3 +494,102 @@ def test_approved_voxel_prop_reaches_cut_and_decoded_take(studio, production_ser
         assert not page.problems
     finally:
         api.put(package, headers=headers, json={"placement": None}).raise_for_status()
+
+
+def test_external_program_camera_blocks_roll_and_preserves_interrupted_take(studio, production_server):
+    page, _ = studio
+    _, auth, api = production_server
+    headers = {"Authorization": "Bearer " + auth["access_token"]}
+    api.post("/api/production/video-cue", headers=headers,
+             json={"cue": "blackout", "enabled": False}).raise_for_status()
+    page.click("#start")
+    page.wait_for_function("switcherLink.textContent === 'VIDEO: SHARED SWITCHER'")
+
+    api.post("/api/switcher/cut/wide_shot", headers=headers).raise_for_status()
+    page.wait_for_function("programShot.textContent.includes('wide_shot')")
+    assert page.locator("#record").is_disabled()
+    cause = page.evaluate("PubCast25DStudio.startRecording().catch(error => error.message)")
+    assert "local video feed" in cause
+    assert recorder_chunks(page) == 0
+
+    api.post("/api/switcher/cut/p25d_news_wide", headers=headers).raise_for_status()
+    page.wait_for_function("!record.disabled")
+    page.click("#record")
+    page.wait_for_function("PubCast25DStudio.state().recording")
+    page.wait_for_function("PubCast25DStudio.state().journal?.bytes > 0", timeout=30000)
+    api.post("/api/switcher/cut/wide_shot", headers=headers).raise_for_status()
+    page.wait_for_function("!PubCast25DStudio.state().recording")
+    page.wait_for_function("sessionList.textContent.includes('INCOMPLETE')")
+    page.locator("#sessionList button").first.click()
+    page.wait_for_function("playback.readyState >= 2 && playback.videoWidth === 1280")
+    assert page.locator("#record").is_disabled()
+
+
+def test_slate_save_preserves_edits_typed_while_a_request_is_in_flight(studio, production_server):
+    page, _ = studio
+    _, auth, api = production_server
+    headers = {"Authorization": "Bearer " + auth["access_token"]}
+    path = "/api/studio/slate"
+    created = api.post(path, headers=headers, json={"action": "create"})
+    created.raise_for_status()
+    held = []
+
+    def delay_first_edit(route):
+        request = route.request
+        if request.method == "POST" and request.post_data_json.get("action") == "edit" and not held:
+            held.append(route)
+        else:
+            route.continue_()
+
+    page.route("**/api/studio/slate", delay_first_edit)
+    try:
+        page.evaluate("PubCastSlate.open()")
+        notes = page.locator("#pubcast-slate-floor [name=notes]")
+        submit = page.locator('#pubcast-slate-floor [data-action="save"]')
+        notes.fill("First edit")
+        submit.click()
+        import time
+        deadline = time.monotonic() + 5
+        while not held and time.monotonic() < deadline:
+            page.wait_for_timeout(50)
+        assert held
+        notes.fill("Second edit typed while saving")
+        held[0].continue_()
+        page.wait_for_function("""document.querySelector('#pubcast-slate-floor .status')
+                                   .textContent.includes('Newer edits are still unsaved')""")
+        assert notes.input_value() == "Second edit typed while saving"
+        with page.expect_response(lambda response: response.url.endswith(path) and response.request.method == "POST"):
+            submit.click()
+        slate = api.get(path, headers=headers).json()["slate"]
+        assert slate["fields"]["notes"] == "Second edit typed while saving"
+    finally:
+        page.unroute("**/api/studio/slate", delay_first_edit)
+        current = api.get(path, headers=headers).json()["slate"]
+        api.post(path, headers=headers, json={"action": "end", "revision": current["revision"]})
+
+
+def test_launch_panel_starts_and_finalizes_the_selected_backend_camera(studio, production_server):
+    import shutil
+
+    if not shutil.which("ffmpeg"):
+        pytest.skip("The launch panel needs FFmpeg to capture its test-pattern source")
+    page, _ = studio
+    base, auth, api = production_server
+    headers = {"Authorization": "Bearer " + auth["access_token"]}
+    api.post("/api/switcher/cut/wide_shot", headers=headers).raise_for_status()
+    page.goto(base + "/static/launch.html")
+    page.locator("#btn-on").click()
+    page.wait_for_function("document.querySelector('#launch-status').textContent.includes('capture started')")
+    active = [row for row in api.get("/api/recording/sessions", headers=headers).json()
+              if row["state"] == "active"]
+    assert len(active) == 1
+    assert active[0]["sources"] == ["wide_shot"]
+    page.wait_for_timeout(1500)
+    page.locator("#btn-on").click()
+    page.wait_for_function("!document.querySelector('#btn-on').classList.contains('live')")
+    recorded = next(row for row in api.get("/api/recording/sessions", headers=headers).json()
+                    if row["session_id"] == active[0]["session_id"])
+    assert recorded["state"] == "stopped"
+    assert any(artifact["size_bytes"] > 1000 for artifact in recorded["artifacts"])
+    assert recorded["artifacts"][0]["name"].endswith(".mp4")
+    assert not page.problems

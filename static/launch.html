@@ -277,6 +277,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 let _health       = {};
 let _wsConnected  = false;
 let _isLive       = false;
+let _launchBusy = false;
 let _sessionId    = null;
 let _recStart     = null;
 let _recInterval  = null;
@@ -288,7 +289,9 @@ function log(msg, level='info') {
   const now = new Date().toTimeString().slice(0,8);
   const line = document.createElement('div');
   line.className='log-line';
-  line.innerHTML=`<span class="log-ts">${now}</span><span class="log-lvl ${level}">${level.toUpperCase()}</span><span class="log-msg">${msg}</span>`;
+  for(const [style,text] of [['log-ts',now],['log-lvl '+level,level.toUpperCase()],['log-msg',msg]]){
+    const span=document.createElement('span');span.className=style;span.textContent=text;line.append(span);
+  }
   el.appendChild(line);
   el.scrollTop = el.scrollHeight;
   if(el.children.length>100) el.removeChild(el.firstChild);
@@ -321,20 +324,9 @@ function connectWS() {
 }
 
 function handleEvent(ev) {
-  if(ev.type==='recording_start') {
-    _isLive=true; _sessionId=ev.payload?.session_id; _recStart=Date.now();
-    startRecTimer();
-    document.getElementById('btn-on').classList.add('live');
-    document.getElementById('launch-status').textContent='● LIVE — broadcast active';
-    document.getElementById('launch-status').style.color='var(--ok)';
-    log(`Recording started: ${_sessionId}`,'ok');
-  }
-  if(ev.type==='recording_stop') {
-    _isLive=false; stopRecTimer();
-    document.getElementById('btn-on').classList.remove('live');
-    document.getElementById('launch-status').textContent='Ready to go live';
-    document.getElementById('launch-status').style.color='';
-    log('Recording stopped','info');
+  if(_sessionId&&(ev.type==='recording_stopped'&&ev.payload?.session_id===_sessionId||
+                  ev.type==='production_panic'&&ev.payload?.sessions_stopped?.includes(_sessionId))){
+    setLaunchIdle('Recording stopped');
   }
   if(ev.type==='production_state') buildChecklist();
   if(ev.type==='camera_cut') log(`Camera cut → ${ev.payload?.new_program}`,'info');
@@ -484,6 +476,7 @@ function buildChecklist() {
   // Update launch button text
   const allCritical = checks.filter(c=>!c.warn&&!c.pending).every(c=>c.pass);
   const status = document.getElementById('launch-status');
+  if(_launchBusy)return;
   if(_isLive) {
     status.textContent='● LIVE — broadcast active';
     status.style.color='var(--ok)';
@@ -510,73 +503,70 @@ function renderChecklist(checks) {
 }
 
 // ── ON BUTTON ──────────────────────────────────────────────────────────────
-async function handleOnButton() {
-  if(_isLive) {
-    // Stop the broadcast
-    if(_sessionId) {
-      try{
-        await fetch(`/api/recording/sessions/${_sessionId}/stop`,{method:'POST'});
-        log('Broadcast stopped','warn');
-      }catch(e){log('Stop failed: '+e.message,'err')}
-    }
-  } else {
-    // Start — run preflight first if not done
-    await goLive();
-  }
+async function launchRequest(path,body) {
+  const res=await fetch(path,body===undefined?{}:{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+  });
+  const data=await res.json();
+  if(!res.ok)throw Error(typeof data.detail==='string'?data.detail:`Request failed (HTTP ${res.status})`);
+  return data;
 }
 
-async function goLive() {
-  const btn    = document.getElementById('btn-on');
-  const status = document.getElementById('launch-status');
-  const timer  = document.getElementById('launch-timer');
-  const prog   = document.getElementById('countdown-progress');
-  const CIRCUMFERENCE = 340;
+function setLaunchIdle(message) {
+  _isLive=false;_sessionId=null;stopRecTimer();
+  document.getElementById('btn-on').classList.remove('live');
+  document.getElementById('rec-timer').textContent='';
+  const status=document.getElementById('launch-status');
+  status.textContent=message;status.style.color='';
+}
 
-  // 5-second countdown
-  btn.disabled = true;
-  log('Initiating launch sequence…','info');
-
-  for(let i=5;i>=1;i--){
-    timer.textContent = i;
-    prog.style.strokeDashoffset = CIRCUMFERENCE * (1 - (5-i+1)/5);
-    status.textContent = `Launching in ${i}…`;
-    status.style.color = 'var(--warn)';
-    log(`T-${i}`,'info');
-    await new Promise(r=>setTimeout(r,1000));
-  }
-
-  prog.style.strokeDashoffset = '0';
-  timer.textContent = '';
-
-  // Start recording session
+async function handleOnButton() {
+  if(_launchBusy)return;
+  const btn=document.getElementById('btn-on');
+  const status=document.getElementById('launch-status');
+  const timer=document.getElementById('launch-timer');
+  const progress=document.getElementById('countdown-progress');
+  _launchBusy=true;btn.disabled=true;
   try {
-    const cams = await fetch('/api/cameras').then(r=>r.json());
-    const sources = (cams.sources||[]).map(s=>s.source_id).slice(0,4);
-    const res = await fetch('/api/recording/sessions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sources,profile_id:'1080p30',operator:'host'}),
-    });
-    const d = await res.json();
-    _sessionId = d.session?.session_id;
-    // Activate
-    if(_sessionId) {
-      await fetch(`/api/recording/sessions/${_sessionId}/activate`,{method:'POST'});
+    if(_isLive){
+      const stopped=await launchRequest(`/api/recording/${encodeURIComponent(_sessionId)}/stop`,{});
+      if(stopped.state!=='stopped')throw Error('Server has not confirmed the recording stopped');
+      setLaunchIdle('Recording stopped');
+      log('Recording stopped','info');
+      return;
     }
-    _isLive=true;
-    _recStart=Date.now();
-    startRecTimer();
-    btn.classList.add('live');
-    btn.disabled=false;
-    status.textContent='● LIVE — broadcast active';
+    const {program}=await launchRequest('/api/switcher/state');
+    if(!program)throw Error('Select a Program camera before launching');
+    const spec={sources:[program],profile_id:'broadcast_mp4'};
+    const checked=await launchRequest('/api/studio/actions/recording.preflight',spec);
+    if(!checked.result?.ready)throw Error(checked.result?.issues?.[0]?.message||'Recording preflight failed');
+
+    for(let seconds=5;seconds>=1;seconds--){
+      timer.textContent=seconds;
+      progress.style.strokeDashoffset=340*(seconds-1)/5;
+      status.textContent=`Launching in ${seconds}…`;
+      status.style.color='var(--warn)';
+      await new Promise(resolve=>setTimeout(resolve,1000));
+    }
+    if((await launchRequest('/api/switcher/state')).program!==program)
+      throw Error('The Program camera changed during countdown. Run preflight again.');
+    const started=await launchRequest('/api/recording/start',{...spec,countdown_seconds:0});
+    if(started.state!=='active'||!started.session_id||!started.capture_paths?.length){
+      if(started.state==='active'&&started.session_id)
+        await launchRequest(`/api/recording/${encodeURIComponent(started.session_id)}/stop`,{});
+      throw Error('Server did not start a camera capture');
+    }
+    _sessionId=started.session_id;_isLive=true;_recStart=Date.now();
+    startRecTimer();btn.classList.add('live');
+    status.textContent='● LIVE — capture started';
     status.style.color='var(--ok)';
-    log('🔴 LIVE — broadcast started','ok');
-  } catch(e) {
-    btn.disabled=false;
-    prog.style.strokeDashoffset=CIRCUMFERENCE;
-    status.textContent='Launch failed: '+e.message;
-    status.style.color='var(--danger)';
-    log('Launch failed: '+e.message,'err');
+    log(`Capture started: ${_sessionId}`,'ok');
+  }catch(error){
+    status.textContent=(_isLive?'Stop failed: ':'Launch failed: ')+error.message;
+    status.style.color='var(--danger)';log(status.textContent,'err');
+  }finally{
+    timer.textContent='';progress.style.strokeDashoffset=340;
+    _launchBusy=false;btn.disabled=false;
   }
 }
 
@@ -586,9 +576,9 @@ document.getElementById('btn-on').addEventListener('click', handleOnButton);
 async function runPreflight() {
   log('Running studio preflight…','info');
   try{
-    const r = await fetch('/api/studio/preflight',{method:'POST'});
-    const d = await r.json();
-    log(d.ok?'✓ Preflight passed':'✗ Preflight failed: '+d.state, d.ok?'ok':'warn');
+    const d = await launchRequest('/api/studio/preflight',{});
+    const failed = d.result?.checks?.find(check=>!check.passed);
+    log(d.ok?'✓ Preflight passed':'✗ Preflight failed: '+(failed?.message||d.result?.state||'Check studio status'), d.ok?'ok':'warn');
     buildChecklist();
   }catch(e){log('Preflight error: '+e.message,'err')}
 }

@@ -3267,6 +3267,7 @@ async def voxel_status():
     return {
         "asset_manager": voxel_asset_manager is not None,
         "studio_integration": voxel_studio is not None,
+        "studio_integration_status": voxel_studio.get_integration_status() if voxel_studio else None,
         "bridge": voxel_bridge is not None,
         "bridge_status": (voxel_bridge.status() if hasattr(voxel_bridge, "status") and callable(voxel_bridge.status) else getattr(voxel_bridge, "status", None)) if voxel_bridge else None,
     }

@@ -62,3 +62,45 @@ test("external cameras remain explicitly unsupported by local renderer",async()=
  assert.equal(state.program,null);assert.equal(state.remoteProgram,"wide_shot");
  bridge.detach();
 });
+
+test("an older polling response cannot undo a confirmed cut",async()=>{
+ const server=fakeServer(),events=[];
+ let release,hold=false;
+ const bridge=Bridge.create({fetch:async (path,init)=>{
+  if(path==="/api/switcher/state"&&hold){
+   const old=server.result();
+   await new Promise(resolve=>{release=resolve;});
+   return {ok:true,json:async()=>old};
+  }
+  return server.fetch(path,init);
+ },onState:s=>events.push(s),setInterval:()=>1,clearInterval:()=>{}});
+ await bridge.attach(Core.PACKAGES.news);
+ hold=true;
+ const stale=bridge.refresh();
+ await bridge.take();
+ release();
+ await stale;
+ assert.equal(events.at(-1).program,"anchor");
+ bridge.detach();
+});
+
+test("a reply from a detached production has no effect",async()=>{
+ const server=fakeServer(),events=[],errors=[];
+ let release,hold=false;
+ const bridge=Bridge.create({fetch:async (path,init)=>{
+  if(path==="/api/switcher/state"&&hold){
+   const old=server.result();
+   await new Promise(resolve=>{release=resolve;});
+   return {ok:true,json:async()=>old};
+  }
+  return server.fetch(path,init);
+ },onState:s=>events.push(s),onError:e=>errors.push(e),setInterval:()=>1,clearInterval:()=>{}});
+ await bridge.attach(Core.PACKAGES.news);
+ hold=true;
+ const stale=bridge.refresh();
+ bridge.detach();
+ release();
+ await stale;
+ assert.equal(events.length,1);
+ assert.equal(errors.length,0);
+});

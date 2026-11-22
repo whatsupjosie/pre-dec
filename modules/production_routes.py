@@ -177,25 +177,37 @@ def create_production_router(
         if blackbox is not None:
             blackbox.record_event(event_type, source=source, actor=actor, data=data or {})
 
+    capture_start_tasks: Dict[str, asyncio.Task] = {}
+    capture_stop_tasks: Dict[str, asyncio.Task] = {}
+
     async def _start_capture_for_session(session) -> List[str]:
-        if capture_engine is None or not getattr(capture_engine, "available", False):
-            return []
         if session.state != RecordingState.ACTIVE:
             return []
+        if capture_engine is None or not getattr(capture_engine, "available", False):
+            return []
+        session_id = session.session_id
         source_objects = [cameras.get(source_id) for source_id in session.sources]
         source_objects = [source for source in source_objects if source is not None]
         if not source_objects:
             return []
         profile = recording.get_profile(session.profile_id)
-        session_dir = recording._session_dir(session.session_id)
-        paths = await capture_engine.start(session.session_id, source_objects, profile, session_dir)
+        session_dir = recording._session_dir(session_id)
+        task = capture_start_tasks.get(session_id)
+        if task is None:
+            task = asyncio.create_task(capture_engine.start(session_id, source_objects, profile, session_dir))
+            capture_start_tasks[session_id] = task
+            task.add_done_callback(lambda _: capture_start_tasks.pop(session_id, None))
+        paths = await asyncio.shield(task)
+        if session_id in capture_stop_tasks or session.state != RecordingState.ACTIVE:
+            raise HTTPException(409, "Recording was stopped while its cameras were starting")
         return [str(path) for path in paths]
-
-    capture_stop_tasks: Dict[str, asyncio.Task] = {}
 
     async def _collect_capture_artifacts(session_id: str) -> List[Dict[str, Any]]:
         if capture_engine is None or not getattr(capture_engine, "available", False):
             return []
+        starting = capture_start_tasks.get(session_id)
+        if starting is not None:
+            await asyncio.shield(starting)
         if not capture_engine.is_capturing(session_id):
             return []
         paths = await capture_engine.stop(session_id)
@@ -704,10 +716,24 @@ def create_production_router(
         that FFmpeg and other capture workers actually stopped.
         """
         now = time.time()
+        # Browser encoders follow these cues while server captures drain.
+        apply_audio_event(program_audio_state, {"action": "stop_all"})
+        program_audio_state.publish({"action": "stop_all"})
+        apply_audio_event(program_audio_state, {"action": "set_volume", "bus": "master", "volume": 0})
+        program_audio_state.publish({"action": "set_volume", "bus": "master", "volume": 0})
+        if hub:
+            hub.update_production_state({
+                "on_air": False,
+                "camera": "black",
+                "lower_third": "",
+                "panic_seq": now,
+                "blackout": True,
+                "blackout_seq": now,
+            })
         stopped, capture_errors = [], []
         for session in recording.list_sessions():
             session_id = session.session_id
-            capturing = bool(capture_engine and capture_engine.is_capturing(session_id))
+            capturing = session_id in capture_start_tasks or bool(capture_engine and capture_engine.is_capturing(session_id))
             finalizing = session_id in capture_stop_tasks
             if (session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED)
                     and not capturing and not finalizing):
@@ -723,19 +749,7 @@ def create_production_router(
                 stopped.append(session_id)
             except Exception as exc:
                 capture_errors.append({"session_id": session_id, "error": str(exc)})
-        apply_audio_event(program_audio_state, {"action": "stop_all"})
-        program_audio_state.publish({"action": "stop_all"})
-        apply_audio_event(program_audio_state, {"action": "set_volume", "bus": "master", "volume": 0})
-        program_audio_state.publish({"action": "set_volume", "bus": "master", "volume": 0})
         if hub:
-            hub.update_production_state({
-                "on_air": False,
-                "camera": "black",
-                "lower_third": "",
-                "panic_seq": now,
-                "blackout": True,
-                "blackout_seq": now,
-            })
             await hub.broadcast_system_event({
                 "type": "production_panic",
                 "payload": {

@@ -88,21 +88,39 @@
     const label=document.createElement('label'),enabled=document.createElement('input');enabled.type='checkbox';enabled.dataset.crewField='enabled';enabled.checked=!!item.enabled;enabled.onchange=()=>crewDirty=true;label.append(enabled,document.createTextNode('Enabled for this session'));row.append(label);
     const remove=document.createElement('button');remove.type='button';remove.textContent='Remove assignment';remove.onclick=()=>{row.remove();crewDirty=true;};row.append(remove);$('[data-crew]').append(row);
   }
+  function readCrew(){
+    return Array.from(root.querySelectorAll('.crew-entry'),row=>Object.fromEntries(
+      Array.from(row.querySelectorAll('[data-crew-field]'),e=>[e.dataset.crewField,e.type==='checkbox'?e.checked:e.value])
+    ));
+  }
   async function command(action,data={}) {
     if(pending)return;
     pending=true;
-    try{const result=await request('POST',{action,data,revision:snapshot?.slate?.revision??null});if(action==='edit')dirtyFields.clear();if(action==='crew')crewDirty=false;adopt(result);status('Saved / delivered to production screens');}
+    try{
+      const result=await request('POST',{action,data,revision:snapshot?.slate?.revision??null});
+      if(action==='edit'){
+        for(const [name,value] of Object.entries(data.fields)){
+          if(fields[name].value===value)dirtyFields.delete(name);
+        }
+      }
+      if(action==='crew'&&JSON.stringify(readCrew())===JSON.stringify(data.crew))crewDirty=false;
+      adopt(result);
+      if(action==='edit'||action==='crew')render();
+      status(dirtyFields.size||crewDirty?'Saved submitted changes. Newer edits are still unsaved.':'Saved / delivered to production screens');
+    }
     catch(error){status(error.message);await refresh();}
     finally{pending=false;}
   }
   function adopt(data) {
     if(snapshot && data.server_time < snapshot.server_time)return;
     if(snapshot?.slate?.id===data.slate?.id && data.slate?.revision<snapshot?.slate?.revision)return;
-    const changed=!snapshot||data.slate?.id!==snapshot.slate?.id||data.slate?.revision!==snapshot.slate?.revision;
+    const newSlate=!snapshot||data.slate?.id!==snapshot.slate?.id;
+    const changed=newSlate||data.slate?.revision!==snapshot.slate?.revision;
+    if(newSlate){dirtyFields.clear();crewDirty=false;}
     snapshot=data;
-    if(changed){render();announce(data.slate);}
+    if(changed){render(newSlate);announce(data.slate);}
   }
-  function render() {
+  function render(refreshRoster=false) {
     if(!snapshot)return;
     const s=snapshot.slate, editor=snapshot.can_edit, director=snapshot.is_director;
     launcher.hidden=false;
@@ -125,7 +143,7 @@
       row.textContent=[take.production,'Scene '+take.scene,take.scene_title,'Take '+take.take,new Date(take.requested_at*1000).toLocaleString()].filter(Boolean).join(' · ');
       return row;
     }));
-    if(!root.contains(document.activeElement)||!['TEXTAREA','INPUT'].includes(document.activeElement.tagName)){
+    if(refreshRoster||!root.contains(document.activeElement)||!['TEXTAREA','INPUT'].includes(document.activeElement.tagName)){
       $('[data-departments]').value=Object.entries(s.departments).map(([d,e])=>d+' = '+e.user_id).join('\n');
       $('[data-editors]').value=s.editors.join('\n');if(!crewDirty){$('[data-crew]').replaceChildren();s.crew.forEach(addCrew);crewDirty=false;}
     }
@@ -214,7 +232,7 @@
       if(action==='departments'){const entries={};for(const line of $('[data-departments]').value.split('\n').filter(v=>v.trim())){const i=line.indexOf('=');if(i<1)throw Error('Use department = account ID');entries[line.slice(0,i).trim()]=line.slice(i+1).trim();}return await command(action,{departments:entries});}
       if(action==='delegate')return await command(action,{editors:$('[data-editors]').value.split('\n').map(v=>v.trim()).filter(Boolean)});
       if(action==='add-crew'){addCrew();crewDirty=true;return;}
-      if(action==='crew')return await command(action,{crew:Array.from(root.querySelectorAll('.crew-entry'),row=>Object.fromEntries(Array.from(row.querySelectorAll('[data-crew-field]'),e=>[e.dataset.crewField,e.type==='checkbox'?e.checked:e.value])))});
+      if(action==='crew')return await command(action,{crew:readCrew()});
       if(action==='end'&&!confirm('End this production and release the shared floor?'))return;
       if(dirtyFields.size&&['standby','clap'].includes(action))throw Error('Save the slate fields first');
       root.dataset.forced='';await command(action);

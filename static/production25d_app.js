@@ -73,7 +73,7 @@ async function safe(fn){
 function setControls(){
  const active=!!state.session&&!state.startingProduction,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
  el.start.disabled=!!state.session||state.startingProduction||state.castingPete||!!state.voxelSaving;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
- el.record.disabled=!active||state.endingProduction||state.panicActive||rec||stopping||starting||!state.storageReady;
+ el.record.disabled=!active||state.endingProduction||state.panicActive||!!state.remoteProgram||rec||stopping||starting||!state.storageReady;
  $("cut").disabled=$("fade").disabled=!active||!!state.endingProduction;
  for(const button of el.camera.children)button.disabled=state.startingProduction||!!state.endingProduction;
  el.recordStop.disabled=(!rec&&!starting)||stopping;
@@ -112,13 +112,13 @@ function refreshCameraUI(){
  if(!state.pkg)return;
  for(const btn of el.camera.children){
   const s=btn.dataset.shot;
-  btn.classList.toggle("selected",s===state.previewId);
+  btn.classList.toggle("selected",!state.remotePreview&&s===state.previewId);
   btn.textContent=state.pkg.cameras.find(x=>x.id===s).label+
-    (s===state.programId?" [PGM]":"")+(s===state.previewId?" [PVW]":"");
+    (!state.remoteProgram&&s===state.programId?" [PGM]":"")+(!state.remotePreview&&s===state.previewId?" [PVW]":"");
  }
  const camera=id=>state.pkg.cameras.find(x=>x.id===id);
- el.programShot.textContent="PGM: "+(camera(state.programId)?.label||"—");
- el.previewShot.textContent="PVW: "+(camera(state.previewId)?.label||"—");
+ el.programShot.textContent="PGM: "+(state.remoteProgram||camera(state.programId)?.label||"—");
+ el.previewShot.textContent="PVW: "+(state.remotePreview||camera(state.previewId)?.label||"—");
 }
 function voxelPlacementReceipt(placement){
  const {blocks,...receipt}=placement;
@@ -242,6 +242,13 @@ async function cut(dissolve){
 function sharedSwitcherState(next) {
  if(!state.session)return;
  const previous=state.programId;
+ const previousRemote=state.remoteProgram;
+ if(state.switcherError){
+   if(el.alert.textContent===state.switcherError){el.alert.textContent="";status("ON AIR");}
+   state.switcherError=null;
+   el.switcherLink.textContent="VIDEO: SHARED SWITCHER";
+   el.switcherLink.style.color="#79e9b0";
+ }
  const transition=next.transition||{};
  if(next.program&&next.program!==previous&&transition.type==="dissolve"){
    const elapsed=Number.isFinite(Number(transition.started_at))
@@ -259,13 +266,23 @@ function sharedSwitcherState(next) {
  if(next.preview)state.previewId=next.preview;
  refreshCameraUI();
  if(next.remoteProgram) {
-   log("SHARED PROGRAM SOURCE OUTSIDE 2.5D PACKAGE: "+next.remoteProgram);
+   if(previousRemote!==next.remoteProgram){
+     const reason="Program switched to a source with no local video feed: "+next.remoteProgram;
+     log(reason);
+     emit("camera.program_unavailable",{source:next.remoteProgram});
+     if(state.recorder||state.recordingStarting){
+       state.mediaError=state.mediaError||Error(reason);
+       stopRecording({immediate:true}).catch(e=>error(e.message));
+     }
+   }
  } else {
    emit("camera.shared_state",{program:state.programId,preview:state.previewId,transition:next.transition});
  }
+ setControls();
 }
 function sharedSwitcherWarning(reason) {
  if(!state.session)return;
+ state.switcherError=reason;
  el.switcherLink.textContent="VIDEO SYNC LOST";
  el.switcherLink.style.color="#ff8b8b";
  error(reason);
@@ -348,7 +365,7 @@ async function startProduction(){
   if(state.slate)sess.slate=state.slate;
   emit("production.start",{package:state.pkg.id,program:state.programId});
   try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
-  state.remoteProgram=null;state.remotePreview=null;
+  state.remoteProgram=null;state.remotePreview=null;state.switcherError=null;
   const Shared=window.PubCast25DSharedSwitcher;
   if(Shared){
     const bridge=Shared.create({onState:sharedSwitcherState,onError:sharedSwitcherWarning});
@@ -439,6 +456,7 @@ function captureLease(id,owner,onFailure=()=>{}){
 async function startRecording(){
  if(!state.session||state.startingProduction||state.endingProduction)throw Error("Recording requires an active production");
  if(state.panicActive)throw Error("Clear the PANIC blackout before recording");
+ if(state.remoteProgram)throw Error("Choose a Program camera with a local video feed before recording");
  if(state.recorder||state.recordingPromise||state.recordingStarting)throw Error("Already recording or preparing recording");
  if(archive?.status().busy)throw Error("Pause the server save before starting another take");
  if(archive?.status().viewBusy){archive.cancelView();$("archiveStatus").textContent="Server transfer paused for recording. Retry after the take.";}
@@ -450,7 +468,11 @@ async function startRecording(){
  const slateApi=window.PubCastSlate;
  const slateLookup=slateApi?.read().catch(error=>({error}));
  state.recordingStarting=op;state.mediaError=null;state.recordingHasData=false;state.recordingStopImmediate=false;setControls();
- const check=()=>{if(op.cancelled||state.recordingStarting!==op||state.session!==sess)throw new DOMException("Recording start canceled","AbortError");};
+ const check=()=>{
+   if(op.cancelled||state.recordingStarting!==op||state.session!==sess)
+     throw new DOMException("Recording start canceled","AbortError");
+   if(state.remoteProgram)throw Error("Program has no local video feed");
+ };
  let capture=null,adopted=false,stopLease=()=>{};
  try{
    if(sess.voxelPlacement){
