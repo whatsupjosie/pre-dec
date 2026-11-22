@@ -3,8 +3,9 @@
   'use strict';
   const identity = () => (window.ReachAuth && window.ReachAuth.getUser()) || {};
   const clientName = () => identity().username || identity().user_id || localStorage.getItem('pubcast.clientId') || 'anon';
+  const requestTimeoutMs = 12000;
   const fetchRoom = async (url, options = {}) => {
-    const response = await fetch(url, { ...options, cache: 'no-store', headers: {'Accept':'application/json', ...(options.headers || {})} });
+    const response = await fetch(url, { ...options, cache: 'no-store', signal: AbortSignal.timeout(requestTimeoutMs), headers: {'Accept':'application/json', ...(options.headers || {})} });
     if (!response.ok) {
       let detail;
       try { detail = (await response.json()).detail; } catch (_) {}
@@ -20,7 +21,39 @@
     const send = root.querySelector('[data-world-send]');
     const mic = root.querySelector('[data-world-mic]');
     window.PubcastSpeech?.bindDictation(mic, input);
-    let previous = '', inflight = false, sending = false, socket = null, pendingSend = null;
+    let previous = '', inflight = false, sending = false, socket = null, pendingSend = null, timer;
+    let deliveryNotice = '';
+    const draftOwner = identity().user_id;
+    const draftKey = root.hasAttribute('data-world-restore-draft') && draftOwner
+      ? 'pubcast.2i.world-draft.' + draftOwner
+      : null;
+    if (draftKey) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(draftKey));
+        if (typeof saved?.text === 'string') {
+          input.value = saved.text;
+          pendingSend = saved.pendingSend;
+          if (pendingSend?.text === saved.text) {
+            deliveryNotice = 'Previous delivery unconfirmed. Check room history before resending.';
+          }
+        }
+      } catch (_) { /* Chat still works when session storage is unavailable. */ }
+    }
+    function preserveDraft() {
+      if (!draftKey) return;
+      try {
+        if (input.value || pendingSend) {
+          sessionStorage.setItem(draftKey, JSON.stringify({text:input.value, pendingSend}));
+        } else {
+          sessionStorage.removeItem(draftKey);
+        }
+      } catch (_) { /* Keep the live draft if session storage is unavailable. */ }
+    }
+    function showStatus(text) {
+      const next = deliveryNotice || text;
+      if (status.textContent !== next) status.textContent = next;
+    }
+    input.addEventListener('input', preserveDraft);
     function visible() { return root.getClientRects().length > 0 && (!root.closest('details') || root.closest('details').open); }
     async function refresh() {
       if (inflight || !visible() || document.hidden) return;
@@ -48,8 +81,8 @@
           if (pinned) log.scrollTop = log.scrollHeight;
         }
         const connected = socket && socket.readyState === WebSocket.OPEN;
-        status.textContent = `World room · ${entries.length} recent messages · ${connected ? 'live' : 'reconnecting / refresh'}`;
-      } catch (error) { status.textContent = `World Chat unavailable: ${error.message}`; }
+        showStatus(`World room · ${entries.length} recent messages · ${connected ? 'live' : 'reconnecting / refresh'}`);
+      } catch (error) { showStatus(`World Chat unavailable: ${error.message}`); }
       finally { inflight = false; }
     }
     function ensureSocket() {
@@ -80,7 +113,7 @@
     if (download) download.addEventListener('click', async () => {
       download.disabled = true;
       try {
-        const response = await fetch('/api/chat/rooms/world/export', {cache:'no-store'});
+        const response = await fetch('/api/chat/rooms/world/export', {cache:'no-store', signal:AbortSignal.timeout(requestTimeoutMs)});
         if (!response.ok) throw new Error(`Room log HTTP ${response.status}`);
         const blob = await response.blob();
         const objectURL = URL.createObjectURL(blob);
@@ -112,7 +145,10 @@
         try { pendingSend = {text:exact, id:newMessageId()}; }
         catch (error) { status.textContent = `Cannot prepare message: ${error.message}`; return; }
       }
+      deliveryNotice = '';
+      preserveDraft();
       sending = true; send.disabled = true;
+      showStatus('Sending…');
       try {
         const receipt = await fetchRoom('/api/chat/rooms/world/send', {method:'POST', headers:{'Content-Type':'application/json', 'X-Client-Id':clientName()},
           body:JSON.stringify({text:exact, client_message_id:pendingSend.id})});
@@ -120,20 +156,36 @@
         // the server confirms that the original UUID was actually committed.
         if (input.value === exact) input.value = '';
         pendingSend = null;
-        await refresh();
-        if (receipt.duplicate) status.textContent = 'Message was already saved · no duplicate sent.';
-        if (receipt.warnings?.length) status.textContent = `Message saved · ${receipt.warnings.join('; ')}`;
+        preserveDraft();
+        if (receipt.duplicate) showStatus('Message was already saved · no duplicate sent.');
+        else if (receipt.warnings?.length) showStatus(`Message saved · ${receipt.warnings.join('; ')}`);
+        else showStatus('Message sent.');
+        void refresh();
         input.focus();
-      } catch (error) { status.textContent = `Delivery unconfirmed: ${error.message}. Check room history before resending; your draft is still here.`; }
+      } catch (error) {
+        deliveryNotice = `Delivery unconfirmed: ${error.message}. Check room history before resending; your draft is still here.`;
+        showStatus(deliveryNotice);
+      }
       finally { sending = false; send.disabled = false; }
     });
     input.addEventListener('keydown', event => {
       if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {event.preventDefault(); form.requestSubmit();}
     });
-    refresh();
-    ensureSocket();
-    const timer = setInterval(() => { ensureSocket(); refresh(); }, 2000);
-    window.addEventListener('pagehide', () => { clearInterval(timer); socket?.close(); }, {once:true});
+    function connect() { ensureSocket(); refresh(); }
+    function resume() {
+      connect();
+      timer = setInterval(connect, 2000);
+    }
+    resume();
+    window.addEventListener('pagehide', () => {
+      clearInterval(timer);
+      const closing = socket;
+      socket = null;
+      closing?.close();
+    });
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) resume();
+    });
     root.addEventListener('world-chat:refresh', refresh);
   }
   document.querySelectorAll('[data-world-chat]').forEach(attach);

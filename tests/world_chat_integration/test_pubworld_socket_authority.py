@@ -8,6 +8,7 @@ from starlette.websockets import WebSocketDisconnect
 
 import main
 from modules.auth import create_access_token
+from modules.governance import GovernanceEngine
 
 
 def token(username: str, role: str = 'guest') -> str:
@@ -15,8 +16,9 @@ def token(username: str, role: str = 'guest') -> str:
 
 
 @pytest.fixture
-def world_app(monkeypatch):
+def world_app(monkeypatch, tmp_path):
     monkeypatch.setenv('PUBCAST_ENFORCE_AUTH', '1')
+    monkeypatch.setattr(main, 'governance', GovernanceEngine(tmp_path))
     app = FastAPI()
     app.add_api_websocket_route('/pubworld/ws/{client_id}', main.pubworld_ws)
     return TestClient(app)

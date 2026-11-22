@@ -42,8 +42,10 @@ def test_world_widgets_render_exchange_messages_and_retry_lost_receipt(tmp_path,
     fail_once = {'pending': True}
     with playwright.sync_playwright() as runtime:
         try:
-            browser = runtime.chromium.launch(headless=True,
-                **({'executable_path': chromium} if chromium else {}), args=['--no-sandbox'])
+            browser_options = {}
+            if chromium and not Path(runtime.chromium.executable_path).is_file():
+                browser_options['executable_path'] = chromium
+            browser = runtime.chromium.launch(headless=True, **browser_options)
         except playwright.Error as exc:
             pytest.skip('Chromium unavailable: ' + str(exc).splitlines()[0])
         try:
