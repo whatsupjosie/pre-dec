@@ -45,7 +45,7 @@ What I do not know: the control room she says was "pulled out of the repo" and t
 ## 3. Correction to what I told her earlier
 
 I told her the show data keeps "every motion and choreography frame." That was overstated, and so is line 27 of handoffs/RECORDING_MODES_2026-11-22.md (corrected in that file in the same commit as this handoff). What the code actually does (READ in modules/recording_modes.py, modules/hub.py and main.py):
-- The show data records everything that goes through the hub's system broadcast (hub.system). Choreography frames (modules/choreography_controller.py) and mocap frames (modules/mocap_integration.py) both send through that broadcast, so they should be recorded. The unit tests feed in a made-up mocap and choreo message, so the file format and the reader are proven. No real choreography or mocap run has been recorded yet. That is the first Sonnet task.
+- The show data records everything that goes through the hub's system broadcast (hub.system). Choreography and mocap messages use that same broadcast, so they should be recorded, but that has not been proven in a real run. Josie has said mocap is not the concern right now (see section 7), so it is not a task here; it is only a fact about what the file may hold.
 - People walking around PubWorld are not recorded. In main.py the PubWorld socket handler's player_move branch does nothing ("pass"), and presence goes to a private roster (pubworld_private). Recording either is a decision about whose movement is kept and in which rooms. It is hers to make. Do not do it unasked.
 - Room messages are kept only from rooms the privacy table names and allows. The default table in modules/recording.py (around line 1144) names pub, green, conference, studio and dressing. Browser code also uses control, octagon and waitingroom, which the table does not name, so those are left out of the show data. Dressing is "never" and is never recorded.
 
@@ -58,7 +58,7 @@ Worktree: /home/claude/work/recording-modes. Branch claude/recording-modes-2026-
 
 Verified (RAN): 16 unit tests and 7 end-to-end tests for the modes pass; 93 recording-related tests pass together. A broad run earlier gave 964 passed, 4 skipped (speech models not installed), but that run was before three small last fixes. Only the recording part was rerun after them. In the end-to-end test, live cuts landed 3 to 66 ms late and armed cuts 0 ms late. Program lengths matched the plan (13.705 against 13.672 s).
 
-Not tested: Windows, a real webcam, takes longer than about 15 seconds, any 3D stage camera, a real choreography or mocap run.
+Not tested: Windows, a real webcam, takes longer than about 15 seconds, any 3D stage camera, a take through the real control room.
 
 Known weaknesses I told her about:
 - Main camera mode starts the new camera at the moment of the cut, so cuts land up to about 0.07 s late unless arm_preview is on.
@@ -104,16 +104,14 @@ Josie asked for the work to be separated by model. The split is by risk. Sonnet 
 
 Do these in order. First: cd /home/claude/work/recording-modes, git status (expect only the untracked assets/vod/, which test runs leave behind and is not to be committed), git fetch, git log --oneline -5.
 
-S1. Prove the recording with the real motion code, not made-up messages. Her words: "let's prove that we can record it."
-- Find how ChoreographyController (modules/choreography_controller.py) and the mocap manager (modules/mocap_integration.py) are started in tests. Several existing tests use them.
-- Write a new end-to-end test next to tests/test_recording_modes_e2e.py. It starts a data_only take and a main_camera take, runs a real choreography and a mocap stream (a stand-in feed is fine; no hardware), and reads the take's show_data.jsonl.gz back.
-- It must show: the choreo_frame and mocap_frame messages are in the file, in order, with the counts the controller sent, and verify_show_data says verified and closed.
-- Do not fix the mocap code itself. Her words: "don't worry too much about the motion capture at the moment, because we're going to be concerned with motion capture very closely soon."
-- If a real run shows the frames are not recorded, that is the finding. Report it, do not patch around it.
-- CHECK-IN 1: report the count of frames sent against frames recorded, and whether the file verified.
+S1. Prove the three recording modes on a real take, through the real start and stop path. Her words: "let's prove that we can record it." Motion capture is NOT part of this task.
+- Start a camcorder take, a data_only take and a main_camera take through the real API (POST /api/recording/{session_id}/start, then stop), the way the control room will, with the cameras and sound sources the studio really has. Use the studio's own cuts and cues as the events. Do not feed in mocap, and do not build mocap tests.
+- For each take, report: the files produced, their lengths against the wall-clock length of the take, whether show_data verifies (verify_show_data says verified and closed), and in main_camera mode whether the program file's cuts match the cut log.
+- If something fails on a real run that passed in the tests, that is the finding. Report it, do not patch around it.
+- CHECK-IN 1: one line per mode: worked or did not, with the numbers.
 
 S2. Measure the show data size on a long take.
-- Simulate a 10-minute take at the real frame rate of choreography and mocap (read the controller for its rate; do not guess). Report file size per minute and the time to flush.
+- Run a 10-minute take with the events the studio really sends (cuts, cues, camera moves). Do not simulate mocap. Report file size per minute and the time to flush.
 - She said the data should be cheap to keep ("store the entire day of shooting cheaply"). If size is a problem, say so with numbers. Do not add caps; her rule is that you ask before capping anything.
 - CHECK-IN 2: size per minute and per hour, plus the memory use of the recorder.
 
@@ -167,7 +165,7 @@ O8. Engine. Not started. She said: "then we can talk more about the engine." Opt
 
 ## 7. Things not to do
 
-- Do not start on the engine, mocap fixes, or the circuit breaker bug. She said: "don't do the circuit breaker bug unless we're going to use the engine."
+- Do not work on motion capture at all. Her words: "don't worry too much about the motion capture at the moment, because we're going to be concerned with motion capture very closely soon." Do not start on the engine or the circuit breaker bug either. She said: "don't do the circuit breaker bug unless we're going to use the engine."
 - Do not push, merge to main, delete, or overwrite originals.
 - Do not read the old handoff as complete; it overstated the motion data (section 3).
 - Do not assume the PubPartner or control-room work from other sessions is in your worktree. Ask which branch.
