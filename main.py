@@ -1178,11 +1178,12 @@ async def lifespan(application: FastAPI):
     application.include_router(create_blackbox_router(blackbox_witness))
     recording = create_recording_service(DATA_DIR, cameras, blackbox_witness=blackbox_witness)
     program_audio_state = ProgramAudioState()
-    application.include_router(create_production_router(
+    production_router = create_production_router(
         cameras, recording, hub, blackbox=blackbox_witness,
         program_audio_state=program_audio_state, include_overlapping_compat_routes=False,
         emergency_snapshot=_studio_emergency_snapshot,
-    ))
+    )
+    application.include_router(production_router)
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
     application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
@@ -1802,14 +1803,14 @@ async def lifespan(application: FastAPI):
         try:
             # Camera switches
             async def handle_timeline_camera(params):
-                to_cam = params.get('to', 'cam_1')
+                requested = params.get('to') or params.get('cam') or 'wide_shot'
+                to_cam = {'wide': 'wide_shot', 'medium': 'medium_shot', 'close': 'close_up'}.get(requested, requested)
                 transition = params.get('transition', 'cut')
-                if cameras:
-                    # Use correct method: set_program_source (not async)
-                    cameras.set_program_source(to_cam)
+                if not cameras or not cameras.set_program_source(to_cam):
+                    raise ValueError(f"Unavailable timeline camera: {to_cam}")
                 if production_log:
                     emit("timeline", "camera_switch", {"to": to_cam, "transition": transition})
-            
+
             # Lighting changes
             async def handle_timeline_lighting(params):
                 preset = params.get('preset')
@@ -1830,31 +1831,48 @@ async def lifespan(application: FastAPI):
                 if production_log:
                     emit("timeline", "bot_chat", {"user": user, "room": room})
             
-            # Recording control
+            # Recording control. The timeline owns exactly one take at a time and only ever
+            # stops that take, so an operator's own session is never touched by a stop cue.
+            timeline_take = None
+
             async def handle_timeline_record(params):
-                action = params.get('action')
-                if action == 'start' and recording:
-                    # Create recording session with timeline-specified parameters
+                nonlocal timeline_take
+                action = params.get("action")
+                if action == "start":
+                    if timeline_take and recording.get_session(timeline_take).state.value in {"active", "paused", "countdown"}:
+                        raise ValueError("Timeline already has an active recording")
+                    program = cameras.get_program_source()
                     session = recording.start_session(
-                        session_id=None,  # Auto-generate
-                        sources=params.get('sources', ['cam_1']),  # Default to cam_1
-                        profile_id=params.get('profile_id', 'broadcast_mp4'),  # Default profile
-                        operator='timeline_automation',
-                        preset=params.get('preset'),
-                        host_override=True,  # Timeline has authority
-                        countdown_seconds=0,  # Immediate start for timeline
+                        session_id=None,
+                        sources=params.get("sources", [program.source_id] if program else []),
+                        profile_id=params.get("profile_id", "broadcast_mp4"),
+                        operator="timeline_automation", preset=params.get("preset"),
+                        countdown_seconds=0,
                     )
-                    if production_log:
-                        emit("timeline", "recording_start", {"session_id": session.session_id})
-                elif action == 'stop' and recording:
-                    # Stop most recent active session
-                    active_sessions = [s for s in recording.list_sessions() 
-                                     if s.state in ['active', 'countdown']]
-                    if active_sessions:
-                        recording.stop_session(active_sessions[-1].session_id)
-                    if production_log:
-                        emit("timeline", "recording_stop", {})
-            
+                    timeline_take = session.session_id
+                    try:
+                        paths = await production_router.begin_take(session)
+                        if len(paths) != len(session.sources):
+                            raise RuntimeError("Timeline could not start every requested encoder")
+                    except BaseException:
+                        try:
+                            await production_router.end_take(timeline_take)
+                        except Exception:
+                            logger.exception("Timeline take %s could not be closed after a failed start", timeline_take)
+                        raise
+                elif action == "stop":
+                    if not timeline_take:
+                        raise ValueError("Timeline has no recording to stop")
+                    _session, artifacts, warnings = await production_router.end_take(timeline_take)
+                    if warnings:
+                        raise RuntimeError("Timeline recording has capture problems: " + "; ".join(warnings))
+                    if not artifacts:
+                        raise RuntimeError("Timeline recording produced no media")
+                else:
+                    raise ValueError("Unknown timeline recording action")
+                if production_log:
+                    emit("timeline", "recording_" + action, {"session_id": timeline_take})
+
             register_timeline_handler(EventType.CAMERA, handle_timeline_camera)
             register_timeline_handler(EventType.LIGHTING, handle_timeline_lighting)
             register_timeline_handler(EventType.CHAT, handle_timeline_chat)

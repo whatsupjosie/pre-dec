@@ -267,6 +267,48 @@ def create_production_router(
             task.add_done_callback(lambda _: capture_stop_tasks.pop(session_id, None))
         return await asyncio.shield(task)
 
+    async def begin_take(session) -> List[str]:
+        """Start capture for a session that was not opened by the start route (timeline cues).
+
+        Goes through the same pipeline as POST /api/recording/start, so a timeline take
+        gets the same encoders, microphone handling, privacy checks and hub event."""
+        paths = await _start_capture_for_session(session)
+        if hub:
+            await hub.broadcast_system_event({
+                "type": "recording_started",
+                "payload": {
+                    "session_id": session.session_id,
+                    "sources": session.sources,
+                    "profile_id": session.profile_id,
+                    "state": session.state.value,
+                    "countdown": 0,
+                    "capture_paths": paths,
+                },
+            })
+        return paths
+
+    async def end_take(session_id: str):
+        """Finish capture, close the session and announce it; shared by the stop route and the timeline.
+
+        Returns the stopped session, its registered artifacts and the capture engine's warnings."""
+        artifacts = await _stop_capture_for_session(session_id)
+        session = recording.stop_session(session_id)
+        warnings = [w for item in (getattr(capture_engine, "report", lambda _s: [])(session_id) or []) for w in item.get("warnings", [])]
+        if hub:
+            await hub.broadcast_system_event({
+                "type": "recording_stopped",
+                "payload": {
+                    "session_id": session_id,
+                    "duration": (session.ended_at or time.time()) - session.started_at,
+                    "artifacts": artifacts,
+                    "capture_warnings": warnings,
+                },
+            })
+        return session, artifacts, warnings
+
+    router.begin_take = begin_take
+    router.end_take = end_take
+
     # —
     # CAMERAS
     # —
@@ -670,21 +712,9 @@ def create_production_router(
     async def stop_recording(session_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
         """Stop a recording session."""
         try:
-            artifacts = await _stop_capture_for_session(session_id)
-            session = recording.stop_session(session_id)
+            session, _artifacts, _warnings = await end_take(session_id)
         except KeyError as exc:
             raise HTTPException(404, str(exc))
-
-        if hub:
-            await hub.broadcast_system_event({
-                "type": "recording_stopped",
-                "payload": {
-                    "session_id": session_id,
-                    "duration": (session.ended_at or time.time()) - session.started_at,
-                    "artifacts": artifacts,
-                    "capture_warnings": [w for item in (getattr(capture_engine, "report", lambda _s: [])(session_id) or []) for w in item.get("warnings", [])],
-                },
-            })
 
         response = session.to_dict()
         report = getattr(capture_engine, "report", None)
