@@ -113,9 +113,10 @@ def execute_studio_action(
         if not _confirmed(body):
             raise ValueError("recording.start requires confirm=true")
         sources = body.get("sources") if isinstance(body.get("sources"), list) else []
+        mode = str(body.get("mode") or "camcorder").strip().lower()
         if not sources:
-            program = cameras.get_program_source()
-            sources = [program.source_id] if program is not None else []
+            from .recording_modes import default_sources  # same defaults as /api/recording/start
+            sources = default_sources(recording, mode)
         session = recording.start_session(
             str(body.get("session_id") or "").strip() or None,
             [str(item) for item in sources],
@@ -123,6 +124,8 @@ def execute_studio_action(
             operator=actor,
             countdown_seconds=int(body.get("countdown_seconds", 0) or 0),
             host_override=bool(body.get("host_override")),
+            mode=mode,
+            record_data=body.get("record_data", True),
         )
         result = session.to_dict()
     elif action_id == "recording.stop":

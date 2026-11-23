@@ -48,6 +48,7 @@ from modules.program_audio_routes import create_program_audio_router
 from modules.participant_audio import create_participant_audio_router
 from starlette.requests import HTTPConnection
 from modules.studio_console_actions import execute_studio_action, list_studio_actions
+from modules.recording_modes import MODES as RECORDING_MODE_DESCRIPTIONS, ModeRequestError, RecordingModeController, default_sources
 
 logger = logging.getLogger("pubcast.production")
 
@@ -180,8 +181,18 @@ def create_production_router(
 
     # Microphone chosen for a recording at start time (see modules/audio_input_spec.py), kept until the capture starts.
     session_audio_inputs: Dict[str, Any] = {}
+    # Camcorder, data only or main camera only (modules/recording_modes.py); one controller for every route.
+    recording_modes = RecordingModeController(cameras=cameras, recording=recording, capture_engine=capture_engine, hub=hub)
+    session_mode_options: Dict[str, Dict[str, bool]] = {}
 
     async def _start_capture_for_session(session) -> List[str]:
+        # The mode starts first: the show data needs no FFmpeg, and data-only and main-camera
+        # takes decide their own picture and sound.
+        if session.state == RecordingState.ACTIVE:
+            mode_paths = await recording_modes.begin(session, audio_input=session_audio_inputs.get(session.session_id),
+                                                     **session_mode_options.pop(session.session_id, {}))
+            if recording_modes.owns_capture(session.session_id):
+                return [str(path) for path in mode_paths]
         if capture_engine is None or not getattr(capture_engine, "available", False):
             return []
         if session.state != RecordingState.ACTIVE:
@@ -201,6 +212,10 @@ def create_production_router(
 
     async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
         session_audio_inputs.pop(session_id, None)
+        session_mode_options.pop(session_id, None)
+        mode_artifacts = await recording_modes.end(session_id)
+        if mode_artifacts is not None:      # data only / main camera: the mode recorded and registered its own media
+            return mode_artifacts
         if capture_engine is None or not getattr(capture_engine, "available", False):
             return []
         if not capture_engine.is_capturing(session_id):
@@ -506,11 +521,16 @@ def create_production_router(
         """Start a new recording session."""
         body = await _json_dict(request)
         sources = _string_list(body, "sources")
+        sources_named = bool(sources)
+        mode = (_string_field(body, "mode", default="camcorder", max_length=32) or "camcorder").strip().lower()
+        record_data = body.get("record_data", True)
+        arm_preview = _bool_field(body, "arm_preview", default=False)
+        if mode not in RECORDING_MODE_DESCRIPTIONS:
+            raise HTTPException(400, f"Unknown recording mode '{mode}'; use one of: {', '.join(RECORDING_MODE_DESCRIPTIONS)}")
         if not sources:
-            pgm = cameras.get_program_source()
-            if pgm:
-                sources = [pgm.source_id]
-            else:
+            # Main camera only may cut to any camera the privacy rules allow; the other modes use the live one.
+            sources = default_sources(recording, mode)
+            if not sources and mode != "data_only":
                 raise HTTPException(400, "No sources specified and no program source set.")
 
         profile_id = _string_field(body, "profile_id", default="broadcast_mp4", max_length=128) or "broadcast_mp4"
@@ -534,12 +554,15 @@ def create_production_router(
                 operator=operator,
                 countdown_seconds=countdown,
                 host_override=host_override,
+                mode=mode,
+                record_data=record_data,
             )
         except (ValueError, PermissionError, KeyError) as exc:
             raise HTTPException(400, str(exc))
 
         if microphone is not None:
             session_audio_inputs[session.session_id] = microphone
+        session_mode_options[session.session_id] = {"arm_preview": arm_preview, "sources_named": sources_named}
         try:
             capture_paths = await _start_capture_for_session(session)
         finally:
@@ -565,9 +588,35 @@ def create_production_router(
         # FFmpeg exiting within moments of starting means nothing is being recorded; say so now.
         startup = getattr(capture_engine, "startup_failures", None)
         capture_errors = startup(session.session_id) if callable(startup) else []
+        capture_errors = capture_errors + recording_modes.start_problems(session.session_id)
         if capture_errors:
             response["capture_errors"] = capture_errors
         return response
+
+    @router.get("/api/recording/modes")
+    async def list_recording_modes():
+        """The three ways a take can record picture, with what each does."""
+        return {"modes": [{"mode": key, "description": text} for key, text in RECORDING_MODE_DESCRIPTIONS.items()],
+                "default": "camcorder"}
+
+    @router.get("/api/recording/{session_id}/mode")
+    async def recording_mode_status(session_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
+        """What this take's mode did: cuts, pieces of picture, sound tracks, show data and the program join."""
+        try:
+            return recording_modes.status(session_id)
+        except KeyError as exc:
+            raise HTTPException(404, str(exc))
+
+    @router.post("/api/recording/{session_id}/mode/assemble")
+    async def recording_mode_assemble(session_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
+        """Join a stopped main-camera take's pieces into its program file again, if it has none yet."""
+        try:
+            result = await recording_modes.assemble(session_id)
+        except KeyError as exc:
+            raise HTTPException(404, str(exc))
+        except ModeRequestError as exc:
+            raise HTTPException(409, str(exc))
+        return result
 
     @router.post("/api/recording/{session_id}/activate")
     async def activate_recording(session_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
@@ -579,6 +628,7 @@ def create_production_router(
 
         capture_paths = await _start_capture_for_session(session)
         session_audio_inputs.pop(session_id, None)
+        mode_errors = recording_modes.start_problems(session_id)
 
         if hub:
             await hub.broadcast_system_event({
@@ -589,6 +639,8 @@ def create_production_router(
         response = session.to_dict()
         if capture_paths:
             response["capture_paths"] = capture_paths
+        if mode_errors:
+            response["capture_errors"] = mode_errors
         return response
 
     @router.post("/api/recording/{session_id}/stop")

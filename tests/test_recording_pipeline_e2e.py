@@ -404,7 +404,8 @@ def test_a_tampered_bundle_is_refused_and_leaves_nothing_behind(host_b, exported
     with zipfile.ZipFile(tampered) as zin, zipfile.ZipFile(renamed, "w", zipfile.ZIP_STORED) as zout:
         for item in zin.infolist():
             data = zin.read(item.filename)
-            if item.filename.endswith(".json") and item.filename != "EXPORT_MANIFEST.json":
+            # Only the take's own metadata sits at the top level; data/ holds the take's other JSON (its mode record).
+            if item.filename.endswith(".json") and "/" not in item.filename and item.filename != "EXPORT_MANIFEST.json":
                 meta = json.loads(data); meta["session_id"] = "e2e_tampered_copy"; data = json.dumps(meta).encode()
                 zout.writestr("e2e_tampered_copy.json", data)
             else:
@@ -412,6 +413,7 @@ def test_a_tampered_bundle_is_refused_and_leaves_nothing_behind(host_b, exported
     before = sorted(p.name for p in (host_b.data / "recordings").iterdir())
     resp = _import(host_b, renamed, "renamed.zip")
     assert resp.status_code == 400, resp.text
+    assert "integrity" in resp.text, f"refused for the flipped byte, not for something else: {resp.text}"
     assert sorted(p.name for p in (host_b.data / "recordings").iterdir()) == before, "a refused import leaves no directory behind"
     assert all(f["session_id"] != "e2e_tampered_copy" for f in host_b.client.get("/api/vod").json()["files"])
 
