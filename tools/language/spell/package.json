@@ -1,0 +1,11 @@
+{
+  "name": "twoi-spell-build",
+  "private": true,
+  "description": "Build-time tools for 2i's offline spell check. Nothing here runs in 2i; the output is committed to 2i/2i-assets/spell/.",
+  "type": "module",
+  "devDependencies": {
+    "dictionary-en": "4.0.0",
+    "esbuild": "0.28.2",
+    "nspell": "2.1.5"
+  }
+}

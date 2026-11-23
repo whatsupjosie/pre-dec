@@ -41,7 +41,7 @@
   surface.id='twoiRichSurface';
   surface.className='twoi-rich-surface';
   surface.contentEditable='true';
-  surface.spellcheck=true;
+  surface.spellcheck=false;   // 2i checks spelling itself (spell.js); the browser's would need the internet
   surface.setAttribute('role','textbox');
   surface.setAttribute('aria-multiline','true');
   surface.setAttribute('aria-label','Manuscript, with formatting shown');

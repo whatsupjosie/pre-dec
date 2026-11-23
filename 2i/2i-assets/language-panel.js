@@ -92,7 +92,8 @@
       surface.insert(replacement);
       return true;
     }
-    const area = typeof soloTextarea !== 'undefined' && soloTextarea ? soloTextarea : null;
+    // The spell check names the text box it means (the draft page as well as the manuscript).
+    const area = target.area || (typeof soloTextarea !== 'undefined' && soloTextarea ? soloTextarea : null);
     if (!area) return false;
     area.focus();
     area.setSelectionRange(target.start, target.end);

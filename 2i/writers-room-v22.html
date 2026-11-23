@@ -1281,7 +1281,7 @@ body[data-twoi-desk="standard"] .solo-textarea { border-radius:0 0 3px 0; }
             <div class="manuscript-lines" id="manuscriptLines"></div>
             <div class="solo-editor" id="soloEditor">
               <div class="line-numbers" id="lineNumbers"></div>
-              <textarea class="solo-textarea" id="soloTextarea" placeholder="Begin writing your manuscript…" spellcheck="true"></textarea>
+              <textarea class="solo-textarea" id="soloTextarea" placeholder="Begin writing your manuscript…" spellcheck="false"></textarea>
             </div>
           </div>
 
@@ -1291,7 +1291,7 @@ body[data-twoi-desk="standard"] .solo-textarea { border-radius:0 0 3px 0; }
           <!-- Draft zone (buffer in co-writing) -->
           <div class="draft-zone" id="draftZone">
             <div id="readingIndicator"></div>
-            <textarea class="draft-area" id="draftArea" placeholder="Keep writing…" spellcheck="true"></textarea>
+            <textarea class="draft-area" id="draftArea" placeholder="Keep writing…" spellcheck="false"></textarea>
           </div>
         </div>
       </div>
@@ -3454,6 +3454,8 @@ function ppForgetGenerated(t) { PP_GEN.delete(ppKey(t)); }
 <script src="2i-assets/rich-surface.js"></script>
 <script src="2i-assets/language.js"></script>
 <script src="2i-assets/language-panel.js"></script>
+<script src="2i-assets/spell.js"></script>
+<script src="2i-assets/spell-ui.js"></script>
 <script src="/static/foresight_files.js"></script>
 <script src="2i-assets/file-workspace.js"></script>
 </body>
