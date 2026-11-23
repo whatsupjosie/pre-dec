@@ -32,6 +32,11 @@ from modules.pub_manager_authority import (
     create_pub_manager_control_router,
 )
 from modules.pubpartner_backup import create_friend_backup
+from modules.hub import Hub
+from modules.chat_rooms import create_chat_router, install_chat_websocket
+from modules.route_security import current_identity
+from modules.writers_room import create_writers_room_router
+from modules.manuscript_intelligence import make_router as create_manuscript_intelligence_router
 from modules.pubpartner_vessel import PubPartnerVesselRuntime
 
 try:
@@ -134,6 +139,9 @@ async def lifespan(app: FastAPI):
         vessel_runtime=vessel,
     )
     spine_holder["spine"] = spine
+    # Reuse PubCast's chat Hub in a minimal local host; no cameras or stage.
+    chat_hub = Hub(DATA_DIR)
+    app.state.hub = chat_hub
 
     if BYOKManager is not None:
         try:
@@ -146,6 +154,10 @@ async def lifespan(app: FastAPI):
     # Register the object-bound routers once. This happens before lifespan
     # yields, so the control plane is live before the first request is served.
     if not getattr(app.state, "control_plane_routes_registered", False):
+        app.include_router(create_writers_room_router(DATA_DIR))
+        app.include_router(create_manuscript_intelligence_router(DATA_DIR))
+        app.include_router(create_chat_router(chat_hub, current_identity))
+        install_chat_websocket(app, chat_hub, current_identity)
         app.include_router(alex_routes.router)
         app.include_router(create_pub_manager_authority_router(pub_manager, alex_bridge))
         app.include_router(create_pub_manager_control_router(pub_manager, alex_bridge))
@@ -209,6 +221,7 @@ app.add_middleware(
 app.include_router(auth_routes.router)
 app.include_router(pubpartner_routes.router)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+app.mount("/2i-assets", StaticFiles(directory=str(ROOT / "2i" / "2i-assets")), name="twoi-assets")
 
 
 @app.get("/", include_in_schema=False)
@@ -219,6 +232,25 @@ async def root() -> RedirectResponse:
 @app.get("/pubpartner", include_in_schema=False)
 async def pubpartner_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "pubpartner.html")
+
+
+@app.get("/2i", include_in_schema=False)
+@app.get("/writers-room", include_in_schema=False)
+@app.get("/2i-v22", include_in_schema=False)
+async def portable_writers_room() -> FileResponse:
+    """Run the same full 2i editor from the Portable host."""
+    return FileResponse(ROOT / "2i" / "writers-room-v22.html")
+
+
+@app.get("/2i/chat", include_in_schema=False)
+async def portable_twoi_chat() -> FileResponse:
+    """2i Chat mode uses the existing local World Chat Hub."""
+    return FileResponse(STATIC_DIR / "world_chat.html")
+
+
+@app.get("/2i/chat/archive", include_in_schema=False)
+async def portable_twoi_chat_archive() -> FileResponse:
+    return FileResponse(STATIC_DIR / "twoi_chat_archive.html")
 
 
 @app.get("/api/pubpartner/app-health")
