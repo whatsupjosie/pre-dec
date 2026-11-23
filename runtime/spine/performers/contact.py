@@ -127,3 +127,4 @@ def _infer_object_type(object_id: str, hint: str) -> str:
 
 def _distance(a: List[float], b: List[float]) -> float:
     return math.sqrt(sum((float(a[index]) - float(b[index])) ** 2 for index in range(3)))
+

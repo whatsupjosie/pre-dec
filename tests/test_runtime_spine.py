@@ -27,7 +27,8 @@ def test_performer_registry_locomotion_and_replication():
     locomotion.move_to("p1", [1, 0, 0])
     locomotion.update(0.2)
     assert performer.position[0] > 0
-    assert performer.skeleton_pose["animation"] == "walk"
+    # The animation name lives on the performer; skeleton_pose is bones only.
+    assert performer.current_animation == "walk"
     snap = build_replication_snapshot([performer], dirty_only=True, mark_clean=True)
     assert snap["count"] == 1
     assert performer.dirty is False
@@ -49,5 +50,6 @@ def test_animation_authority_uses_highest_priority_bone_first():
     authority.submit("p1", "base", {"bones": {"head": {"rotation": [1, 0, 0]}}}, priority=10)
     authority.submit("p1", "overlay", {"bones": {"head": {"rotation": [5, 0, 0]}, "spine": {"rotation": [0, 1, 0]}}}, priority=50)
     pose = authority.resolve("p1")
-    assert pose["bones"]["head"]["rotation"] == [5, 0, 0]
-    assert pose["bones"]["spine"]["rotation"] == [0, 1, 0]
+    # resolve() returns a flat bone map: the overlay wins the head, the base keeps the spine.
+    assert pose["head"]["rotation"] == [5, 0, 0]
+    assert pose["spine"]["rotation"] == [0, 1, 0]

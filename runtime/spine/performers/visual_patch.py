@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Optional
 
-from ..event_bus import EventBus
+from ..event_bus import EventBus, FrozenDict
 
 
 PATCH_KIND_COVER = "cover"
@@ -131,13 +131,13 @@ class VisualPatchCoordinator:
                 source=source,
             )
 
-    def _on_mesh_glitch(self, event: Mapping[str, Any]):
+    def _on_mesh_glitch(self, event: FrozenDict):
         self._publish_patch(self.build_patch(_plain_dict(event.get("data", {}))), "visual_patch_coordinator")
 
-    def _on_jeremy_request(self, event: Mapping[str, Any]):
+    def _on_jeremy_request(self, event: FrozenDict):
         self._publish_patch(self.build_patch(_plain_dict(event.get("data", {}))), "visual_patch_coordinator")
 
-    def _on_motion_feedback(self, event: Mapping[str, Any]):
+    def _on_motion_feedback(self, event: FrozenDict):
         data = _plain_dict(event.get("data", {}))
         hints = [str(item) for item in data.get("compensation_hints", [])]
         if "fallback_to_simpler_animation" not in hints and "avoid_forcing_joint_limits" not in hints:
@@ -154,7 +154,7 @@ class VisualPatchCoordinator:
         })
         self._publish_patch(patch, "visual_patch_coordinator")
 
-    def _on_mesh_ready(self, event: Mapping[str, Any]):
+    def _on_mesh_ready(self, event: FrozenDict):
         data = _plain_dict(event.get("data", {}))
         self.event_bus.emit(
             "avatar:visual_patch_retired",
@@ -266,7 +266,9 @@ def _color_for_issue(issue: str) -> str:
 
 
 def _plain_dict(value: Any) -> Dict[str, Any]:
-    if isinstance(value, Mapping):
+    if isinstance(value, FrozenDict):
+        return value.to_dict()
+    if isinstance(value, dict):
         return dict(value)
     return {}
 

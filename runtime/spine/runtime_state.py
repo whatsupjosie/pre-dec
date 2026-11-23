@@ -28,4 +28,4 @@ class RuntimeState:
         self.event_bus.emit("room:entered", {"performer_id": performer_id, "room_id": room_id}, source="runtime_state")
 
     def snapshot(self) -> Dict[str, Any]:
-        return {"current_room": self.current_room, "performers": [item.to_dict() for item in self.performers.all_performers()], "stations": self.stations.broadcast_station_states(), "events": list(self.event_bus.history[-32:])}
+        return {"current_room": self.current_room, "performers": [item.to_dict() for item in self.performers.all_performers()], "stations": self.stations.broadcast_station_states(), "events": self.event_bus.history(32)}
