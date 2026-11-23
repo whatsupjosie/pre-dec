@@ -4,7 +4,7 @@ Branch: claude/studio-assembly-2026-11-23 (pushed). Built on claude/one-source-2
 
 Labels: RAN = I ran it and saw the result. READ = I opened and read it. LISTED = I saw only a name or count. GUESS = my reasoning, not checked.
 
-## What changed (four commits, all RAN against the tests named)
+## What changed (all RAN against the tests named)
 
 1. static/pubpartner_calibration_ui.js. The calibration screen built '/api/pubpartner' + path. tests/test_frontend_contract_compat.py reads every /api literal in static/ and accepts a router base only when it ends in a slash. Now '/api/pubpartner/' + the path with leading slashes removed. Behavior unchanged. RAN: test_frontend_contract_compat.py and the calibration tests, 15 passed.
 
@@ -25,6 +25,8 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. LISTED =
    - capture.py: sources whose ids clean to the same file name ("cam/a" and "cam_a"), or differ only in letter case, used to be written to one file by FFmpeg with -y, the later one overwriting the earlier. Each source now gets its own file (cam_a.mp4, cam_a-2.mp4, ...). Backslashes in a source id are now cleaned too.
    - RAN: tests/test_recording_portable_bundle.py with main-debug's three new tests added unchanged (all pass); new tests/test_capture_output_names.py, 4 passed; the old code was run against the same colliding ids and gave cam_a.wav twice. tests/test_recording_pipeline_e2e.py, 21 passed (real FFmpeg takes). 19 non-browser test files that touch recording or capture, 270 passed, 0 failed.
    - NOT ported: the main-debug test that checks overlapping names through SessionCapture (class not on this branch; covered by the new test instead), recording import not overwriting an existing zip, production pause rejecting a non-boolean, import sanitizing a filename. Those three were not diagnosed on this branch.
+
+5. Loose-parts inventory (handoffs/LOOSE_PARTS_INVENTORY_2026-11-23.md, tools/loose_parts_inventory.py, tests/test_loose_parts_inventory.py). RAN: tool on this branch (440 Python files: 319 attached, 45 tests-only, 10 tools-only, 66 loose); 3 tests pass and one fails when the byte-order-mark handling is deliberately broken. Finding: the backends are attached; the studio's gap is screens (timeline transport buttons, readiness before a take, a link to the phone-camera page, and others). Nothing was attached, because each attachment needs a placement choice that is Josie's.
 
 ## Known and not fixed
 
