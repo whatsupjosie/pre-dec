@@ -295,24 +295,8 @@ class FFmpegCaptureEngine:
             output_args = _build_ffmpeg_output(profile, out_path)
 
             cmd = [self._bin, "-y", "-hide_banner"] + input_args + output_args
-            logger.info("FFmpeg cmd for %s: %s", src.source_id, " ".join(cmd))
-
-            log_path = out_path.with_name(out_path.name + ".ffmpeg.log")
-            try:
-                # FFmpeg's own output is kept next to the take: it is the only record of why an encode failed or lagged.
-                with open(log_path, "wb") as log_file:
-                    proc = await asyncio.create_subprocess_exec(
-                        *cmd,
-                        stdin=asyncio.subprocess.PIPE,
-                        stdout=asyncio.subprocess.DEVNULL,
-                        stderr=log_file,
-                    )
-                cp = _CaptureProcess(
-                    source_id=src.source_id,
-                    output_path=out_path,
-                    proc=proc,
-                    log_path=log_path,
-                )
+            cp = await self._spawn(cmd, src.source_id, out_path)
+            if cp is not None:
                 procs.append(cp)
                 output_paths.append(out_path)
                 if src.transport.value.lower() == "virtual":
@@ -321,28 +305,82 @@ class FFmpegCaptureEngine:
                         "Source %s is a virtual camera: %s will contain an FFmpeg test pattern, not rendered PubWorld video.",
                         src.source_id, out_path,
                     )
-                logger.info("Capture started for %s → %s (pid=%d)", src.source_id, out_path, proc.pid)
 
-            except Exception as e:
-                logger.error("Failed to start FFmpeg for %s: %s", src.source_id, e)
-
-        if procs:
-            self._active[session_id] = procs
-            # An encoder that cannot start (unknown codec, bad input) exits within moments. Say so now
-            # instead of letting the operator record to nothing.
-            await asyncio.sleep(_STARTUP_CHECK_SECONDS)
-            failed = [self._describe(cp) for cp in procs if cp.proc.returncode is not None]
-            if failed:
-                self._startup_failures[session_id] = failed
-                self._bound(self._startup_failures)
-                for item in failed:
-                    logger.error("Capture for %s failed to start: %s", item["source_id"], item["error"])
+        await self._register_started(session_id, procs)
         if synthetic_paths:
             self._synthetic[session_id] = synthetic_paths
             while len(self._synthetic) > 50:   # bounded: drop the oldest session's record
                 self._synthetic.pop(next(iter(self._synthetic)))
 
         return output_paths
+
+    async def start_audio_input(self, session_id: str, audio_input, profile, session_dir: Path,
+                                *, name: str = "microphone") -> List[Path]:
+        """Record a microphone on its own, for the whole of ``session_id``.
+
+        ``audio_input`` is an ``AudioInput`` (modules/audio_input_spec.py); nothing else is opened, so a camera
+        that is also being recorded is never opened twice. ``profile`` should be audio-only; any picture settings
+        in it are ignored. The file is ``<name>.<container>`` in ``session_dir``.
+        """
+        if not self.available:
+            logger.warning("FFmpeg not available — microphone for %s will not be recorded.", session_id)
+            return []
+        if session_id in self._active:
+            logger.warning("Session %s already capturing — ignoring duplicate start.", session_id)
+            return [cp.output_path for cp in self._active[session_id]]
+        self._reports.pop(session_id, None)
+        self._startup_failures.pop(session_id, None)
+        safe_name = str(name).replace("/", "_").replace(":", "_").replace("\\", "_")
+        out_path = session_dir / f"{safe_name}.{profile.container.value}"
+        args = _build_ffmpeg_output(profile, out_path)
+        if "-vn" not in args:
+            args = ["-vn"] + args
+        cmd = [self._bin, "-y", "-hide_banner"] + audio_input.ffmpeg_args() + args
+        cp = await self._spawn(cmd, safe_name, out_path)
+        await self._register_started(session_id, [cp] if cp is not None else [])
+        return [out_path] if cp is not None else []
+
+    async def _spawn(self, cmd: List[str], source_id: str, out_path: Path) -> Optional["_CaptureProcess"]:
+        """Start one FFmpeg process writing ``out_path``, with its log kept beside it."""
+        logger.info("FFmpeg cmd for %s: %s", source_id, " ".join(cmd))
+        log_path = out_path.with_name(out_path.name + ".ffmpeg.log")
+        try:
+            # FFmpeg's own output is kept next to the take: it is the only record of why an encode failed or lagged.
+            with open(log_path, "wb") as log_file:
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=log_file,
+                )
+        except Exception as e:
+            logger.error("Failed to start FFmpeg for %s: %s", source_id, e)
+            return None
+        logger.info("Capture started for %s → %s (pid=%d)", source_id, out_path, proc.pid)
+        return _CaptureProcess(source_id=source_id, output_path=out_path, proc=proc, log_path=log_path)
+
+    async def _register_started(self, session_id: str, procs: List["_CaptureProcess"]) -> None:
+        if not procs:
+            return
+        self._active[session_id] = procs
+        # An encoder that cannot start (unknown codec, bad input) exits within moments. Say so now
+        # instead of letting the operator record to nothing.
+        await asyncio.sleep(_STARTUP_CHECK_SECONDS)
+        failed = [self._describe(cp) for cp in procs if cp.proc.returncode is not None]
+        if failed:
+            self._startup_failures[session_id] = failed
+            self._bound(self._startup_failures)
+            for item in failed:
+                logger.error("Capture for %s failed to start: %s", item["source_id"], item["error"])
+
+    def live_report(self, session_id: str) -> List[dict]:
+        """The same account as ``report()``, for processes that are still running (empty when none are)."""
+        return [self._report_for(cp) for cp in self._active.get(session_id, [])]
+
+    def running(self, session_id: str) -> bool:
+        """True while every process of ``session_id`` is still alive."""
+        procs = self._active.get(session_id, [])
+        return bool(procs) and all(cp.proc.returncode is None for cp in procs)
 
     def synthetic_outputs(self, session_id: str) -> List[Path]:
         """Outputs of this session recorded from the test pattern (``virtual`` transport).
