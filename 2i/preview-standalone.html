@@ -3478,7 +3478,7 @@ $('frReplaceAllBtn').onclick = () => {
     markDirty();render();
   }
   $('frResult').textContent=count+' replacement'+(count===1?'':'s')+' made'
-    +(kept?'; '+kept+' in locked lines left as they are':'');
+    +(kept?'; '+kept+' in locked lines left unchanged':'');
   $('frResult').className='test-result ok';
 };
 

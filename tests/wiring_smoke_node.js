@@ -38,7 +38,12 @@ async function bridgeTest(){
    saveDocument:save,docPayload:()=>({format:'2i-document',version:4,state:{committed:['My untouched draft']}}),safeName:()=>"Original_Work",
    Blob,URLSearchParams,Promise,console,Event:class Event{constructor(type){this.type=type}},
    document:{documentElement:{dataset:{}},addEventListener(){},dispatchEvent(){}},
-   initializing:false,documentDirty:false,saveConflict:false,savePromise:null,chatSending:false,generating:false,PP:{inflight:false},recoverySafe:true,
+   documentDirty:false,saveConflict:false,savePromise:null,chatSending:false,generating:false,PP:{inflight:false},recoverySafe:true,
+   // file-workspace.js checks `initializing` after awaiting reachStarted: Reach can
+   // resolve startup and still be showing a sign-in dialog, which is not authenticated
+   // readiness. reach.js declares it at line 47; a vm fixture must supply it. These
+   // tests are the authenticated case, so it is false.
+   initializing:false,
  };
  vm.runInNewContext(fileBridge,context,{filename:'file-workspace.js'});
  await tick();

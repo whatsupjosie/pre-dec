@@ -16,7 +16,9 @@ function uniqueEditorRecoveries(records){
   const copies=new Map();
   for(const r of records){
     if(!r?.id||!r.state)continue;
-    const key=r.dirty?"dirty:"+r.id+":"+(r.writer||"legacy")+":"+(r.writer?"":(r.ts||0)):"clean:"+r.id;
+    // The slot keeps the current and the earlier backup apart; without it they
+    // share an id and the de-duplicator would keep only the newer of the two.
+    const key=r.dirty?"dirty:"+r.id+":"+(r.writer||"legacy")+":"+(r.writer?"":(r.ts||0)):"clean:"+r.id+":"+(r.slot||'current');
     const old=copies.get(key);
     if(!old||(r.revision||0)>(old.revision||0)||((r.revision||0)===(old.revision||0)&&(r.ts||0)>(old.ts||0)))copies.set(key,r);
   }
@@ -158,17 +160,40 @@ function writeRecovery() {
   if(reachFileMode || (networked&&!serverReady))return;
   try{
     conversations[partnerId]=chatHistory;
-    const copy={id:documentId,revision,mutation,title:documentTitle,state:getDocState(),dirty:documentDirty,ts:Date.now(),writer:editorWriter};
+    const copy={id:documentId,revision,mutation,title:documentTitle,state:getDocState(),dirty:documentDirty,ts:Date.now(),writer:editorWriter,slot:'current'};
     const content=JSON.stringify(copy), key=RECOVERY_KEY+':'+documentId, own=recoveryWriterKey(documentId);
     if(documentDirty){
       // Independent tabs must never overwrite one another's unsaved recovery.
       localStorage.setItem(own,content);
     }else{
       const old=stored(key,null);
-      if(!old?.dirty&&(!old||(old.revision||0)<=revision))localStorage.setItem(key,content);
+      if(!old?.dirty&&(!old||(old.revision||0)<=revision)){
+        // Two backups per manuscript, Josie's decision of 2026-11-21: the copy
+        // about to be replaced is kept as the earlier one, so there is always a
+        // step back if the newest copy is not the one wanted.
+        //
+        // Its own try/catch on purpose. The second copy doubles what recovery
+        // uses, and if storage is full the primary copy is the one that must
+        // survive -- losing the spare is a worse day, losing the current one is
+        // a lost manuscript.
+        if(old&&old.id===documentId&&(old.mutation!==copy.mutation||old.ts!==copy.ts)){
+          try{localStorage.setItem(RECOVERY_KEY+':prev:'+documentId,JSON.stringify({...old,slot:'previous'}));}
+          catch{try{localStorage.removeItem(RECOVERY_KEY+':prev:'+documentId);}catch{}}
+        }
+        localStorage.setItem(key,content);
+      }
       // Preserve legacy dirty copies. Remove only this runtime's buffer once
       // the server or the clean canonical recovery actually retains the work.
-      if((networked&&revision>0)||(!old?.dirty&&stored(key,null)?.revision===revision))localStorage.removeItem(own);
+      //
+      // "Retains the work" has to mean it: this used to clear the buffer whenever
+      // there was a server revision at all, on the assumption the server held
+      // everything. It does not when a save failed -- the text lives only in the
+      // buffer then -- and reopening a clean copy of the same manuscript would
+      // clear the buffer and take the unsaved writing with it. The buffer is now
+      // removed only when it holds nothing the copy being written does not.
+      const buffered=stored(own,null);
+      const bufferIsRedundant=!buffered||JSON.stringify(buffered.state)===JSON.stringify(copy.state);
+      if(bufferIsRedundant&&((networked&&revision>0)||(!old?.dirty&&stored(key,null)?.revision===revision)))localStorage.removeItem(own);
     }
     rememberWorkspace();recoverySafe=true;unsavedNoticeShown=false;
   }catch{recoverySafe=false;pinEditorDocument();setSaveStatus('Browser recovery unavailable · export a copy if needed');}
@@ -714,9 +739,18 @@ async function showShelf() {
     catch (error) { remoteError=error; }
   }
   const local=browserManuscripts();
-  const entries=local.filter(doc=>doc.dirty||!remote.some(r=>r.id===doc.id))
+  // browserManuscripts() returns newest first. Adding them one at a time with
+  // unshift reversed that, so the shelf listed the stalest browser copy at the
+  // top -- and an empty copy of a manuscript could sit above the copy that held
+  // the unsaved writing. Browser copies still come before server ones; they just
+  // keep the order they were sorted into.
+  const browser=local
+    .filter(doc=>doc.dirty||!remote.some(r=>r.id===doc.id))
     .map(doc=>({...doc,source:'browser'}))
-    .concat(remote.map(doc=>({...doc,source:'server'})));
+    // Within one manuscript, the copy with unsaved work is the one being looked
+    // for, whatever the timestamps say about the saved copy beside it.
+    .sort((a,b)=>a.id===b.id?(b.dirty?1:0)-(a.dirty?1:0):0);
+  const entries=[...browser,...remote.map(doc=>({...doc,source:'server'}))];
   // A disconnected Reach server must not masquerade as an empty manuscript shelf.
   if (remoteError) {
     const warning=document.createElement('p');
@@ -733,7 +767,8 @@ async function showShelf() {
   for(const doc of entries) {
     const button=document.createElement('button');button.className='mc-btn shelf-item';button.dataset.documentId=doc.id;button.dataset.source=doc.source;
     const title=document.createElement('strong');title.textContent=doc.title;
-    const stamp=document.createElement('small');stamp.textContent=doc.source==='browser'?(doc.dirty?'Unsaved browser recovery':'Browser copy')+' · '+new Date(doc.ts).toLocaleString():'Revision '+doc.revision+' · '+new Date(doc.updated*1000).toLocaleString();
+    const label=doc.dirty?'Unsaved browser recovery':doc.slot==='previous'?'Earlier browser copy':'Browser copy';
+    const stamp=document.createElement('small');stamp.textContent=doc.source==='browser'?label+' · '+new Date(doc.ts).toLocaleString():'Revision '+doc.revision+' · '+new Date(doc.updated*1000).toLocaleString();
     button.append(title,stamp);
     if(typeof decorateVersionShelf==='function')decorateVersionShelf(button,doc);
     button.onclick=async()=>{
@@ -742,8 +777,30 @@ async function showShelf() {
         if(doc.source==='browser'){
           const candidate=stored(doc.recoveryKey,null)||doc;
           validateDocumentState(candidate.state);
-          if(!confirm('Recover this browser copy as an independent manuscript? The original version and other editors will remain untouched.'))return;
-          if(await importDocument(new Blob([JSON.stringify({format:'2i-document',version:4,title:String(candidate.title||'Untitled').slice(0,175)+' — browser recovery',state:candidate.state})],{type:'application/json'})))closeModal('reachShelf');
+          // Josie's decision of 2026-11-21: a recovery copy reopens the SAME
+          // manuscript, under its own id and its own title. It used to be
+          // imported as an independent document with a new id and
+          // " — browser recovery" added to the title, which made a near-duplicate
+          // every time and renamed the author's work to do it.
+          //
+          // Opening an older copy of a manuscript the server has moved past
+          // cannot quietly overwrite the server's: the copy carries its own
+          // revision, and saving a stale revision is refused with a conflict and
+          // the offer to save a copy, exactly as it is for any other stale write.
+          if(!confirm('Open the '+(candidate.slot==='previous'?'earlier':'latest')+' browser copy of “'+String(candidate.title||'Untitled')+'”? Anything unsaved here has already been preserved.'))return;
+          cancelLLM();stopPlaying();
+          documentId=candidate.id;
+          revision=candidate.revision||0;
+          saveConflict=false;
+          documentTitle=String(candidate.title||'Untitled manuscript').slice(0,200);
+          loadDocState(candidate.state);
+          documentDirty=!!candidate.dirty;
+          savedMutation=mutation;
+          writeRecovery();
+          setSaveStatus(documentDirty?'Recovered from this browser · not yet saved':'Recovered from this browser');
+          closeModal('reachShelf');
+          render();
+          document.dispatchEvent(new Event('foresight:work-change'));
           return;
         }
         const previous=documentId,before=mutation;
@@ -810,7 +867,10 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape' && $('reachAccount').classList.contains('open')){event.preventDefault();event.stopImmediatePropagation();return;}
   const key=String(event.key||'').toLowerCase();
   const field=document.activeElement;
-  const typing=field&&(field.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(field.tagName))&&!field.closest?.('.m-line-edit');
+  // #twoiRichSurface is excluded for the same reason .m-line-edit is: its undo
+  // is the manuscript's. The browser's own contenteditable undo would put the
+  // page back without putting the model back, and they would disagree.
+  const typing=field&&(field.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(field.tagName))&&!field.closest?.('.m-line-edit')&&!field.closest?.('#twoiRichSurface');
   if((event.ctrlKey||event.metaKey)&&['z','y'].includes(key)&&typing) event.stopImmediatePropagation();
 },true);
 // Drop is handled once; invalid input cannot partially replace the active document.

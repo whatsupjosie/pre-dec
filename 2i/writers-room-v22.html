@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="2i-assets/reach.css">
 <link rel="stylesheet" href="2i-assets/studio-desk.css">
 <link rel="stylesheet" href="2i-assets/format-menu.css">
+<link rel="stylesheet" href="2i-assets/rich-surface.css">
 <script src="2i-assets/format-core.js"></script>
 <style>
 
@@ -1968,6 +1969,10 @@ function updateModeUI() {
     $('playbackControls').classList.add('hidden');
     $('zoneLabel').textContent = 'Manuscript';
   }
+  // Write/Collab is a change other parts of 2i need to follow (the live
+  // formatting surface steps aside for Collab's two-page spread and its own
+  // line editor, then comes back with Write mode).
+  document.dispatchEvent(new CustomEvent('twoi:mode-change',{detail:{coWriting}}));
 }
 function toggleMode() {
   if (coWriting && buffer.length) approveBuffer();
@@ -2881,7 +2886,11 @@ function manuscriptShortcut(event,context) {
   return null;
 }
 document.addEventListener('keydown',e=>{
-  const target=e.target,editor=target===soloTextarea||target===draftArea||!!target?.closest?.('.m-line-edit textarea');
+  // #twoiRichSurface is the live formatting surface (rich-surface.js). It is a
+  // contenteditable, so without naming it here the check below would class it as
+  // another text field and Ctrl+S / Ctrl+F / Ctrl+Z would stop reaching the
+  // manuscript while the caret was in it.
+  const target=e.target,editor=target===soloTextarea||target===draftArea||!!target?.closest?.('.m-line-edit textarea')||!!target?.closest?.('#twoiRichSurface');
   const otherTextField=!editor&&!!target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
   const nativeTextField=(editor||otherTextField)&&!target?.closest?.('.m-line-edit');
   const action=manuscriptShortcut(e,{nativeDialog:!!document.querySelector('dialog[open]'),legacyModal:!!document.querySelector('.modal-backdrop.open'),otherTextField,nativeTextField,collab:coWriting});
@@ -3442,6 +3451,9 @@ function ppForgetGenerated(t) { PP_GEN.delete(ppKey(t)); }
 <script src="2i-assets/typewriter-input.js"></script>
 <script src="2i-assets/studio-desk.js"></script>
 <script src="2i-assets/format-menu.js"></script>
+<script src="2i-assets/rich-surface.js"></script>
+<script src="2i-assets/language.js"></script>
+<script src="2i-assets/language-panel.js"></script>
 <script src="/static/foresight_files.js"></script>
 <script src="2i-assets/file-workspace.js"></script>
 </body>

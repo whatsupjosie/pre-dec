@@ -78,19 +78,25 @@ test('cancelling the chapter dialog creates no undo point',()=>{
   assert.equal(c.undoStack.length,0);
   assert.equal(c.chapters.length,1);
 });
+// The context key is otherTextField. writers-room-v22.html line 2881 computes it
+// for any input, textarea, select or contenteditable that is not the manuscript
+// surface, and manuscriptShortcut returns null for it, so Ctrl+Z in a Find or
+// Rename box stays with the field. This test used the older name nativeTextField.
 test('manuscript shortcut owner preserves every native text-field undo',()=>{
   const s=take(page,'function manuscriptShortcut(',"\ndocument.addEventListener('keydown',e=>{");
   const shortcut=vm.runInNewContext('('+s+')');
   for(const key of ['z','Z','y']){
     for(const shiftKey of [false,true]){
-      assert.equal(shortcut({key,ctrlKey:true,shiftKey},{nativeTextField:true}),null);
+      assert.equal(shortcut({key,ctrlKey:true,shiftKey},{otherTextField:true}),null);
     }
   }
-  assert.equal(shortcut({key:'z',ctrlKey:true},{nativeTextField:false}),'undo');
-  assert.equal(shortcut({key:'z',ctrlKey:true,shiftKey:true},{nativeTextField:false}),'redo');
+  assert.equal(shortcut({key:'z',ctrlKey:true},{otherTextField:false}),'undo');
+  assert.equal(shortcut({key:'z',ctrlKey:true,shiftKey:true},{otherTextField:false}),'redo');
 });
 test('Reach capture guard stops Ctrl+Z in Find and Rename, not Save',()=>{
-  const s=take(reach,"// Native undo belongs to the focused text field",'// Drop is handled once');
+  // Anchored on the code, not on comment prose: the comment above this guard was
+  // reworded on 2026-11-18 and the old literal anchor stopped matching.
+  const s=take(reach,"document.addEventListener('keydown',event=>{",'// Drop is handled once');
   let callback=null;
   const c={
     document:{
@@ -132,5 +138,7 @@ test('standalone Replace All counts once and never edits protected lines',()=>{
   elements.frReplaceAllBtn.onclick();
   assert.equal(c.soloTextarea.value,'the fox sat\nthe cat is locked\na fox and a fox');
   assert.equal(c.committed.join('\n'),c.soloTextarea.value);
+  // Josie settled the wording on 2026-11-21: "left unchanged". Both trees say it
+  // now (preview-standalone.html said "left as they are"), so this is exact again.
   assert.equal(elements.frResult.textContent,'3 replacements made; 1 in locked lines left unchanged');
 });

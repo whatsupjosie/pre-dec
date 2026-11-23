@@ -20,9 +20,15 @@ body[data-twoi-desk="typewriter"] .solo-textarea,body[data-twoi-desk="typewriter
 #twoiPaperPreview{position:absolute;top:31.9%;left:39.1%;width:16.4%;height:11%;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;font:400 1.05cqw/1.3 "Courier New",monospace;color:#2b2118;pointer-events:none}
 #twoiStudioControls{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 #twoiStudioControls .mc-btn{min-height:36px;flex:1 1 auto}
-#twoiAudioOptions{display:flex;flex-wrap:wrap;gap:8px;font:12px/1.4 system-ui;color:#ead6aa;padding:3px}
+/* The sound switches sit on the machine, opposite Expand keys and in the same
+   chip, so they belong to the typewriter rather than floating under it. Josie:
+   "audio effects must be optional" -- they are off until she ticks them. */
+#twoiAudioOptions{position:absolute;top:3px;left:5px;z-index:5;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center;max-width:calc(100% - 110px);padding:4px 9px;border:1px solid #e4bd6e;border-radius:5px;background:#17130fd9;color:#f7e5be;font:600 12px/1.2 system-ui}
+#twoiAudioOptions label{display:inline-flex;align-items:center;gap:5px;min-height:24px;cursor:pointer;user-select:none;white-space:nowrap}
+#twoiAudioOptions input{width:14px;height:14px;margin:0;cursor:pointer;accent-color:#e4bd6e}
+#twoiAudioOptions input:focus-visible{outline:3px solid #e4bd6e;outline-offset:2px}
 body[data-twoi-desk] #pnLayer{position:fixed;z-index:10000}
-@media(max-width:850px){.app-shell:has(>#twoiVersionBar){grid-template-rows:auto auto 1fr auto}body[data-twoi-desk="typewriter"] .notebook-frame{min-height:85dvh;height:85dvh}#twoiDeskScene{width:min(100%,300px,42dvh)}}
+@media(max-width:850px){.app-shell:has(>#twoiVersionBar){grid-template-rows:auto auto 1fr auto}body[data-twoi-desk="typewriter"] .notebook-frame{min-height:85dvh;height:85dvh}#twoiDeskScene{width:min(100%,300px,42dvh)}#twoiAudioOptions{font-size:11px;padding:3px 7px;max-width:calc(100% - 96px)}#twoiAudioOptions label{min-height:34px}}
 
 /* Ordinary document: editorial paper, neutral workspace; never alters text or file state. */
 body[data-twoi-desk="standard"] .notebook-frame{background:#e3e0da;border:0;border-image:none;box-shadow:none;padding:clamp(8px,2vw,24px);justify-content:center}
@@ -66,3 +72,21 @@ body[data-twoi-desk="standard"] .solo-textarea:focus-visible,body[data-twoi-desk
 #twoiDeskScene[hidden]{display:none!important}
 /* A phone has no room for the binding or wide margins: the page takes the whole width. */
 @media(max-width:850px){body[data-twoi-desk="standard"] .notebook-frame{padding:5px}body[data-twoi-desk="standard"] .spiral-spine{display:none}body[data-twoi-desk="standard"] .page-sheets{--ring-inset:0px;--page-margin:min(var(--page-margin-chosen,14px),14px)}}
+
+/* Page zoom. The sheet gets the whole column and the machine is cropped to the
+   band carrying the platen, the paper bail and the bank of type hammers, laid
+   along the bottom so the page rises out of it.
+   The band is 35.5%-64% of static/typewriter_keys.webp (2560 x 1430), which
+   starts just under the paper bail so almost none of the machine's own painted
+   sheet shows: the real page appears to feed straight into the roller instead
+   of sitting above a second, paler one. With the image set to the strip's full
+   width, the strip's height is 28.5% of the image's drawn height -- hence the
+   aspect ratio -- and the vertical position is 0.355H / (H - 0.285H) = 50%. */
+#twoiPageMachine{display:none;flex:0 0 auto;width:100%;aspect-ratio:2560/408;background:#120f0c url("/static/typewriter_keys.webp") 50% 50%/100% auto no-repeat;border-radius:0 0 5px 5px;position:relative}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiPageMachine{display:block}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiDeskScene{display:none}
+/* The page takes everything above the machine. */
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] .manuscript-zone{flex:1 1 auto;min-height:0}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] .notebook-frame{display:flex;flex-direction:column}
+body[data-twoi-desk="typewriter"][data-twoi-typewriter-page="on"] #twoiPageMachine #twoiAudioOptions{top:auto;bottom:6px;left:8px}
+@media(max-width:850px){#twoiPageMachine{aspect-ratio:2560/470;background-position:50% 48%}}

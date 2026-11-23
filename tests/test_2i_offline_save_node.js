@@ -31,7 +31,11 @@ function fixture() {
       dispatchEvent() {},
       createElement: () => ({click() { downloads.push(this.download); }})
     },
-    window: {}, reachFileMode:false, initializing: false, networked: false, recoverySafe: true,
+    window: {}, initializing: false, networked: false, recoverySafe: true,
+    // saveNow() in reach.js branches on reachFileMode. reach.js declares it at
+    // line 3 from the query string; a vm fixture has to supply it or the
+    // extracted function throws ReferenceError before any assertion runs.
+    reachFileMode: false,
     documentId: 'first', mutation: 1, documentDirty: true, documentHandle: null,
     standaloneDocumentId: 1, standaloneSaveInProgress: false, fileSavingId: null,
     content: 'First line',
@@ -213,7 +217,11 @@ test('offline manuscript shelf lists browser recovery without asking Reach', asy
     browserManuscripts:() => [{id:'draft', title:'My recovered draft', dirty:true, ts:0}],
     openModal:() => clicks.push('open'),
     api:() => assert.fail('Disk recovery does not use Reach'),
-    saveDocument:() => assert.fail('Disk shelf must not await a server save')
+    saveDocument:() => assert.fail('Disk shelf must not await a server save'),
+    // showShelf() now guards against Foresight file-tray documents first
+    // (reach.js line 704). This fixture is the offline disk shelf, which is not
+    // a file tray, so the guard is the not-blocked case.
+    blockReachFileOperation:() => false
   });
   const fileGuard = extract(reach, 'function blockReachFileOperation(', 'async function saveDocumentAs(');
   await runInContext(fileGuard + shelfSource + '\nshowShelf()', context);

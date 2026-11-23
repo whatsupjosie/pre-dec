@@ -102,6 +102,123 @@
   });
   el("figcaption",config.seated?"Type on the machine or in the manuscript":"Typewriter view · keys edit this manuscript",figure);
 
+  // ---- page zoom: the full-length sheet, standing in the machine ----------
+  // Josie, 2026-11-21: "at the bottom of the screen, you can still have the
+  // roller and the bay where the letter stamps are... and then just above that
+  // is the full page."
+  //
+  // So this is not a separate look. It is the typewriter view with the page
+  // given the whole column and the machine cropped to the band that holds the
+  // platen, the paper bail and the bank of type hammers, sitting along the
+  // bottom so the sheet rises out of it. Staying inside the typewriter view is
+  // what keeps the sidebars, the menus and the typing sound exactly as they
+  // are -- none of them has to learn about a fourth mode.
+  //
+  // The strip is the still image rather than the live console: the keys are
+  // below the band and would be cut in half, and in this view the writing is
+  // done on the real keyboard at the full page. The interactive keys stay in
+  // the ordinary typewriter view, where they are whole.
+  const machineStrip=el("div",null,$("notebookFrame"));
+  machineStrip.id="twoiPageMachine";
+  machineStrip.setAttribute("aria-hidden","true");
+  const pageZoom=el("button","Page zoom",null);
+  pageZoom.id="twoiTypewriterPage";pageZoom.type="button";
+  pageZoom.className="twoi-rich-toggle";
+  pageZoom.title="Give the page the full column, with the roller and type bars along the bottom";
+  pageZoom.setAttribute("aria-pressed","false");
+  const labelRow=$("manuscriptZone")?.querySelector(".zone-label-row");
+  const zoneLabel=labelRow?.querySelector(".zone-label");
+  if(zoneLabel)labelRow.insertBefore(pageZoom,zoneLabel);
+  else if(labelRow)labelRow.append(pageZoom);
+  function setPageZoom(on){
+    const zoomed=!!on&&document.body.dataset.twoiDesk==="typewriter";
+    if(zoomed)document.body.dataset.twoiTypewriterPage="on";
+    else delete document.body.dataset.twoiTypewriterPage;
+    pageZoom.setAttribute("aria-pressed",String(zoomed));
+    pageZoom.textContent=zoomed?"Page zoom · on":"Page zoom";
+    // One set of sound switches, moved to whichever piece of the machine is
+    // showing, rather than a second set that could disagree with the first.
+    (zoomed?machineStrip:figure).append(audioOptions);
+    if(zoomed)setExpanded(false);
+  }
+  pageZoom.onclick=()=>setPageZoom(document.body.dataset.twoiTypewriterPage!=="on");
+
+  // ---- the machine's own sounds -------------------------------------------
+  // Josie: "audio effects must be optional". Both are off until she turns them
+  // on, and her choice is kept. The controls live on the typewriter itself, so
+  // they are in front of her only in the view that makes a sound.
+  //
+  // The cue logic is TwoiStudioBridge.cue, shared with preview-standalone.html
+  // and tested in tests/test_2i_studio_bridge_node.js: it refuses to fire on a
+  // paste, a drop, a replacement or a composition, so dictation and pasted text
+  // do not rattle. The tones are synthesised, so this needs no audio files and
+  // works with no network -- which is the point, since the dressing room is
+  // somewhere she may be sitting offline.
+  const audioOptions=el("div",null,figure);
+  audioOptions.id="twoiAudioOptions";
+  const audioKey="twoi.typewriter.audio.v1";
+  let audioPrefs={click:false,bell:false};
+  try{
+    const saved=JSON.parse(localStorage.getItem(audioKey)||"null");
+    if(saved){if(typeof saved.click==="boolean")audioPrefs.click=saved.click;if(typeof saved.bell==="boolean")audioPrefs.bell=saved.bell;}
+  }catch{/* a browser that refuses storage still gets working sound, just not remembered */}
+  function audioToggle(name,label){
+    const wrap=el("label",null,audioOptions),box=el("input",null,wrap);
+    box.type="checkbox";box.checked=audioPrefs[name];
+    el("span",label,wrap);
+    box.onchange=()=>{audioPrefs[name]=box.checked;try{localStorage.setItem(audioKey,JSON.stringify(audioPrefs));}catch{}};
+    return box;
+  }
+  audioToggle("click","Key clicks");
+  audioToggle("bell","Line-end bell");
+  let audioContext=null,lastClickAt=0,relayingConsoleKey=false;
+  function sound(kind){
+    if(document.body.dataset.twoiDesk!=="typewriter"||!audioPrefs[kind])return;
+    // Private interface effects only; never production or broadcast audio.
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+      if(!audioContext)audioContext=new AC();
+      if(audioContext.state==="suspended")audioContext.resume().catch(()=>{});
+      const t=audioContext.currentTime;
+      // Held keys and key repeat must not stack into a buzz.
+      if(kind==="click"&&lastClickAt!==0&&t-lastClickAt<0.022)return;
+      if(kind==="click")lastClickAt=t;
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+      osc.type=kind==="bell"?"sine":"triangle";
+      osc.frequency.setValueAtTime(kind==="bell"?1450:940,t);
+      if(kind==="click")osc.frequency.exponentialRampToValueAtTime(190,t+0.027);
+      gain.gain.setValueAtTime(kind==="bell"?0.075:0.045,t);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+(kind==="bell"?0.22:0.042));
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start(t);osc.stop(t+(kind==="bell"?0.23:0.05));
+      osc.onended=()=>{osc.disconnect();gain.disconnect();};
+    }catch{/* no audio device, or the browser refused one */}
+  }
+  function play(cue){
+    if(relayingConsoleKey)return; // the console already made that noise
+    if(cue.click)sound("click");
+    if(cue.bell)sound("bell");
+  }
+  // The plain writing fields report themselves through their own values.
+  const typedBefore=new WeakMap();
+  const isWritingField=node=>node===soloTextarea||node===draftArea||!!node?.matches?.(".m-line-edit textarea");
+  document.addEventListener("beforeinput",event=>{
+    if(event.isTrusted&&isWritingField(event.target)&&!event.isComposing)typedBefore.set(event.target,event.target.value);
+  },true);
+  document.addEventListener("input",event=>{
+    if(!event.isTrusted||!isWritingField(event.target)||event.isComposing||!typedBefore.has(event.target))return;
+    const before=typedBefore.get(event.target);typedBefore.delete(event.target);
+    play(TwoiStudioBridge.cue(before,event.target.value,event.target.selectionStart,event.inputType,event.data));
+  });
+  // The live formatting surface is a contenteditable with no value of its own,
+  // so it reports its own paragraph through twoi:typed (rich-surface.js).
+  document.addEventListener("twoi:typed",event=>{
+    const d=event.detail;
+    if(!d)return;
+    play(TwoiStudioBridge.cue(d.before,d.after,d.position,d.inputType,d.data));
+  });
+  window.addEventListener("pagehide",()=>{if(audioContext){audioContext.close().catch(()=>{});audioContext=null;}});
+
   function currentText(){
     return coWriting ? [committed.join("\n"),buffer.join("\n")].filter(Boolean).join("\n") : soloTextarea.value;
   }
@@ -143,12 +260,22 @@
       addChat("notice","Finish the active edit or request before using the typewriter keys.");
       return;
     }
-    const target=coWriting?draftArea:soloTextarea;
     if(!window.TwoiTypewriterInput){
       addChat("notice","Typewriter input is unavailable; write in the manuscript instead.");
       return;
     }
-    window.TwoiTypewriterInput.apply(target,data.key);
+    // The console plays its own key sound through static/typewriter_sound.js, so
+    // 2i must not add a second click on top of it for the same keystroke. One
+    // key, one sound, whichever way the writer typed it.
+    relayingConsoleKey=true;
+    try{
+      const surface=window.twoiRichSurface;
+      const onSurface=!coWriting&&typeof surface?.active==="function"&&surface.active();
+      // The live formatting surface is where the words are when it is on; the
+      // hidden textarea behind it would lose them at the next model update.
+      if(!onSurface||!surface.key(data.key))
+        window.TwoiTypewriterInput.apply(coWriting?draftArea:soloTextarea,data.key);
+    }finally{relayingConsoleKey=false;}
     // Existing input handlers enforce locked lines and synchronize Save Now.
     syncPaper();
   });
@@ -159,6 +286,9 @@
   const syncPresentation=()=>{
     const active=document.body.dataset.twoiDesk==="typewriter";
     figure.hidden=!active;
+    audioOptions.style.display=active?"":"none";
+    pageZoom.hidden=!active;
+    if(!active)setPageZoom(false);
     if(!active)setExpanded(false);
     if(active)syncPaper();
   };
