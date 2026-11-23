@@ -31,7 +31,7 @@
     if (payload !== undefined) headers['Content-Type'] = 'application/json';
     if (token()) headers.Authorization = 'Bearer ' + token();
     headers['X-Client-Id'] = user();
-    const res = await fetch('/api/pubpartner' + path, {
+    const res = await fetch('/api/pubpartner/' + String(path).replace(/^\/+/, ''), {
       method, headers, body: payload === undefined ? undefined : JSON.stringify(payload)
     });
     const raw = await res.text();
