@@ -824,6 +824,66 @@
     }catch{return false;}
   }
 
+  // Undo and redo on this page.
+  // Typing is undone by the browser, which is right: it knows every keystroke.
+  // But the browser knows nothing about formatting, alignment, lists or the other
+  // manuscript operations, which 2i records itself (snapshot() in the page). If
+  // Ctrl+Z always went to the browser, Bold could never be undone; if it always
+  // went to 2i, typing could not be. So the newest thing the writer did decides:
+  // an operation 2i recorded since the last keystroke is undone by 2i, one step
+  // at a time, and once those are used up Ctrl+Z goes back to the browser.
+  // Redo follows the same rule for what 2i just undid.
+  // "typing" is the run of keystrokes since the last 2i operation, with the text as
+  // it stood before the first of them. While that run still has something left for
+  // the browser to undo, the browser gets Ctrl+Z; once the text is back to where the
+  // run started, the operation underneath it (say, a Bold) is the next thing to undo.
+  let ownedUndo=new WeakSet(),ownedRedo=new WeakSet(),typing=null;
+  const manuscriptText=()=>(typeof committed!=='undefined'?committed:[]).join('\n');
+  if(typeof snapshot==='function'){
+    const recorded=snapshot;
+    snapshot=function(){
+      const result=recorded.apply(this,arguments);
+      if(typeof undoStack!=='undefined'&&undoStack.length)ownedUndo.add(undoStack[undoStack.length-1]);
+      ownedRedo=new WeakSet();
+      typing=null;
+      return result;
+    };
+  }
+  const isHistory=event=>/^history(Undo|Redo)$/.test(event.inputType||'');
+  surface.addEventListener('beforeinput',event=>{
+    if(isHistory(event)||typing)return;
+    typing={start:manuscriptText()};
+  });
+  surface.addEventListener('input',event=>{
+    if(isHistory(event))return;
+    ownedRedo=new WeakSet();   // anything undone by 2i can no longer be redone once the writer has written on
+  });
+  surface.addEventListener('keydown',event=>{
+    if(event.defaultPrevented||event.isComposing||event.altKey||!(event.ctrlKey||event.metaKey))return;
+    const key=String(event.key||'').toLowerCase();
+    const wantsUndo=key==='z'&&!event.shiftKey,wantsRedo=(key==='z'&&event.shiftKey)||(key==='y'&&!event.shiftKey);
+    if(!wantsUndo&&!wantsRedo)return;
+    if(typeof undoStack==='undefined'||typeof redoStack==='undefined')return;
+    if(wantsUndo){
+      const top=undoStack[undoStack.length-1];
+      if(!top||!ownedUndo.has(top)||typeof undo!=='function')return;   // not ours: the browser undoes typing
+      if(typing&&manuscriptText()!==typing.start)return;                // typing still to undo: the browser's turn
+      event.preventDefault();
+      typing=null;
+      const before=redoStack.length;
+      undo();
+      if(redoStack.length>before)ownedRedo.add(redoStack[redoStack.length-1]);
+    }else{
+      const top=redoStack[redoStack.length-1];
+      if(!top||!ownedRedo.has(top)||typeof redo!=='function')return;
+      event.preventDefault();
+      typing=null;
+      const before=undoStack.length;
+      redo();
+      if(undoStack.length>before)ownedUndo.add(undoStack[undoStack.length-1]);
+    }
+  });
+
   // Exposed so the menus and the rest of 2i can reach it without reading
   // anything private: window.twoiRichSurface.active() etc.
   window.twoiRichSurface={

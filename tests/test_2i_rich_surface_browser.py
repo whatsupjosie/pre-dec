@@ -468,3 +468,43 @@ def test_a_locked_paragraph_refuses_a_list_too(page):
     _select(page, 0, 0, 6)
     page.locator("#twoiFormatBar button[aria-label='Bulleted list']").click()
     assert _styles(page) == []
+
+
+def test_redo_puts_the_formatting_back(page):
+    _type(page, "undo this")
+    _select(page, 0, 0, 4)
+    page.locator("#twoiFormatBar button[aria-label^='Bold']").click()
+    before = _runs(page)
+    assert before
+    page.locator("#twoiRichSurface").click()
+    page.keyboard.press("Control+z")
+    assert _runs(page) == []
+    page.keyboard.press("Control+Shift+z")
+    assert _runs(page) == before
+    page.keyboard.press("Control+z")
+    assert _runs(page) == []
+    page.keyboard.press("Control+y")
+    assert _runs(page) == before
+    assert page.evaluate("committed[0]") == "undo this"
+
+
+def test_undo_goes_to_the_newest_thing_done_typing_or_formatting(page):
+    _type(page, "one two")
+    _select(page, 0, 0, 3)
+    page.locator("#twoiFormatBar button[aria-label^='Bold']").click()
+    page.locator("#twoiRichSurface").click()
+    page.keyboard.press("End")
+    page.keyboard.type(" three")
+    assert page.evaluate("committed[0]") == "one two three"
+    # Newest is the typing: the browser undoes it (a character or a word at a
+    # time, however it likes) and the bold stays the whole while.
+    for _ in range(20):
+        if page.evaluate("committed[0]") == "one two":
+            break
+        page.keyboard.press("Control+z")
+        assert _runs(page), "undoing typing must not take the bold off"
+    assert page.evaluate("committed[0]") == "one two"
+    # Only then the bold, and the words stay.
+    page.keyboard.press("Control+z")
+    assert _runs(page) == []
+    assert page.evaluate("committed[0]") == "one two"
