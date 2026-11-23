@@ -38,6 +38,32 @@ class Hub:
         self.eq_monitoring_recorder = None  # Optional development evidence recorder.
         self.dm_authorizer = None  # Bound to persistent consent by chat route install.
         self._chat_commit_store = None  # Lazy, installation-local SQLite receipts.
+        # Listeners that see every message the hub sends (the recording modes' show-data
+        # record). They observe only: they cannot change or stop a message.
+        self._event_observers: Dict[int, Any] = {}
+        self._next_observer_token = 0
+
+    def add_event_observer(self, callback) -> int:
+        """Call ``callback(kind, room, message)`` for every message this hub sends.
+
+        ``kind`` is ``"system"`` for a broadcast to every room (``room`` is None) and
+        ``"room"`` for a message to one room. The callback runs on the event loop before
+        the message goes out, so it must be quick and must not block. An exception in it
+        is logged and never affects delivery.
+        """
+        self._next_observer_token += 1
+        self._event_observers[self._next_observer_token] = callback
+        return self._next_observer_token
+
+    def remove_event_observer(self, token: int) -> bool:
+        return self._event_observers.pop(token, None) is not None
+
+    def _notify_observers(self, kind: str, room: str | None, message: Dict[str, Any]) -> None:
+        for callback in list(self._event_observers.values()):
+            try:
+                callback(kind, room, message)
+            except Exception:
+                logger.exception("hub: event observer failed for %s message %s", kind, message.get("type"))
 
     def get_production_state(self) -> Dict[str, Any]:
         return read_json(self.prod_file)
@@ -140,8 +166,9 @@ class Hub:
                     logger.warning('BlackBox system event receipt failed: %s', event.get('type'))
             except Exception:
                 logger.exception('BlackBox system event witness failed: %s', event.get('type'))
+        self._notify_observers("system", None, event)
         for room, conns in self.rooms.items():
-            await self._broadcast(room, event)
+            await self._broadcast(room, event, _observed=True)
 
     async def send_private_event(self, user_ids: Set[str], event: Dict[str, Any]) -> int:
         """Deliver a private notification only to verified sockets of its addressees.
@@ -284,7 +311,11 @@ class Hub:
             logger.exception("Private room authorization unavailable; denying outgoing frame")
             return False
 
-    async def _broadcast(self, room: str, msg: Dict[str, Any]):
+    async def _broadcast(self, room: str, msg: Dict[str, Any], _observed: bool = False):
+        # A system broadcast has already been reported once, as "system"; do not
+        # report it again for each room it reaches.
+        if not _observed:
+            self._notify_observers("room", room, msg)
         dead: List[WebSocket] = []
         revoked: List[WebSocket] = []
         wire = json.dumps(msg)
