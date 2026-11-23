@@ -110,6 +110,19 @@ def test_overlay_on_html_not_json_and_head(floor):
     assert '/static/studio_slate.js' not in c.get('/api/studio/slate',headers=headers()).text
 
 
+def test_foresight_counter_is_served_without_the_floor_overlay(tmp_path):
+    page='<!doctype html><html><head><title>Counter</title></head><body>Tray</body></html>'
+    app=FastAPI()
+    app.include_router(create_slate_router(tmp_path/'slates.sqlite3'))
+    app.add_middleware(SlateOverlayMiddleware)
+    for path in ('/foresight-counter','/static/foresight_counter.html','/studio'):
+        app.add_api_route(path,lambda: HTMLResponse(page),methods=['GET'])
+    c=TestClient(app)
+    for path in ('/foresight-counter','/static/foresight_counter.html'):
+        assert c.get(path).content==page.encode(),path
+    assert c.get('/studio').text.count('/static/studio_slate.js')==1
+
+
 def test_live_voice_only_verified_director_can_transmit(floor):
     c,_=floor;post(c,'create');post(c,'standby')
     # Browser sockets use the same HttpOnly Reach session cookie, no token URLs.

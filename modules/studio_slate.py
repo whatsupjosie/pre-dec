@@ -523,13 +523,19 @@ def create_slate_router(path: Path):
     return router
 
 
+# The Foresight Counter is its own shell (tray physics, programs, 2i hosting) and
+# is served byte-for-byte from static/foresight_counter.html; the floor slate
+# belongs to the studio pages and is never layered over it.
+SLATE_EXEMPT_PATHS = frozenset({'/foresight-counter', '/static/foresight_counter.html'})
+
+
 class SlateOverlayMiddleware:
     """Add the floor overlay to HTML, inside compression and outside static routes."""
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope['type'] != 'http' or scope.get('method') == 'HEAD':
+        if scope['type'] != 'http' or scope.get('method') == 'HEAD' or scope.get('path', '') in SLATE_EXEMPT_PATHS:
             return await self.app(scope, receive, send)
         if scope.get('path', '').endswith('.html') or any(k == b'accept' and b'text/html' in v for k, v in scope.get('headers', [])):
             scope = dict(scope, headers=[(k, v) for k, v in scope.get('headers', []) if k not in {b'if-none-match', b'if-modified-since'}])
