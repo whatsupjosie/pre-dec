@@ -66,8 +66,6 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <aside>
 <section>
 <h2>PRODUCTION SETUP</h2>
-<div class="row"><strong id="stageSlateTitle">No active production slate</strong><button type="button" data-open-production-slate>Production slate</button></div>
-<p id="stageSlateDetails" class="muted" hidden></p>
 <div class="field"><label for="genre">Studio package</label><select id="genre"></select></div>
 <p id="description" class="muted"></p>
 <div class="row"><button id="start">START PRODUCTION</button><button id="stop" disabled>END PRODUCTION</button></div>
@@ -104,22 +102,6 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <p id="peteStatus" role="status" aria-live="polite"></p>
 <small>Pete’s mouth follows local speech audio. Shared camera-pool previews require the default cast.</small>
 <p id="avatarStatus" class="muted">Checking avatar renderer…</p>
-</section>
-<section style="margin-top:12px"><h2>VOXEL SET PROP</h2>
-<form id="voxelPlacement">
-<fieldset id="voxelPlacementControls">
-<label class="field">Approved prop <select id="voxelProp"><option value="">None</option></select></label>
-<div class="row">
-<label class="field">Horizontal position (%) <input id="voxelX" type="number" min="0" max="100" value="35" required></label>
-<label class="field">Floor position (%) <input id="voxelY" type="number" min="0" max="100" value="76" required></label>
-<label class="field">Width (%) <input id="voxelSize" type="number" min="2" max="50" value="15" required></label>
-<label class="field">Rotation (degrees) <input id="voxelAngle" type="number" min="-180" max="180" value="0" required></label>
-</div>
-<div class="row"><button type="submit">Save placement</button><button type="button" id="refreshVoxelProps">Refresh approved props</button></div>
-</fieldset>
-</form>
-<p id="voxelStatus" role="status" aria-live="polite"></p>
-<a href="/pubworld-stage#visual-patch" target="_blank" rel="noopener">Open Visual Patch Kit</a>
 </section>
 <section style="margin-top:12px"><h2>REPLACEABLE SET ASSETS</h2>
 <div class="field"><label for="backFile">Background layer image</label><input type="file" id="backFile" accept="image/*"></div>

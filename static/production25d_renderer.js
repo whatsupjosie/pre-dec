@@ -93,69 +93,12 @@ function drawOverlay(c,pkg,state){
  }
  if(state?.blackout)rect(c,0,0,W,H,"#000000");
 }
-const voxelGeometry = new WeakMap();
-const voxelFaces = [
- {normal:[0,1,0], shade:1, corners:[[0,1,0],[0,1,1],[1,1,1],[1,1,0]]},
- {normal:[1,0,0], shade:.72, corners:[[1,0,0],[1,1,0],[1,1,1],[1,0,1]]},
- {normal:[-1,0,0], shade:.72, corners:[[0,0,0],[0,0,1],[0,1,1],[0,1,0]]},
- {normal:[0,0,1], shade:.86, corners:[[0,0,1],[1,0,1],[1,1,1],[0,1,1]]},
- {normal:[0,0,-1], shade:.86, corners:[[0,0,0],[0,1,0],[1,1,0],[1,0,0]]},
-];
-
-function projectVoxelProp(prop) {
- const radians=prop.angle*Math.PI/180, cos=Math.cos(radians), sin=Math.sin(radians);
- const rotate=(x,z)=>[x*cos-z*sin,x*sin+z*cos];
- const minY=Math.min(...prop.blocks.map(block=>block.y));
- const occupied=new Set(prop.blocks.map(({x,y,z})=>[x,y,z].join(",")));
- const faces=[];
- let minX=Infinity,maxX=-Infinity,maxY=-Infinity;
- for(const block of prop.blocks){
-  for(const face of voxelFaces){
-   const [nx,ny,nz]=face.normal,[viewX,viewZ]=rotate(nx,nz);
-   if(!ny&&viewX+viewZ<=1e-7)continue;
-   if(occupied.has([block.x+nx,block.y+ny,block.z+nz].join(",")))continue;
-   let distance=0;
-   const points=face.corners.map(([dx,dy,dz])=>{
-    const [x,z]=rotate(block.x+dx,block.z+dz);
-    const px=x-z,py=(x+z)*.45-(block.y+dy-minY);
-    minX=Math.min(minX,px);maxX=Math.max(maxX,px);maxY=Math.max(maxY,py);
-    distance+=x+z+(block.y+dy)*.9;
-    return [px,py];
-   });
-   const source=/^#[0-9a-f]{6}$/i.test(block.color)?block.color:"#8a7f72";
-   const rgb=[1,3,5].map(i=>Math.round(parseInt(source.slice(i,i+2),16)*face.shade));
-   faces.push({points,distance,color:`rgb(${rgb.join(",")})`});
-  }
- }
- faces.sort((a,b)=>a.distance-b.distance);
- return {faces,center:(minX+maxX)/2,bottom:maxY,width:maxX-minX};
-}
-
-function drawVoxelProp(ctx,prop,shift){
- if(!prop?.blocks?.length)return;
- let model=voxelGeometry.get(prop);
- if(!model){model=projectVoxelProp(prop);voxelGeometry.set(prop,model);}
- if(!model.width)return;
- ctx.save();
- ctx.translate(prop.x*W-shift*.65,prop.y*H);
- const scale=prop.size*W/model.width;
- ctx.scale(scale,scale);ctx.translate(-model.center,-model.bottom);
- for(const face of model.faces){
-  ctx.beginPath();
-  ctx.moveTo(...face.points[0]);
-  for(const point of face.points.slice(1))ctx.lineTo(...point);
-  ctx.closePath();ctx.fillStyle=face.color;ctx.fill();
- }
- ctx.restore();
-}
-
 function renderWorld(c,pkg,state,shot,dt){
  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,W,H);
  const shift=(shot.center[0]-.5)*100;
  const assets=state.assets||{};
  drawBack(c,pkg,assets,shift);
  drawMiddle(c,pkg,assets,shift);
- drawVoxelProp(c,state.voxelProp,shift);
  const glb=state.avatarBridge;
  for(const p of state.performers||[]){
     const pos=p.position||[.5,.82],x=pos[0]*W,y=pos[1]*H;
