@@ -259,32 +259,32 @@ Not started. It was her first request of the session. First candidate: the studi
 ### 14.5 New open questions
 12. Default visibility per profile field, and whether the filmmaker-finder opt-in is its own switch (suggested yes). 13. Which fields go on a guest's visiting card. 14. Two cartridges: separate memories by default? 15. A name for the in-studio Claude. 16. Confirm "identity constant, mode switchable" as the persona rule.
 
-### 14.6 The cricket: each person's private line to the system (added 2026-11-23; her design, in her words in Appendix A item 23)
-Status: DESIGN ONLY. Nothing for this is built. Nothing below has been tested except item (a).
+### 14.6 The Cricket as each person's private line to the system (rewritten 2026-11-23 after Josie corrected the first version)
+CORRECTION NOTICE. The first version of this section (commit 30b7c56 / 7fdb768) wrongly treated the Cricket as a new idea first proposed on 2026-11-23, and said "nothing for this is built". That was wrong. Josie's correction, verbatim: "Both Jeremy and Crickets have existed for nearly a year." Jeremy Cricket and the per-character Crickets are an existing part of PubCast. This version replaces the first.
 
-(a) What was tested [VERIFIED 2026-11-23]. The scheduled task "PubCast nudge test (safe to delete)" (id trig_01MnfpZqC9z7GJoCei4Q32xk, tied to the chat session that built this work) was fired by hand by Josie at 21:13 UTC and its fixed message arrived in that same chat. So a fixed "doorbell" message can wake an existing chat on demand. NOT verified: whether PubCast could fire it by itself from outside. The scheduler shows no API token for this task, and the official outside fire route was earlier observed to start a NEW session instead of waking the existing one. Treat "PubCast pokes a Claude chat from outside" as unproven. The task is switched off, not deleted; she has not asked for it to be deleted.
+(a) What exists [READ in pre-dec at 538a40f, not run or tested in this session]
+  - modules/jeremy_cricket.py (577 lines). Its own header: "Every character in PubCast has a Cricket instance." Per-character SQLite memory in data/jeremy/<character_id>.db; memories scored by importance, recency and keywords; class CricketKeeper hands out one Cricket per character.
+  - main.py creates CricketKeeper(data_dir=DATA_DIR / "jeremy") when the module imports, passes it to the bot manager (bot_manager.set_cricket_keeper) and to RoomConductor ("Jeremy Cricket conversation orchestra"); modules/bots.py uses it to enrich a bot's context before it speaks.
+  - Naming convention recorded from Josie earlier (not re-verified in code): "Cricket" is the shared surname; each Cricket takes the first name of the person it is assigned to (Curtsey Cricket, Pete Cricket, Sir Purfluous Cricket); Jeremy Cricket is the head and reports to Jeremy. Jeremy is a systems orchestrator, not a character.
+  - Earlier statements from her (not re-verified here): the guest side of the waiting room has a room for trying avatars where "the guest's Cricket can explain the controls to the AIs"; Jeremy Cricket is "the logic layer and runs the show", Alex is the emotional layer, and "the Nudge is how the AIs get to talk extemporaneously".
+  - What I did NOT check: whether the Cricket already has any private help / escalation / security / host line, or any per-person (human) Cricket UI. The code I read is the memory side. Treat the private line below as unconfirmed, possibly already specified elsewhere in her earlier handoffs. Before building anything, search the older handoffs and the repo for it and adapt what exists.
 
-(b) Her design [JOSIE]. Keep it inside the program. Each avatar gets its own cricket. The cricket is not a one-way poke; it is a two-way private line, "a pager system, it's a cell phone, it's a walkie talkie". Through it a person can:
-  - ask the bot system for basic help (confused by controls, something will not load, a problem with their avatar, something crashing);
-  - escalate to Jeremy;
-  - flag security;
-  - ask to talk to the host / manager.
-  All of it private, so nobody has to say a problem out loud in front of everyone. The host decides what to do, for example: a guest says their computer is about to crash, and the host sends them to the waiting room so they are not kicked out while they fix it.
+(b) What was tested on 2026-11-23 [VERIFIED]. The scheduled task "PubCast nudge test (safe to delete)" (id trig_01MnfpZqC9z7GJoCei4Q32xk, created 2026-11-03, tied to the chat session that built the notes work) was fired by hand by Josie at 21:13 UTC and its fixed message arrived in that same chat. This tested only whether a scheduled task can wake an existing chat. It was NOT a test of PubCast's Nudge code and did not involve Jeremy, any Cricket or any avatar. NOT verified: whether PubCast could fire it by itself from outside (no API token is shown for the task; the official outside fire route was earlier observed to start a new session). The task is switched off, not deleted; she has not asked for it to be deleted.
 
-(c) How it fits what exists [CLAUDE reading; not checked against code beyond the handoff's own earlier sections]. Nudge (modules/bots.py nudge -> request_turn; wired_system.py care levels) is the existing sender/watcher. The cricket would be the per-avatar courier and mailbox that Nudge hands a poke to. Because each avatar has its own cricket and mailbox, there is no shared doorbell and a poke for one avatar cannot land on another.
+(c) Her description of what each person's Cricket does [JOSIE; her words are Appendix A item 23]. Keep Nudge pokes inside the program instead of depending on an outside trigger. The Cricket works like "a pager system, it's a cell phone, it's a walkie talkie": everyone's individual private connection to the system. Through it a person can ask the bot system for basic help (confused by controls, something will not load, a problem with their avatar, something crashing); escalate to Jeremy; flag security; or ask to talk to the host / manager. All of it private, so nobody has to say a problem in front of everyone. The host decides what to do, for example sending someone whose computer is about to crash to the waiting room so they are not kicked out while they fix it.
 
-(d) Two delivery routes [CLAUDE proposal; Josie has not chosen]:
-  1. The AI behind the avatar runs on the user's own API key (bring-your-own-key). PubCast calls the model directly; the cricket's message is simply delivered as a call. Fully inside the program, no outside doorbell.
-  2. The AI is a Claude chat on the connector. The cricket drops its message in that avatar's mailbox on the PubCast connector; the model reads it the next time it looks (it only acts during a turn). An outside doorbell can make it look sooner but is optional and unproven (see (a)).
-  Reason for the split: a chat model cannot be woken from inside PubCast alone.
+(d) Two delivery routes for a poke [CLAUDE proposal; Josie has not chosen]:
+  1. The AI behind the avatar runs on the user's own API key. PubCast calls the model directly; the Cricket's message is delivered as a call. Fully inside the program.
+  2. The AI is a Claude chat on the connector. The Cricket's message waits in that avatar's mailbox on the PubCast connector; the model reads it the next time it looks. An outside doorbell can make it look sooner but is unproven (see (b)).
+  Reason: a chat model cannot be woken from inside PubCast alone.
 
 (e) Open questions for her:
-  17. Who can read a private cricket message besides the host (security? Jeremy?), and is anything logged?
-  18. Can the host reply through the same cricket, and can the host act from it (send to the waiting room, mute, remove)?
-  19. Do guests get a cricket in the waiting room, before entering?
-  20. What does a cricket look and sound like, and is it visible in the studio or only a sound? (She said "it's a cricket" and has not designed it.)
-  21. Is the cricket per avatar or per person when one person has several avatars? She said "an individual avatar's cricket."
-  22. Which requests are answered by the bot system alone, and when does it hand to Jeremy? (Her list: help, Jeremy, security, host.)
+  17. Does the private help / escalation / host line already exist in her earlier designs or code? (I could not find it in what I read.)
+  18. Who can read a private Cricket message besides the host (security? Jeremy?), and is anything logged?
+  19. Can the host reply and act through the same Cricket (send to the waiting room, mute, remove)?
+  20. Do guests get a Cricket in the waiting room, before entering?
+  21. How does a Cricket look and sound in the studio, if at all?
+  22. Which requests does the bot system answer alone, and when does it hand to Jeremy?
 
 ---------------------------------------------------------------------------------------------------
 ## APPENDIX A — JOSIE'S WORDS, VERBATIM (design statements, in conversation order)
@@ -345,5 +345,7 @@ Status: DESIGN ONLY. Nothing for this is built. Nothing below has been tested ex
     Then: "Or maybe a cricket."
     Then: "Use an individual avatar's cricket. Do you get what I'm saying?"
     Then: "Yeah, the crickets act like, I don't know, a walkie-talkie, just like they're everybody's individual connection to the system, like through the cricket they can talk, to the bot system for basic help if they get confused with controls or having trouble loading something or issue with their avatar or something is crashing or and if it has to be escalated, then they can go to Jeremy, or they can flag security, or they can request to talk to the host, the manager, just like, but they are able to do that privately. So if there actually is an issue, and they don't want to shout it in front of everyone, they can let the host know, just like, hey, this person, blah, blah, blah, blah, blah, blah, blah. And the host can decide what to do about that, or just like, hey, just like, I can't participate in the blah, blah, blah because my computer's about to crash. It's like, all right, then just go sit down. I'll send you to the waiting room so you're not kicked out, and fix your problem, whatever it is, So, yeah, sure, it's a pager system, it's a cell phone, it's a walkie talkie, it's something, it's a cricket."
+
+24. The correction (2026-11-23): "Both Jeremy and Crickets have existed for nearly a year."
 
 END OF HANDOFF
