@@ -1,0 +1,10 @@
+[project]
+name = "alex-prime-core"
+version = "0.10.0"
+description = "Alex Prime / AlexT core: PubPartner Co-Lab mediation, audit, memory gating, presence-effect testing, evidence persistence, personal support, Co-Lab brief generation, continuity/reawakening checks, source-locked intake, adaptive-companion bridge, identity-filter boundary, and release-quality scanning."
+requires-python = ">=3.10"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -1,0 +1,96 @@
+# Jeremy Cricket Adaptive Awareness Suite — Configuration
+# All thresholds tunable here without touching code.
+
+system:
+  character_id: "jeremy_cricket"
+  version: "beta-1.0"
+  default_mode: "AMBIENT"           # AMBIENT | ATTENTIVE | CARE | TOTAL_CARE_MANDATE
+
+# ─── State Machine Thresholds ─────────────────────────────────────────────────
+state_machine:
+  # Logic Variance: complexity score 0.0–1.0
+  complexity_care_threshold: 0.35       # above this → shift toward CARE mode
+  complexity_mandate_threshold: 0.60    # above this → TOTAL_CARE_MANDATE
+
+  # Emotional Velocity: rate of intensity change per minute
+  velocity_care_threshold: 0.30
+  velocity_mandate_threshold: 0.55
+
+  # Dysregulation Levels (mirrors LittleMode)
+  dysregulation:
+    light:    [0.0,  0.45]
+    moderate: [0.45, 0.80]
+    heavy:    [0.80, 1.01]
+
+  # How many consecutive high-variance signals before state locks
+  lock_consecutive_signals: 3
+
+  # Cool-down: consecutive low signals before state can step down
+  cooldown_consecutive_signals: 5
+
+  # Stability handshake: number of calm confirmations required to unlock
+  stability_handshake_required: 3
+  stability_handshake_window_seconds: 60
+
+# ─── Memory / Storybook ───────────────────────────────────────────────────────
+memory:
+  max_memories_per_character: 5000
+  eviction_target: 4000
+  recall_timeout_seconds: 0.5
+  write_batch_size: 10
+
+  chapters:
+    - ESSENTIALS        # Always visible
+    - SUPPORT           # Visible in CARE modes
+    - GROWTH            # Visible in AMBIENT/ATTENTIVE
+    - COMPLEX_LOGISTICS # Hidden in CARE modes
+
+  # Which chapters are accessible at each mode
+  chapter_access:
+    AMBIENT:            [ESSENTIALS, SUPPORT, GROWTH, COMPLEX_LOGISTICS]
+    ATTENTIVE:          [ESSENTIALS, SUPPORT, GROWTH]
+    CARE:               [ESSENTIALS, SUPPORT]
+    TOTAL_CARE_MANDATE: [ESSENTIALS]
+
+# ─── Safety Governor ──────────────────────────────────────────────────────────
+safety:
+  preservation_lock_mode: "READ_ONLY"   # READ_ONLY | SNAPSHOT_ONLY
+  lock_sensitive_extensions: [".py", ".yaml", ".json", ".db", ".env"]
+  autopilot_tasks:                       # Tasks Jeremy handles during lockdown
+    - save_current_work
+    - reschedule_pending_actions
+    - lock_sensitive_files
+    - send_care_notification
+
+# ─── Sanctuary Vault ──────────────────────────────────────────────────────────
+vault:
+  db_filename: "sanctuary_vault.db"
+  encryption_key_env: "SANCTUARY_KEY"   # Must be set in environment
+  never_joins_with: ["memories", "characters", "inference_log"]
+  audit_log_enabled: true
+  retention_days: 365
+
+# ─── Tone / Output ────────────────────────────────────────────────────────────
+tone:
+  AMBIENT:
+    style: "conversational"
+    complexity: "full"
+    pace: "normal"
+
+  ATTENTIVE:
+    style: "warm_direct"
+    complexity: "reduced"
+    pace: "measured"
+
+  CARE:
+    style: "maternal_firm"
+    complexity: "simplified"
+    pace: "slow"
+    reframe_technical: true           # server outage → "the library is taking a nap"
+
+  TOTAL_CARE_MANDATE:
+    style: "presence_only"
+    complexity: "minimal"
+    pace: "very_slow"
+    reframe_technical: true
+    action_only: false                # words still used, just minimal
