@@ -16,11 +16,11 @@ playback:$("playback"),sessionList:$("sessionList"),manifest:$("manifest"),downl
 assetInfo:$("assetInfo"),avatarStatus:$("avatarStatus"),switcherLink:$("switcherLink"),liveMedia:$("liveMedia")};
 const world=document.createElement("canvas");world.width=Core.W;world.height=Core.H;
 const lastFrame=document.createElement("canvas");lastFrame.width=Core.W;lastFrame.height=Core.H;
-const state={pkg:null,performers:[],assets:{},avatarBridge:null,avatarError:"",
+const state={pkg:null,voxelProp:null,performers:[],assets:{},avatarBridge:null,avatarError:"",
 programId:null,previewId:null,
-session:null,media:null,mediaError:null,recorder:null,videoStream:null,micStream:null,audioContext:null,micSource:null,
+session:null,startingProduction:false,media:null,mediaError:null,recorder:null,videoStream:null,micStream:null,audioContext:null,micSource:null,
 micGain:null,micAnalyser:null,audioDest:null,recordingPromise:null,recordingComplete:null,recordingStarting:null,
-recordingStartedAt:0,recordingId:null,recovery:null,
+recordingStartedAt:0,recordingId:null,recovery:null,slate:null,recordingTitle:"",
 recordingMime:"",microphoneMuted:false,microphoneLevel:1,selected:null,playbackUrl:null,downloadUrl:null,
 lastTick:0,blackout:false,panicActive:false,lowerThird:false,lowerText:"BELLA FAUX PAS",scores:[0,0],transition:null,
 storageReady:false,assetUrls:{},assetByPackage:{},avatarChecks:0,
@@ -51,30 +51,50 @@ function emit(type,payload){
  const e=Core.event(state.session,type,payload||{},Date.now());
  return e;
 }
+function showStageSlate(slate){
+ state.slate=Core.slateTake(slate);
+ syncSlateSetup();
+}
+function syncSlateSetup(){
+ const title=Core.slateTitle(state.slate);
+ $("stageSlateTitle").textContent=title?(state.recorder?"Next slate: ":"")+title:"No active production slate";
+ const packageId=state.slate?.packageId;
+ if(Core.PACKAGES[packageId]&&!state.session&&!state.startingProduction&&!state.castingPete&&state.pkg?.id!==packageId)
+   loadGenre(packageId);
+ const details=$("stageSlateDetails");
+ details.textContent=[state.slate?.actors&&"Cast: "+state.slate.actors,state.slate?.notes,
+   Core.PACKAGES[packageId]&&state.pkg?.id!==packageId&&"Next set: "+Core.PACKAGES[packageId].title].filter(Boolean).join(" · ");
+ details.hidden=!details.textContent;
+ if(state.pkg)setControls();
+}
 async function safe(fn){
  try{await fn()}catch(e){if(e?.name==="AbortError")return;error(String(e?.message||e));console.error("PubCast 2.5D",e);}
 }
 function setControls(){
- const active=!!state.session,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
- el.start.disabled=active||state.castingPete;el.genre.disabled=active||state.castingPete;el.stop.disabled=!active||stopping||state.endingProduction;
- el.record.disabled=!active||rec||stopping||starting||!state.storageReady;
+ const active=!!state.session&&!state.startingProduction,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
+ el.start.disabled=!!state.session||state.startingProduction||state.castingPete||!!state.voxelSaving;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
+ el.record.disabled=!active||state.endingProduction||state.panicActive||!!state.remoteProgram||rec||stopping||starting||!state.storageReady;
+ $("cut").disabled=$("fade").disabled=!active||!!state.endingProduction;
+ for(const button of el.camera.children)button.disabled=state.startingProduction||!!state.endingProduction;
  el.recordStop.disabled=(!rec&&!starting)||stopping;
  el.recordStop.textContent=starting?"CANCEL RECORDING START":"STOP RECORDING";
  el.record.disabled=el.record.disabled||!!state.recovery;
- $("castPete").disabled=active||!!state.castingPete||!!state.peteActor;
+ $("voxelPlacementControls").disabled=!!state.session||state.startingProduction||!!state.voxelSaving;
+ $("castPete").disabled=el.start.disabled||!!state.castingPete||!!state.peteActor;
  $("speakPete").disabled=!active||!state.peteActor||!!state.peteSpeaking||state.panicActive||state.endingProduction;
  $("stopPete").disabled=!state.peteSpeaking;
  $("recoveryPanel").hidden=!state.recovery;
  $("archiveSave").disabled=!state.selected?.take||!state.selected?.blob||rec||starting||stopping||!!selectedServer||!archive||archive.status().busy;
  $("archiveRefresh").disabled=rec||starting||stopping;
  $("archiveBundle").disabled=rec||starting||stopping||!selectedServer;
- el.recBadge.textContent=rec?"● REC "+state.recordingMime:starting?"PREPARING RECORDING":"REC OFF";
+ el.recBadge.textContent=rec?"● REC "+(state.recordingTitle||state.recordingMime):starting?"PREPARING RECORDING":"REC OFF";
  el.recBadge.style.color=rec?"#ff7070":"";
  const microphoneLive=state.micStream?.getAudioTracks().some(t=>t.readyState==='live');
  el.audioBadge.textContent=microphoneLive?"MIC "+(state.microphoneMuted?"MUTED":"ACTIVE"):"MIC OFF";
  el.micMute.disabled=!microphoneLive;
  el.micLevel.disabled=!microphoneLive;
- if(active&&state.panicActive)status("PANIC: BLACKOUT",true);
+ if(state.startingProduction)status("STARTING PRODUCTION");
+ else if(active&&state.panicActive)status("PANIC: BLACKOUT",true);
  else if(!active&&el.state.textContent!=="ATTENTION")status("STANDBY");
  else if(active&&el.state.textContent!=="ATTENTION")status(state.blackout?"BLACKOUT":rec?"RECORDING":"ON AIR");
 }
@@ -92,16 +112,76 @@ function refreshCameraUI(){
  if(!state.pkg)return;
  for(const btn of el.camera.children){
   const s=btn.dataset.shot;
-  btn.classList.toggle("selected",s===state.previewId);
+  btn.classList.toggle("selected",!state.remotePreview&&s===state.previewId);
   btn.textContent=state.pkg.cameras.find(x=>x.id===s).label+
-    (s===state.programId?" [PGM]":"")+(s===state.previewId?" [PVW]":"");
+    (!state.remoteProgram&&s===state.programId?" [PGM]":"")+(!state.remotePreview&&s===state.previewId?" [PVW]":"");
  }
  const camera=id=>state.pkg.cameras.find(x=>x.id===id);
- el.programShot.textContent="PGM: "+(camera(state.programId)?.label||"—");
- el.previewShot.textContent="PVW: "+(camera(state.previewId)?.label||"—");
+ el.programShot.textContent="PGM: "+(state.remoteProgram||camera(state.programId)?.label||"—");
+ el.previewShot.textContent="PVW: "+(state.remotePreview||camera(state.previewId)?.label||"—");
 }
+function voxelPlacementReceipt(placement){
+ const {blocks,...receipt}=placement;
+ return receipt;
+}
+async function voxelRequest(endpoint,options){
+ const response=await fetch("/api/studio25d/voxel-props/"+endpoint,{
+   signal:globalThis.AbortSignal?.timeout?.(5000),...options,
+ });
+ if(!response.ok){
+   const {detail}=await response.json().catch(()=>({}));
+   const error=Error(typeof detail==="string"?detail:`Voxel request failed (HTTP ${response.status})`);
+   error.status=response.status;throw error;
+ }
+ return response.json();
+}
+function showVoxelPlacement(placement){
+ state.voxelProp=placement;
+ $("voxelProp").value=placement?.prop_id||"";
+ $("voxelX").value=placement?Math.round(placement.x*100):35;
+ $("voxelY").value=placement?Math.round(placement.y*100):76;
+ $("voxelSize").value=placement?Math.round(placement.size*100):15;
+ $("voxelAngle").value=placement?.angle??0;
+ $("voxelStatus").textContent=placement?`Placed: ${placement.label}`:"No voxel prop placed.";
+}
+let voxelRequestGeneration=0;
+async function loadVoxelPlacement(pkg){
+ const generation=++voxelRequestGeneration;
+ const status=$("voxelStatus");
+ const [assets,saved]=await Promise.allSettled([voxelRequest("assets"),voxelRequest(pkg.id)]);
+ if(pkg!==state.pkg||generation!==voxelRequestGeneration||state.session)return;
+ if(assets.status==="fulfilled"){
+   const select=$("voxelProp");
+   select.replaceChildren(new Option("None",""));
+   for(const prop of assets.value.props)select.add(new Option(prop.label,prop.prop_id));
+ }
+ if(saved.status==="fulfilled"){
+   showVoxelPlacement(saved.value.placement);
+   return;
+ }
+ status.textContent=saved.reason.message;
+ // Static/offline use has no shared placement. A known placement must be resolved.
+ if(state.voxelProp||saved.reason.status===422||saved.reason.status>=500)throw saved.reason;
+}
+async function saveVoxelPlacement(){
+ if(state.session||state.startingProduction||state.voxelSaving)return;
+ const pkg=state.pkg, prop_id=$("voxelProp").value;
+ const placement=prop_id?{prop_id,x:Number($("voxelX").value)/100,y:Number($("voxelY").value)/100,
+   size:Number($("voxelSize").value)/100,angle:Number($("voxelAngle").value)}:null;
+ ++voxelRequestGeneration;
+ state.voxelSaving=true;setControls();
+ try{
+   const saved=await voxelRequest(pkg.id,{method:"PUT",headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({placement})});
+   if(pkg===state.pkg)showVoxelPlacement(saved.placement);
+ }finally{state.voxelSaving=false;setControls();}
+}
+function refreshVoxelPlacement(){
+ loadVoxelPlacement(state.pkg).catch(error=>log("VOXEL PREFLIGHT: "+error.message));
+}
+
 function loadGenre(id){
- if(state.session||state.castingPete)throw Error("Finish production or casting before changing the set");
+ if(state.session||state.startingProduction||state.castingPete||state.voxelSaving)throw Error("Finish production, casting, or set setup before changing the set");
  const pkg=Core.PACKAGES[id];if(!pkg)throw Error("Unknown package "+id);
  Core.validate(pkg);
  // All GLB actor instances belong to ONE current production package.
@@ -113,6 +193,7 @@ function loadGenre(id){
  if(state.avatarBridge?.clear)for(const id of state.loadedActorIds)state.avatarBridge.clear(id);
  state.loadedActorIds.clear();
  state.pkg=pkg;
+ state.voxelProp=null;refreshVoxelPlacement();
  state.performers=pkg.performers.map(p=>({id:"p25d-"+pkg.id+"-"+p.id,slot:p.slot,position:p.position.slice(),
  avatar:p.avatar,moving:false,vx:0,vy:0,motionUntil:0}));
  state.programId=pkg.cameras[0].id;state.previewId=pkg.cameras[1].id;
@@ -128,6 +209,7 @@ function loadGenre(id){
  loadActors();
 }
 async function choosePreview(id){
+ if(state.startingProduction||state.endingProduction)throw Error("Wait for the production transition to finish");
  Core.shot(state.pkg,id);
  if(state.sharedSwitcher?.connected()){
    await state.sharedSwitcher.choosePreview(id);
@@ -142,7 +224,7 @@ function makeTransition(duration=600,elapsedMs=0){
  state.transition={started:performance.now()-Math.max(0,elapsedMs),duration};
 }
 async function cut(dissolve){
- if(!state.pkg||!state.session)throw Error("Start production before switching Program");
+ if(!state.session||state.startingProduction||state.endingProduction)throw Error("Program switching requires an active production");
  const old=state.programId, wanted=state.previewId;
  if(state.sharedSwitcher?.connected()){
    // The same canonical switcher operates the studio; never take locally on HTTP failure.
@@ -160,6 +242,13 @@ async function cut(dissolve){
 function sharedSwitcherState(next) {
  if(!state.session)return;
  const previous=state.programId;
+ const previousRemote=state.remoteProgram;
+ if(state.switcherError){
+   if(el.alert.textContent===state.switcherError){el.alert.textContent="";status("ON AIR");}
+   state.switcherError=null;
+   el.switcherLink.textContent="VIDEO: SHARED SWITCHER";
+   el.switcherLink.style.color="#79e9b0";
+ }
  const transition=next.transition||{};
  if(next.program&&next.program!==previous&&transition.type==="dissolve"){
    const elapsed=Number.isFinite(Number(transition.started_at))
@@ -177,13 +266,23 @@ function sharedSwitcherState(next) {
  if(next.preview)state.previewId=next.preview;
  refreshCameraUI();
  if(next.remoteProgram) {
-   log("SHARED PROGRAM SOURCE OUTSIDE 2.5D PACKAGE: "+next.remoteProgram);
+   if(previousRemote!==next.remoteProgram){
+     const reason="Program switched to a source with no local video feed: "+next.remoteProgram;
+     log(reason);
+     emit("camera.program_unavailable",{source:next.remoteProgram});
+     if(state.recorder||state.recordingStarting){
+       state.mediaError=state.mediaError||Error(reason);
+       stopRecording({immediate:true}).catch(e=>error(e.message));
+     }
+   }
  } else {
    emit("camera.shared_state",{program:state.programId,preview:state.previewId,transition:next.transition});
  }
+ setControls();
 }
 function sharedSwitcherWarning(reason) {
  if(!state.session)return;
+ state.switcherError=reason;
  el.switcherLink.textContent="VIDEO SYNC LOST";
  el.switcherLink.style.color="#ff8b8b";
  error(reason);
@@ -200,12 +299,13 @@ function drawPreviewBars(c){
 }
 async function syncServerVideoCues(){
  if(!state.session||state.cuePollBusy)return;
+ const session=state.session;
  state.cuePollBusy=true;
  try{
    const response=await fetch("/api/state/production",{cache:"no-store"});
    if(!response.ok)return;
    const remote=await response.json();
-   if(!remote||typeof remote!=="object")return;
+   if(state.session!==session||!remote||typeof remote!=="object")return;
    const panicSeq=Number(remote.panic_seq)||0;
    if(panicSeq>state.lastPanicSeq&&panicSeq>Date.parse(state.session.startedAt)/1000){
      state.lastPanicSeq=panicSeq;state.blackout=true;state.panicActive=true;
@@ -213,6 +313,7 @@ async function syncServerVideoCues(){
      cue("remote_panic",{panicSeq});
      status("PANIC: BLACKOUT");
      if(state.recorder||state.recordingStarting)await stopRecording({immediate:true});
+     if(state.session!==session)return;
    }
    const blackSeq=Number(remote.blackout_seq)||0;
    if(blackSeq&&blackSeq!==state.lastBlackoutSeq){
@@ -253,42 +354,53 @@ function reset(){
  cue("blocking.reset",{});log("Stage blocking reset");
 }
 async function startProduction(){
- if(state.session||state.castingPete)throw Error("Production or casting is already underway");
- const sess=Core.makeSession(state.pkg,Date.now());state.session=sess;
- emit("production.start",{package:state.pkg.id,program:state.programId});
- try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
- log("PRODUCTION START "+sess.id);setControls();
- state.remoteProgram=null;state.remotePreview=null;
- const Shared=window.PubCast25DSharedSwitcher;
- if(Shared){
-   const bridge=Shared.create({onState:sharedSwitcherState,onError:sharedSwitcherWarning});
-   const result=await bridge.attach(state.pkg);
-   state.sharedSwitcher=bridge;
-   el.switcherLink.textContent=result.shared?"VIDEO: SHARED SWITCHER":"VIDEO: LOCAL ONLY";
-   el.switcherLink.style.color=result.shared?"#79e9b0":"#efd18b";
-   log(result.shared?"SHARED SWITCHER ATTACHED: "+result.sourceCount+" stage cameras":"LOCAL VIDEO MODE: "+result.reason);
-   if(result.shared&&window.PubCast25DFramePublisher){
-     state.mediaPublisher=window.PubCast25DFramePublisher.create({
-       session:sess.id,sourceId:id=>Shared.sourceId(state.pkg.id,id),
-       onState:feed=>{
-         el.liveMedia.textContent=feed.live?"REMOTE FRAMES: CONFIRMED ("+feed.frames+")":"REMOTE FRAMES: OFF";
-         el.liveMedia.style.color=feed.live?"#79e9b0":"";
-       },
-       onError:(reason,count)=>{
-         if(count===1||count===3||count%10===0){
-           el.liveMedia.textContent="REMOTE FRAMES: ERROR";
-           el.liveMedia.style.color="#ff8b8b";log(reason);
-         }
-       }
-     });
-   }
- }else{
-   el.switcherLink.textContent="VIDEO: LOCAL ONLY";
-   log("Shared switcher adapter unavailable; local-only production");
+ if(state.session||state.startingProduction||state.castingPete||state.voxelSaving)throw Error("Production, casting, or set setup is already underway");
+ state.startingProduction=true;
+ el.alert.textContent="";
+ setControls();
+ try{
+  await loadVoxelPlacement(state.pkg);
+  const sess=Core.makeSession(state.pkg,Date.now());state.session=sess;
+  if(state.voxelProp)sess.voxelPlacement=voxelPlacementReceipt(state.voxelProp);
+  if(state.slate)sess.slate=state.slate;
+  emit("production.start",{package:state.pkg.id,program:state.programId});
+  try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
+  state.remoteProgram=null;state.remotePreview=null;state.switcherError=null;
+  const Shared=window.PubCast25DSharedSwitcher;
+  if(Shared){
+    const bridge=Shared.create({onState:sharedSwitcherState,onError:sharedSwitcherWarning});
+    const result=await bridge.attach(state.pkg);
+    state.sharedSwitcher=bridge;
+    el.switcherLink.textContent=result.shared?"VIDEO: SHARED SWITCHER":"VIDEO: LOCAL ONLY";
+    el.switcherLink.style.color=result.shared?"#79e9b0":"#efd18b";
+    log(result.shared?"SHARED SWITCHER ATTACHED: "+result.sourceCount+" stage cameras":"LOCAL VIDEO MODE: "+result.reason);
+    if(result.shared&&window.PubCast25DFramePublisher){
+      state.mediaPublisher=window.PubCast25DFramePublisher.create({
+        session:sess.id,sourceId:id=>Shared.sourceId(state.pkg.id,id),
+        onState:feed=>{
+          el.liveMedia.textContent=feed.live?"REMOTE FRAMES: CONFIRMED ("+feed.frames+")":"REMOTE FRAMES: OFF";
+          el.liveMedia.style.color=feed.live?"#79e9b0":"";
+        },
+        onError:(reason,count)=>{
+          if(count===1||count===3||count%10===0){
+            el.liveMedia.textContent="REMOTE FRAMES: ERROR";
+            el.liveMedia.style.color="#ff8b8b";log(reason);
+          }
+        }
+      });
+    }
+  }else{
+    el.switcherLink.textContent="VIDEO: LOCAL ONLY";
+    log("Shared switcher adapter unavailable; local-only production");
+  }
+  log("PRODUCTION START "+sess.id);
+ }finally{
+   state.startingProduction=false;
+   setControls();
  }
 }
 async function stopProduction(){
- if(state.endingProduction)return;
+ if(state.startingProduction||state.endingProduction||!state.session)return;
  state.endingProduction=true;setControls();
  try{
   window.PubcastSpeech?.stop();
@@ -296,11 +408,12 @@ async function stopProduction(){
   if(!state.session)return;
   if(state.recorder||state.recordingStarting)await stopRecording();
   if(state.recovery)throw Error("Save the unsaved take before ending this production. A recovery copy can also be downloaded below.");
-  state.clacker?.close();state.clacker=null;
-  const sess=state.session;
-  emit("production.stop",{});
-  Core.finish(sess,Date.now());
+  const sess={...state.session,events:state.session.events.slice()};
+  const endedAt=Date.now();
+  Core.event(sess,"production.stop",{},endedAt);
+  Core.finish(sess,endedAt);
   if(state.storageReady)await Store.save(sess);
+  state.clacker?.close();state.clacker=null;
   try{await window.PubCastCameraPool?.endProduction?.();}catch(e){log("POOL CLOSE WARNING "+e.message);}
   if(state.mediaPublisher){
     try{await state.mediaPublisher.stop()}catch(e){log("LIVE MEDIA RELEASE WARNING "+e.message)}
@@ -311,7 +424,7 @@ async function stopProduction(){
   el.switcherLink.textContent="VIDEO: LOCAL ONLY";
   el.liveMedia.textContent="REMOTE FRAMES: OFF";el.liveMedia.style.color="";
   state.session=null;log("PRODUCTION END "+sess.id);setControls();await refreshSessions();
- }finally{state.endingProduction=false;setControls();}
+ }finally{state.endingProduction=false;syncSlateSetup();setControls();}
 }
 function recordedMime(){
  if(typeof MediaRecorder==="undefined")throw Error("MediaRecorder is unavailable in this browser");
@@ -341,7 +454,9 @@ function captureLease(id,owner,onFailure=()=>{}){
  return ()=>{closed=true;clearInterval(timer);};
 }
 async function startRecording(){
- if(!state.session)throw Error("Start a production before recording");
+ if(!state.session||state.startingProduction||state.endingProduction)throw Error("Recording requires an active production");
+ if(state.panicActive)throw Error("Clear the PANIC blackout before recording");
+ if(state.remoteProgram)throw Error("Choose a Program camera with a local video feed before recording");
  if(state.recorder||state.recordingPromise||state.recordingStarting)throw Error("Already recording or preparing recording");
  if(archive?.status().busy)throw Error("Pause the server save before starting another take");
  if(archive?.status().viewBusy){archive.cancelView();$("archiveStatus").textContent="Server transfer paused for recording. Retry after the take.";}
@@ -350,10 +465,21 @@ async function startRecording(){
  if(!globalThis.crypto?.subtle)throw Error("Recording integrity checks require HTTPS or localhost");
  if(typeof el.program.captureStream!=="function")throw Error("Canvas.captureStream is unsupported");
  const mime=recordedMime(),sess=state.session,media={},op={cancelled:false,media};
+ const slateApi=window.PubCastSlate;
+ const slateLookup=slateApi?.read().catch(error=>({error}));
  state.recordingStarting=op;state.mediaError=null;state.recordingHasData=false;state.recordingStopImmediate=false;setControls();
- const check=()=>{if(op.cancelled||state.recordingStarting!==op||state.session!==sess)throw new DOMException("Recording start canceled","AbortError");};
+ const check=()=>{
+   if(op.cancelled||state.recordingStarting!==op||state.session!==sess)
+     throw new DOMException("Recording start canceled","AbortError");
+   if(state.remoteProgram)throw Error("Program has no local video feed");
+ };
  let capture=null,adopted=false,stopLease=()=>{};
  try{
+   if(sess.voxelPlacement){
+     const {placement}=await voxelRequest(sess.packageId);check();
+     if(!placement||JSON.stringify(voxelPlacementReceipt(placement))!==JSON.stringify(sess.voxelPlacement))
+       throw Error("The saved voxel placement changed. End production and reload the set before recording.");
+   }
    media.videoStream=el.program.captureStream(30);
    if(!media.videoStream.getVideoTracks().length)throw Error("No video track from program canvas");
    const combined=new MediaStream([...media.videoStream.getVideoTracks()]);
@@ -394,13 +520,28 @@ async function startRecording(){
      state.clacker=reference;
    }
    const rec=new MediaRecorder(combined,mime?{mimeType:mime,videoBitsPerSecond:3000000}:{videoBitsPerSecond:3000000});
+   const slateResponse=await slateLookup;check();
+   if(slateResponse?.error){
+     if(state.slate)throw Error("Could not confirm the active slate. Reconnect before recording this take.");
+     log("Slate unavailable. This clip will use its local take ID.");
+   }else if(slateResponse){
+     showStageSlate(slateResponse.slate);
+   }
+   const slate=Core.slateTake(slateResponse?.slate);
+   const title=Core.slateTitle(slate);
    let startedAt=Date.now();const id=sess.id+"-take-"+startedAt+"-"+Capture.id().slice(0,8);
+   if(slate){
+     if(slate.packageId&&slate.packageId!==sess.packageId)
+       throw Error("The slate has a different studio set. End this production to load it before rolling.");
+     if(!slateResponse.can_edit)throw Error("Ask the director to delegate slate editing before rolling this take.");
+     await slateApi.logTake(slate,id);check();
+   }
    capture={id,owner:captureOwner,session:structuredClone(sess),mime:rec.mimeType||mime||"video/webm",syncReferenceId:state.clacker.input.syncReferenceId,
      sourceId:"p25d_"+sess.packageId+"_"+state.programId,startedAt:new Date(startedAt).toISOString(),
-     offsetMs:startedAt-Date.parse(sess.startedAt)};
+     offsetMs:startedAt-Date.parse(sess.startedAt),...(slate?{slate,title}:{})};
    await Store.beginCapture(capture);check();
    media.sourceRecordings=new window.PubCast25DSourceRecordings({mixer:programAudio,session:sess,
-     parentTakeId:id,owner:captureOwner,references:[state.clacker.input],onFailure:e=>{
+     parentTakeId:id,owner:captureOwner,slate,references:[state.clacker.input],onFailure:e=>{
        if(op.cancelled||(state.recordingId!==id&&state.recordingStarting!==op))return;
        state.mediaError=state.mediaError||e;
        $("captureStatus").textContent="Recording interrupted: "+e.message+". Available chunks are retained.";
@@ -411,6 +552,7 @@ async function startRecording(){
    Object.assign(state,media);adopted=true;
    state.recordingSourceId=capture.sourceId;state.recordingMime=capture.mime;
    state.recordingStartedAt=startedAt;state.recordingId=id;
+   state.recordingTitle=title;
    let resolve,reject,finishing=false;
    const completion=new Promise((a,b)=>{resolve=a;reject=b;});completion.catch(()=>{});
    state.recordingComplete=completion;
@@ -436,9 +578,9 @@ async function startRecording(){
    state.recordingStartedAt=startedAt;
    rec.start(1000);
    emit("recording.start",{mime:state.recordingMime,microphone:!!state.micStream,
-     sharedProgramMix:!!state.programMixSource,canvas:[Core.W,Core.H],journal:id});
+     sharedProgramMix:!!state.programMixSource,canvas:[Core.W,Core.H],journal:id,...(slate?{slate,title}:{})});
    $("captureStatus").textContent="Recording started; waiting for the first local checkpoint.";
-   log("REC START "+state.recordingMime+" / microphone "+(state.micStream?"ON":"OFF"));setControls();
+   log("REC START "+state.recordingMime+" / microphone "+(state.micStream?"ON":"OFF"));syncSlateSetup();setControls();
  }catch(e){
    stopLease();
    await media.sourceRecordings?.stop().catch(()=>{});
@@ -463,6 +605,7 @@ async function finishRecording(rec,writer,capture,sess){
    if(!sess.recordings)sess.recordings=sess.media?[Object.assign({id:sess.id},sess.media)]:[];
    sess.media={id:capture.id,mime:blob.type,bytes:blob.size,sourceId:capture.sourceId,syncReferenceId:capture.syncReferenceId,
      startedAt:capture.startedAt,offsetMs:capture.offsetMs,durationMs:Date.now()-Date.parse(capture.startedAt),
+     ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
      incomplete:!!captureError,journal:{chunks:record.chunks.length,bytes:record.capture.bytes}};
    sess.recordings.push(sess.media);
    state.recovery={session:sess,blob,take:sess.media,capture:{id:capture.id,owner:captureOwner}};
@@ -480,7 +623,7 @@ async function finishRecording(rec,writer,capture,sess){
    throw e;
  }finally{
    state.sourceRecordings=null;
-   cleanupMedia();state.recorder=null;state.recordingPromise=null;state.recordingComplete=null;state.captureWriter=null;setControls();
+   cleanupMedia();state.recorder=null;state.recordingPromise=null;state.recordingComplete=null;state.captureWriter=null;syncSlateSetup();setControls();
  }
 }
 // Ordinary Stop gives a short take up to three seconds to produce media.
@@ -537,6 +680,7 @@ async function recoverCapture(id){
    if(capture.kind==='audio-source'){
      const source={id,parentTakeId:capture.parentTakeId,sourceId:capture.sourceId,label:capture.label,kind:capture.sourceKind||'voice',syncReferenceId:capture.syncReferenceId||null,
        mime:blob.type,bytes:blob.size,startedAt:capture.startedAt,offsetMs:capture.offsetMs,
+       ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
        durationMs:capture.durationMs,preFader:true,incomplete:true,recovered:true};
      await Store.saveSource(sess,source,blob,{id,owner:captureOwner});
      await refreshSessions();return;
@@ -546,6 +690,7 @@ async function recoverCapture(id){
    if(!sess.recordings)sess.recordings=sess.media?[Object.assign({id:sess.id},sess.media)]:[];
    sess.media={id,mime:blob.type,bytes:blob.size,sourceId:capture.sourceId,syncReferenceId:capture.syncReferenceId||null,startedAt:capture.startedAt,
      offsetMs:capture.offsetMs,durationMs:record.capture.durationMs,incomplete:true,recovered:true,
+     ...(capture.slate?{slate:capture.slate,title:capture.title,timecode:Core.stageTimecode(capture.offsetMs)}:{}),
      journal:{chunks:record.chunks.length,bytes:blob.size,lastCheckpointAt:record.capture.lastCheckpointAt}};
    sess.recordings.push(sess.media);
    if(!sess.endedAt){Core.event(sess,"recording.recovered",{take:id,committedBytes:blob.size},Date.now());Core.finish(sess,Date.now());}
@@ -563,7 +708,7 @@ async function refreshCaptureRecovery(){
    const button=document.createElement("button");button.type="button";button.style.cssText="width:100%;min-height:44px;text-align:left;margin:4px 0";
    button.dataset.captureId=row.id;
    const active=row.leaseUntil>Date.now();
-   button.textContent=(active?"Active in another tab / checking connection: ":"Recover incomplete take: ")+row.startedAt+" · "+row.bytes+" bytes saved";
+   button.textContent=(active?"Active in another tab / checking connection: ":"Recover incomplete take: ")+(row.title?row.title+" · ":"")+row.startedAt+" · "+row.bytes+" bytes saved";
    button.disabled=active||!row.bytes||!!state.session;
    button.onclick=()=>safe(()=>recoverCapture(row.id));list.appendChild(button);
  }
@@ -577,13 +722,15 @@ async function refreshSessions(){
   const takes=session.recordings?.length?session.recordings:[session.media||null];
   for(const [index,take] of takes.entries()){
    const btn=document.createElement("button");
-   btn.textContent=(session.endedAt?"✓ ":"● ")+session.packageId+" · "+session.startedAt.slice(0,19).replace("T"," ")+" · "+(take?.incomplete?"INCOMPLETE ":"")+"Take "+(index+1)+" · "+(take?.bytes||0)+" bytes";
+   const title=take?.title||session.packageId+" · Take "+(index+1);
+   const started=take?.startedAt||session.startedAt;
+   btn.textContent=(session.endedAt?"✓ ":"● ")+(take?.incomplete?"INCOMPLETE · ":"")+title+" · "+started.slice(0,19).replace("T"," ")+(take?.timecode?" · "+take.timecode:"")+" · "+(take?.bytes||0)+" bytes";
    btn.addEventListener("click",()=>safe(()=>selectSession(session.id,take?.id)));
    el.sessionList.appendChild(btn);
   }
   for(const source of session.sourceTracks||[]){
    const btn=document.createElement('button');
-   btn.textContent=(source.kind==='sync-reference'?'SYNC: ':'VOICE: ')+source.label+' · '+(source.incomplete?'INCOMPLETE · ':'')+source.bytes+' bytes';
+   btn.textContent=(source.kind==='sync-reference'?'SYNC: ':'VOICE: ')+(source.title||source.label)+' · '+(source.incomplete?'INCOMPLETE · ':'')+source.bytes+' bytes';
    btn.onclick=()=>safe(()=>selectSession(session.id,source.id));el.sessionList.appendChild(btn);
   }
  }
@@ -613,7 +760,7 @@ async function refreshServerTakes(){
  if(!takes.length)list.textContent="No server takes for this account.";
  for(const take of takes){
   const button=document.createElement("button");button.type="button";button.style.cssText="width:100%;min-height:44px;text-align:left;margin:4px 0;overflow-wrap:anywhere";
-  button.textContent=take.take_id+" · "+take.state+" · "+take.received_bytes+" / "+take.expected_bytes+" bytes"+(Number.isFinite(take.capture_started_at)?" · captured "+new Date(take.capture_started_at*1000).toLocaleString():" · capture time unknown")+(take.capture_incomplete?" · INCOMPLETE CAPTURE":"");
+  button.textContent=(take.title||take.take_id)+" · "+take.state+" · "+take.received_bytes+" / "+take.expected_bytes+" bytes"+(Number.isFinite(take.capture_started_at)?" · captured "+new Date(take.capture_started_at*1000).toLocaleString():" · capture time unknown")+(take.timecode?" · "+take.timecode:"")+(take.capture_incomplete?" · INCOMPLETE CAPTURE":"");
   button.disabled=take.state!=="complete";
   button.onclick=()=>safe(async()=>{
    if(state.recorder||state.recordingStarting)throw Error("Finish recording before opening server media");
@@ -627,7 +774,7 @@ async function refreshServerTakes(){
    if(selectedServer!==take)return;
    if(item.sha256!==take.sha256||item.blob.size!==take.received_bytes)throw Error("Server media response does not match its saved manifest");
    if(state.playbackUrl)URL.revokeObjectURL(state.playbackUrl);
-   state.selected={blob:item.blob,takeId:take.take_id};
+   state.selected={blob:item.blob,takeId:take.take_id,filename:take.filename};
    el.download.disabled=false;
    state.playbackUrl=URL.createObjectURL(item.blob);el.playback.src=state.playbackUrl;
    $("archiveBundle").disabled=false;$("archiveStatus").textContent="Opened server take: "+item.blob.size+" verified source bytes.";
@@ -745,7 +892,7 @@ function frame(now){
   state.actorFrameStamp=now;
   Render.renderCamera(pr,pkg,Core.shot(pkg,state.programId),state,world,dt);
   const previewState=Object.assign({},state,{blackout:false,lowerThird:false,reuseActorFrame:true});
-  const pooledPreview=window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
+  const pooledPreview=!state.voxelProp&&window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
   if(pooledPreview)pv.drawImage(pooledPreview,0,0,Core.W,Core.H);
   else Render.renderCamera(pv,pkg,Core.shot(pkg,state.previewId),previewState,world,0);
   if(state.previewBars)drawPreviewBars(pv);
@@ -778,10 +925,7 @@ function frame(now){
  }catch(e){state.avatarError=e.message;log("RENDER ERROR "+e.message);}
  if(state.session){
   const elapsed=Math.max(0,Date.now()-Date.parse(state.session.startedAt));
-  const seconds=Math.floor(elapsed/1000);
-  el.timecode.textContent=String(Math.floor(seconds/3600)).padStart(2,"0")+":"+
-   String(Math.floor(seconds/60)%60).padStart(2,"0")+":"+
-   String(seconds%60).padStart(2,"0");
+  el.timecode.textContent=Core.stageTimecode(elapsed);
  }
  if(state.micAnalyser){
   const data=new Uint8Array(state.micAnalyser.frequencyBinCount);state.micAnalyser.getByteTimeDomainData(data);
@@ -807,7 +951,7 @@ function initializeControls(){
   if(!selectedServer)return;
   const take=selectedServer;
   const blob=await archive.bundle(take.id);
-  downloadBlob(blob,take.take_id+"-source.zip");
+  downloadBlob(blob,(take.filename||take.take_id)+"-source.zip");
  });
  window.addEventListener("pagehide",()=>archive?.close());
  for(const [id,pkg] of Object.entries(Core.PACKAGES)){
@@ -845,6 +989,8 @@ function initializeControls(){
  }));
  $("scoreLeft").addEventListener("click",()=>safe(()=>{state.scores[0]++;cue("score",{contestant:0,value:state.scores[0]})}));
  $("scoreRight").addEventListener("click",()=>safe(()=>{state.scores[1]++;cue("score",{contestant:1,value:state.scores[1]})}));
+ $("voxelPlacement").addEventListener("submit",event=>{event.preventDefault();safe(saveVoxelPlacement);});
+ $("refreshVoxelProps").addEventListener("click",refreshVoxelPlacement);
  $("backFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"back")));
  $("frontFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"front")));
  $("midFile").addEventListener("change",e=>safe(()=>chooseImage(e.target,"mid")));
@@ -854,16 +1000,19 @@ function initializeControls(){
  }));
  el.micLevel.addEventListener("input",()=>{state.microphoneLevel=Number(el.micLevel.value)/100;if(state.micHandle)window.PubcastProgramAudio.configureInput(state.micHandle.id,{volume:state.microphoneLevel});});
  el.micMute.addEventListener("click",()=>{state.microphoneMuted=!state.microphoneMuted;if(state.micHandle)window.PubcastProgramAudio.configureInput(state.micHandle.id,{muted:state.microphoneMuted});setControls();emit("audio.mic_mute",{muted:state.microphoneMuted})});
- el.download.addEventListener("click",()=>safe(()=>{if(state.selected?.blob)downloadBlob(state.selected.blob,state.selected.takeId+"."+(/mp4/.test(state.selected.blob.type)?"mp4":"webm"))}));
+ el.download.addEventListener("click",()=>safe(()=>{
+   const selected=state.selected;
+   if(selected?.blob)downloadBlob(selected.blob,(selected.filename||Core.takeFilename(selected.take,selected.takeId))+"."+(/mp4/.test(selected.blob.type)?"mp4":"webm"));
+ }));
  $("recoveryDownload").addEventListener("click",()=>safe(()=>{
-   if(state.recovery)downloadBlob(state.recovery.blob,state.recovery.take.id+"."+(/mp4/.test(state.recovery.blob.type)?"mp4":"webm"));
+   if(state.recovery)downloadBlob(state.recovery.blob,Core.takeFilename(state.recovery.take,state.recovery.take.id)+"."+(/mp4/.test(state.recovery.blob.type)?"mp4":"webm"));
  }));
  $("recoverySave").addEventListener("click",()=>safe(async()=>{
    const recovery=state.recovery;if(!recovery)return;
    await Store.save(recovery.session,recovery.blob,recovery.capture);state.recovery=null;
    el.alert.textContent="";status("ON AIR");setControls();await refreshSessions();log("RECOVERY SAVED "+recovery.take.id);
  }));
- el.manifest.addEventListener("click",()=>safe(()=>{if(state.selected?.session)downloadBlob(new Blob([JSON.stringify(state.selected.session,null,2)],{type:"application/json"}),state.selected.session.id+".json")}));
+ el.manifest.addEventListener("click",()=>safe(()=>{if(state.selected?.session)downloadBlob(new Blob([JSON.stringify(state.selected.session,null,2)],{type:"application/json"}),Core.takeFilename(state.selected.take,state.selected.takeId)+".json")}));
  window.addEventListener("pagehide",()=>{
    state.mediaPublisher?.stop().catch(()=>{});
    state.sharedSwitcher?.detach();
@@ -879,10 +1028,12 @@ function initializeControls(){
 }
 async function init(){
  initializeControls();
+ window.addEventListener("pubcast:slate-change",event=>showStageSlate(event.detail));
+ window.PubCastSlate?.read().then(data=>{if(data)showStageSlate(data.slate);}).catch(()=>{});
  window.PubcastProgramAudio?.onInput((type,input)=>{emit('audio.input.'+type,{id:input.id,label:input.label,
    volume:input.volume,muted:input.muted,solo:input.solo,eq:input.eq,connectedAt:input.connectedAt});setControls();});
  try{const db=await Store.open();db.close();state.storageReady=true;}catch(e){error("Persistent recording storage unavailable: "+e.message);}
- loadGenre("news");setControls();await refreshSessions();
+ loadGenre(Core.PACKAGES[state.slate?.packageId]?state.slate.packageId:"news");setControls();await refreshSessions();
  window.requestAnimationFrame(frame);
  const cuePoll=setInterval(()=>syncServerVideoCues().catch(e=>log("CUE ERROR "+e.message)),500);
  const recoveryPoll=setInterval(()=>refreshCaptureRecovery().catch(()=>{}),3000);
@@ -890,7 +1041,7 @@ async function init(){
  window.PubCast25DStudio={state:()=>({package:state.pkg?.id,program:state.programId,preview:state.previewId,recording:!!state.recorder,recordingStarting:!!state.recordingStarting,journal:state.captureWriter?.status()||null,session:state.session?.id||null,storage:state.storageReady}),
  loadGenre,choosePreview,cut,startProduction,stopProduction,startRecording,stopRecording,recoverCapture,
  poolSnapshot:()=>{
-  if(Object.values(state.assets).some(Boolean))throw Error("Shared camera previews currently require the bundled set assets");
+  if(state.voxelProp||Object.values(state.assets).some(Boolean))throw Error("Pooled camera jobs require the bundled set assets. This set is rendered locally.");
   for(const p of state.performers){
    const expected=new URL("./world/test_avatars/MakeHuman_"+(p.avatar==="female"?"Female":"Male")+".glb",location.href).href;
    if(state.avatarBridge?.info?.(p.id)?.sourceUrl!==expected)throw Error("Shared camera previews currently require the bundled performers to finish loading");
