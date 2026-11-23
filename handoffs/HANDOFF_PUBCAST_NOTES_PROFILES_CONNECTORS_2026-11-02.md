@@ -259,6 +259,33 @@ Not started. It was her first request of the session. First candidate: the studi
 ### 14.5 New open questions
 12. Default visibility per profile field, and whether the filmmaker-finder opt-in is its own switch (suggested yes). 13. Which fields go on a guest's visiting card. 14. Two cartridges: separate memories by default? 15. A name for the in-studio Claude. 16. Confirm "identity constant, mode switchable" as the persona rule.
 
+### 14.6 The cricket: each person's private line to the system (added 2026-11-23; her design, in her words in Appendix A item 23)
+Status: DESIGN ONLY. Nothing for this is built. Nothing below has been tested except item (a).
+
+(a) What was tested [VERIFIED 2026-11-23]. The scheduled task "PubCast nudge test (safe to delete)" (id trig_01MnfpZqC9z7GJoCei4Q32xk, tied to the chat session that built this work) was fired by hand by Josie at 21:13 UTC and its fixed message arrived in that same chat. So a fixed "doorbell" message can wake an existing chat on demand. NOT verified: whether PubCast could fire it by itself from outside. The scheduler shows no API token for this task, and the official outside fire route was earlier observed to start a NEW session instead of waking the existing one. Treat "PubCast pokes a Claude chat from outside" as unproven. The task is switched off, not deleted; she has not asked for it to be deleted.
+
+(b) Her design [JOSIE]. Keep it inside the program. Each avatar gets its own cricket. The cricket is not a one-way poke; it is a two-way private line, "a pager system, it's a cell phone, it's a walkie talkie". Through it a person can:
+  - ask the bot system for basic help (confused by controls, something will not load, a problem with their avatar, something crashing);
+  - escalate to Jeremy;
+  - flag security;
+  - ask to talk to the host / manager.
+  All of it private, so nobody has to say a problem out loud in front of everyone. The host decides what to do, for example: a guest says their computer is about to crash, and the host sends them to the waiting room so they are not kicked out while they fix it.
+
+(c) How it fits what exists [CLAUDE reading; not checked against code beyond the handoff's own earlier sections]. Nudge (modules/bots.py nudge -> request_turn; wired_system.py care levels) is the existing sender/watcher. The cricket would be the per-avatar courier and mailbox that Nudge hands a poke to. Because each avatar has its own cricket and mailbox, there is no shared doorbell and a poke for one avatar cannot land on another.
+
+(d) Two delivery routes [CLAUDE proposal; Josie has not chosen]:
+  1. The AI behind the avatar runs on the user's own API key (bring-your-own-key). PubCast calls the model directly; the cricket's message is simply delivered as a call. Fully inside the program, no outside doorbell.
+  2. The AI is a Claude chat on the connector. The cricket drops its message in that avatar's mailbox on the PubCast connector; the model reads it the next time it looks (it only acts during a turn). An outside doorbell can make it look sooner but is optional and unproven (see (a)).
+  Reason for the split: a chat model cannot be woken from inside PubCast alone.
+
+(e) Open questions for her:
+  17. Who can read a private cricket message besides the host (security? Jeremy?), and is anything logged?
+  18. Can the host reply through the same cricket, and can the host act from it (send to the waiting room, mute, remove)?
+  19. Do guests get a cricket in the waiting room, before entering?
+  20. What does a cricket look and sound like, and is it visible in the studio or only a sound? (She said "it's a cricket" and has not designed it.)
+  21. Is the cricket per avatar or per person when one person has several avatars? She said "an individual avatar's cricket."
+  22. Which requests are answered by the bot system alone, and when does it hand to Jeremy? (Her list: help, Jeremy, security, host.)
+
 ---------------------------------------------------------------------------------------------------
 ## APPENDIX A — JOSIE'S WORDS, VERBATIM (design statements, in conversation order)
 (Dictated; spelling and punctuation are original. Do not edit.)
@@ -310,5 +337,13 @@ Not started. It was her first request of the session. First candidate: the studi
 20. Saving the work: "Should we do a commit so we don't lose anything?" was asked by Claude's side of the chat; her words: "The local branch isn't good enough. We need to upload this to the Claude's work section on Beyond October." / "Access is granted." / "Don't hold it back."
 
 21. The status question: "So, what did we get done last night? And how complete are the sticky note systems?"
+
+22. The nudge test result (2026-11-23): "I think I fired it, and it's in this session."
+
+23. The cricket (2026-11-23): "Well, task scheduler is a thing, but you don't want it to necessarily fire at, 4:30 tomorrow, because you don't know what's going on at 4:30. So it works principally. But how does something inside Pubcast observe the situation and then fire that button outside of Pubcast to reach Jeremy or one of the avatars in Pubcast? Am I understanding this?"
+    Then: "Well, it sounds like you need to keep it more on planet, as it were. You need to keep it more within the program. You need a way of sending a carrier pigeon. Maybe something like, oh, I don't know. A little Jeremy or something."
+    Then: "Or maybe a cricket."
+    Then: "Use an individual avatar's cricket. Do you get what I'm saying?"
+    Then: "Yeah, the crickets act like, I don't know, a walkie-talkie, just like they're everybody's individual connection to the system, like through the cricket they can talk, to the bot system for basic help if they get confused with controls or having trouble loading something or issue with their avatar or something is crashing or and if it has to be escalated, then they can go to Jeremy, or they can flag security, or they can request to talk to the host, the manager, just like, but they are able to do that privately. So if there actually is an issue, and they don't want to shout it in front of everyone, they can let the host know, just like, hey, this person, blah, blah, blah, blah, blah, blah, blah. And the host can decide what to do about that, or just like, hey, just like, I can't participate in the blah, blah, blah because my computer's about to crash. It's like, all right, then just go sit down. I'll send you to the waiting room so you're not kicked out, and fix your problem, whatever it is, So, yeah, sure, it's a pager system, it's a cell phone, it's a walkie talkie, it's something, it's a cricket."
 
 END OF HANDOFF
