@@ -38,7 +38,7 @@
   function buildPhone() {
     room=el('div','phoneRoom',photoRoot);
     const header=el('header','phoneHeader',room);
-    const brand=el('div','phoneBrand',header);el('small','phoneBrandSmall',brand,'PUBCAST REACH');el('div','phoneBrandTitle',brand,'Writer’s Room');
+    const brand=el('div','phoneBrand',header);el('small','phoneBrandSmall',brand,'PUBCAST REACH');el('div','phoneBrandTitle',brand,'2i');
     const headerActions=row('phoneHeaderActions',header);
     move('sidebarToggle',headerActions,'Settings');move('menuToggle',headerActions,'Menu');
     const tabs=el('nav','phoneTabs',room);tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Your writing room');

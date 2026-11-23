@@ -89,7 +89,7 @@ window.reachDeskReady=(window.reachLocalReady||window.reachPhoneReady).then(()=>
   photoMenu('photoCollapseMenu','Shrink desk',()=>collapseDesk());
   photoMenu('photoCloseMenu','Close desk view',()=>closeDesk());
   const dock=make('div','reachDeskDock',host);dock.hidden=true;
-  make('span','reachDeskDockTitle',dock,'Writer’s Room · closed');
+  make('span','reachDeskDockTitle',dock,'2i · closed');
   button('deskReopen','Reopen writing desk',dock,()=>restoreDesk());
   let collapsed=false,closed=false;
   function restoreDesk(){closed=false;collapsed=false;delete document.body.dataset.deskState;dock.hidden=true;updateChrome();}

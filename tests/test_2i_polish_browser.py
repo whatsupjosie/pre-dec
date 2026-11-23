@@ -378,7 +378,7 @@ def test_interface_messages_come_from_the_writers_room_not_the_partner(served):
     _caret_to(page, 0, 1)
     page.keyboard.type("x")
     last = page.locator("#chatLog .chat-msg").last
-    assert last.locator(".who").inner_text().lower() == "writer’s room"
+    assert last.locator(".who").inner_text().lower() == "2i"
     assert "notice" in last.get_attribute("class")
     page.context.close()
 

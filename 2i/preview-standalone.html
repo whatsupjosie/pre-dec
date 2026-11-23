@@ -4,7 +4,7 @@
 <!-- 2i browser preview: bundled original Writer's Room source and its local JS/CSS dependencies. Backend APIs are not provided by this file. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pubcast 2i — Writer's Room</title>
+<title>Pubcast 2i</title>
 <script data-inline-source="static/reach_auth.js">
 /* PubCast Reach shared browser auth adapter.
  * Same-origin requests inherit the current Reach bearer token and authenticated
@@ -2301,7 +2301,7 @@ body[data-twoi-desk="standard"] .solo-textarea { border-radius:0 0 3px 0; }
 <div class="app-shell">
   <!-- TOP BAR -->
   <div class="top-bar">
-    <div class="top-logo">Writer's Room<small>Pubcast 2i</small></div>
+    <div class="top-logo">2i<small>Pubcast</small></div>
     <!-- The document's own line: what it is called, how long it is, whether it is saved. The status word shows
          only while something is happening (reading, generating); "idle" is not shown. -->
     <div class="top-doc">
@@ -5681,7 +5681,7 @@ function addChat(who,text,thinking=false) {
   const div=document.createElement('div');
   div.className='chat-msg '+(who==='you'?'you':who==='notice'?'notice':'pp')+(thinking?' thinking':'');
   const name=document.createElement('span'); name.className='who';
-  name.textContent=who==='you'?'You':who==='notice'?'Writer’s Room':(partnerNames[partnerId]||partnerId);
+  name.textContent=who==='you'?'You':who==='notice'?'2i':(partnerNames[partnerId]||partnerId);
   div.append(name,document.createTextNode(String(text))); chatLog.append(div); chatLog.scrollTop=chatLog.scrollHeight; return div;
 }
 function conversationId() { return conversationIds[partnerId] ||= 'writing_'+uuid(); }

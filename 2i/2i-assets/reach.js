@@ -462,7 +462,7 @@ function addChat(who,text,thinking=false) {
   const div=document.createElement('div');
   div.className='chat-msg '+(who==='you'?'you':who==='notice'?'notice':'pp')+(thinking?' thinking':'');
   const name=document.createElement('span'); name.className='who';
-  name.textContent=who==='you'?'You':who==='notice'?'Writer’s Room':(partnerNames[partnerId]||partnerId);
+  name.textContent=who==='you'?'You':who==='notice'?'2i':(partnerNames[partnerId]||partnerId);
   div.append(name,document.createTextNode(String(text))); chatLog.append(div); chatLog.scrollTop=chatLog.scrollHeight; return div;
 }
 function conversationId() { return conversationIds[partnerId] ||= 'writing_'+uuid(); }
