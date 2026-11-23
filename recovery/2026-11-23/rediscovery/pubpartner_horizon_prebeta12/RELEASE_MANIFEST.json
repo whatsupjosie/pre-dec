@@ -1,0 +1,38 @@
+{
+  "schema": "pubpartner-release-manifest/1",
+  "name": "PubPartner_UAI_VESSEL_FOUNDATION_PREBETA8_20260728",
+  "version": "0.1.0-prebeta.10+wallet-ui-transplant.20260728",
+  "created_at_utc": "2026-07-28T00:00:00Z",
+  "status": "verified engineering checkpoint; not claimed publicly market-ready",
+  "base": {
+    "name": "PubPartner_CANONICAL_RC7_RECONCILED_20260712",
+    "version": "0.1.0-prebeta.7+canonical-reconciled.20260712",
+    "historical_manifest": "docs/reconciliation/LEGACY_RELEASE_MANIFEST_RC7_20260712.json",
+    "baseline_commit": "1f317a7"
+  },
+  "implementation_commits": [
+    "3703e4a",
+    "d7924fb"
+  ],
+  "purpose": "First functional model-independent PubPartner vessel authority with evidence-governed memory, scoped context compilation, correction controls, PubCast audience isolation, operational CLI, and live PubPartner wiring.",
+  "validation": {
+    "python_compileall": "passed",
+    "focused_static_analysis": "passed",
+    "pytest": "163 passed, 3 skipped",
+    "vessel_focused_tests": "31 passed",
+    "zip_integrity": "verified during checkpoint packaging",
+    "live_cloud_provider_calls": "not run",
+    "native_windows": "not run",
+    "public_market_readiness": "not claimed"
+  },
+  "performance_evidence": {
+    "benchmark": "2000 sequential evidence-event writes with full synchronous durability",
+    "elapsed_seconds": 5.983,
+    "validation_records": 2011,
+    "validation_seconds": 0.051,
+    "environment": "Linux sandbox; Python 3.12"
+  },
+  "primary_documentation": "docs/PUBPARTNER_VESSEL_V1.md",
+  "default_vessel_path": "data/pubpartner/vessels/alex.pubpartner",
+  "trust_boundary": "In-file record seals and audit hashes detect corruption and uncoordinated modification. Adversarial authenticity still requires an external trusted signature or owner key."
+}

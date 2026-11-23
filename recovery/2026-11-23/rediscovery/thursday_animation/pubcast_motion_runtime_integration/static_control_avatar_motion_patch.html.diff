@@ -1,0 +1,10 @@
+--- static/control.html.original.bak	2026-05-08 22:00:21.061889269 +0000
++++ static/control.html.patched	2026-05-08 22:01:00.957492628 +0000
+@@ -547,6 +547,7 @@
+   <script src="/static/conference.js"></script>
+   <script src="/static/editor_ui.js"></script>
+   <script src="/static/tts.js"></script>\n  <script src="/static/bots.js"></script>\n  <script src="/static/audio.js"></script>
++  <script src="/static/avatar_motion_runtime.js"></script>
+ {% endblock %}
+ 
+ 

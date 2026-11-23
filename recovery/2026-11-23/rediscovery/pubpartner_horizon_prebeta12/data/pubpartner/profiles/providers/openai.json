@@ -1,0 +1,12 @@
+{
+  "provider": "openai",
+  "model": "",
+  "fixes": [
+    "trim_boilerplate",
+    "anti_syc",
+    "no_fake_memory",
+    "preserve_alex_voice"
+  ],
+  "created_at": 1783660665.7995305,
+  "updated_at": 1783837283.6554863
+}

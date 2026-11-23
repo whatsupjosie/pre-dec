@@ -1,0 +1,475 @@
+.....F.EEEEEEEEEEEEEE.                                                   [100%]
+==================================== ERRORS ====================================
+________ ERROR at setup of TestMemoryProcessor.test_remember_and_recall ________
+
+self = <Coroutine test_remember_and_recall>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='memory' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'memory' for <Coroutine test_remember_and_recall>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_remember_and_recall' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+____ ERROR at setup of TestMemoryProcessor.test_chapter_gating_in_care_mode ____
+
+self = <Coroutine test_chapter_gating_in_care_mode>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='memory' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'memory' for <Coroutine test_chapter_gating_in_care_mode>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_chapter_gating_in_care_mode' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_____ ERROR at setup of TestMemoryProcessor.test_eviction_keeps_db_bounded _____
+
+self = <Coroutine test_eviction_keeps_db_bounded>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='memory' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'memory' for <Coroutine test_eviction_keeps_db_bounded>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_eviction_keeps_db_bounded' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+__ ERROR at setup of TestMemoryProcessor.test_recall_returns_empty_on_timeout __
+
+self = <Coroutine test_recall_returns_empty_on_timeout>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='memory' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'memory' for <Coroutine test_recall_returns_empty_on_timeout>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_recall_returns_empty_on_timeout' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_____ ERROR at setup of TestSafetyGovernor.test_engage_lock_blocks_writes ______
+
+self = <Coroutine test_engage_lock_blocks_writes>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='governor' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'governor' for <Coroutine test_engage_lock_blocks_writes>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_engage_lock_blocks_writes' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+____ ERROR at setup of TestSafetyGovernor.test_handshake_bypass_prevention _____
+
+self = <Coroutine test_handshake_bypass_prevention>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='governor' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'governor' for <Coroutine test_handshake_bypass_prevention>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_handshake_bypass_prevention' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+______ ERROR at setup of TestSafetyGovernor.test_three_handshakes_unlock _______
+
+self = <Coroutine test_three_handshakes_unlock>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='governor' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'governor' for <Coroutine test_three_handshakes_unlock>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_three_handshakes_unlock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+___ ERROR at setup of TestSafetyGovernor.test_mode_change_hook_triggers_lock ___
+
+self = <Coroutine test_mode_change_hook_triggers_lock>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='governor' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'governor' for <Coroutine test_mode_change_hook_triggers_lock>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_mode_change_hook_triggers_lock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_ ERROR at setup of TestSafetyGovernor.test_non_sensitive_files_writeable_during_lock _
+
+self = <Coroutine test_non_sensitive_files_writeable_during_lock>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='governor' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'governor' for <Coroutine test_non_sensitive_files_writeable_during_lock>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_non_sensitive_files_writeable_during_lock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_________ ERROR at setup of TestSanctuaryVault.test_store_and_retrieve _________
+
+self = <Coroutine test_store_and_retrieve>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='vault' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'vault' for <Coroutine test_store_and_retrieve>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_store_and_retrieve' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_ ERROR at setup of TestSanctuaryVault.test_retrieve_nonexistent_returns_none __
+
+self = <Coroutine test_retrieve_nonexistent_returns_none>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='vault' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'vault' for <Coroutine test_retrieve_nonexistent_returns_none>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_retrieve_nonexistent_returns_none' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+____________ ERROR at setup of TestSanctuaryVault.test_delete_works ____________
+
+self = <Coroutine test_delete_works>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='vault' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'vault' for <Coroutine test_delete_works>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_delete_works' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+_ ERROR at setup of TestSanctuaryVault.test_list_labels_never_exposes_payload __
+
+self = <Coroutine test_list_labels_never_exposes_payload>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='vault' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'vault' for <Coroutine test_list_labels_never_exposes_payload>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_list_labels_never_exposes_payload' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+______ ERROR at setup of TestSanctuaryVault.test_audit_log_has_no_payload ______
+
+self = <Coroutine test_audit_log_has_no_payload>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixturedef = <FixtureDef argname='vault' scope='function' baseid='test_hardening.py'>
+request = <SubRequest 'vault' for <Coroutine test_audit_log_has_no_payload>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+E               pytest.PytestRemovedIn9Warning: 'test_audit_log_has_no_payload' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E               See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+
+/opt/pyvenv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:728: PytestRemovedIn9Warning
+=================================== FAILURES ===================================
+________________ TestCharacterEngine.test_low_signals_step_down ________________
+
+self = <test_hardening.TestCharacterEngine object at 0x7edf6bb6c5a0>
+engine = <character_engine.CharacterEngine object at 0x7edf6bc53770>
+
+    @pytest.mark.asyncio
+    async def test_low_signals_step_down(self, engine):
+        from character_engine import Mode, VarianceSignal
+        # Escalate
+        for _ in range(2):
+            await engine.ingest_signal(VarianceSignal(
+                timestamp=time.time(), complexity_score=0.70, emotional_velocity=0.60
+            ))
+>       assert engine.current_mode != Mode.AMBIENT
+E       AssertionError: assert <Mode.AMBIENT: 'AMBIENT'> != <Mode.AMBIENT: 'AMBIENT'>
+E        +  where <Mode.AMBIENT: 'AMBIENT'> = <character_engine.CharacterEngine object at 0x7edf6bc53770>.current_mode
+E        +  and   <Mode.AMBIENT: 'AMBIENT'> = <enum 'Mode'>.AMBIENT
+
+test_hardening.py:122: AssertionError
+=========================== short test summary info ============================
+FAILED test_hardening.py::TestCharacterEngine::test_low_signals_step_down - AssertionError: assert <Mode.AMBIENT: 'AMBIENT'> != <Mode.AMBIENT: 'AMBIENT'>
+ +  where <Mode.AMBIENT: 'AMBIENT'> = <character_engine.CharacterEngine object at 0x7edf6bc53770>.current_mode
+ +  and   <Mode.AMBIENT: 'AMBIENT'> = <enum 'Mode'>.AMBIENT
+ERROR test_hardening.py::TestMemoryProcessor::test_remember_and_recall - pytest.PytestRemovedIn9Warning: 'test_remember_and_recall' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestMemoryProcessor::test_chapter_gating_in_care_mode - pytest.PytestRemovedIn9Warning: 'test_chapter_gating_in_care_mode' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestMemoryProcessor::test_eviction_keeps_db_bounded - pytest.PytestRemovedIn9Warning: 'test_eviction_keeps_db_bounded' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestMemoryProcessor::test_recall_returns_empty_on_timeout - pytest.PytestRemovedIn9Warning: 'test_recall_returns_empty_on_timeout' requested an async fixture 'memory', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSafetyGovernor::test_engage_lock_blocks_writes - pytest.PytestRemovedIn9Warning: 'test_engage_lock_blocks_writes' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSafetyGovernor::test_handshake_bypass_prevention - pytest.PytestRemovedIn9Warning: 'test_handshake_bypass_prevention' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSafetyGovernor::test_three_handshakes_unlock - pytest.PytestRemovedIn9Warning: 'test_three_handshakes_unlock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSafetyGovernor::test_mode_change_hook_triggers_lock - pytest.PytestRemovedIn9Warning: 'test_mode_change_hook_triggers_lock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSafetyGovernor::test_non_sensitive_files_writeable_during_lock - pytest.PytestRemovedIn9Warning: 'test_non_sensitive_files_writeable_during_lock' requested an async fixture 'governor', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSanctuaryVault::test_store_and_retrieve - pytest.PytestRemovedIn9Warning: 'test_store_and_retrieve' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSanctuaryVault::test_retrieve_nonexistent_returns_none - pytest.PytestRemovedIn9Warning: 'test_retrieve_nonexistent_returns_none' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSanctuaryVault::test_delete_works - pytest.PytestRemovedIn9Warning: 'test_delete_works' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSanctuaryVault::test_list_labels_never_exposes_payload - pytest.PytestRemovedIn9Warning: 'test_list_labels_never_exposes_payload' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+ERROR test_hardening.py::TestSanctuaryVault::test_audit_log_has_no_payload - pytest.PytestRemovedIn9Warning: 'test_audit_log_has_no_payload' requested an async fixture 'vault', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture
+1 failed, 7 passed, 14 errors in 0.45s

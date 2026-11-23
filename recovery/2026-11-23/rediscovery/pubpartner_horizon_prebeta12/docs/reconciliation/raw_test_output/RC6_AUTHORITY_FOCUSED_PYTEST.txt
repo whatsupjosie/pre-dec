@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /opt/pyvenv/bin/python
+cachedir: .pytest_cache
+metadata: {'Python': '3.13.5', 'Platform': 'Linux-4.4.0-x86_64-with-glibc2.41', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'asyncio': '1.3.0', 'anyio': '4.13.0', 'Faker': '40.1.2', 'cov': '7.0.0', 'json-report': '1.5.0', 'metadata': '3.1.1', 'ddtrace': '4.4.0'}, 'PLATFORM': 'linux/amd64', 'CI': 'true'}
+rootdir: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/worktree/validation_rc6
+plugins: asyncio-1.3.0, anyio-4.13.0, Faker-40.1.2, cov-7.0.0, json-report-1.5.0, metadata-3.1.1, ddtrace-4.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+tests/test_pub_manager_authority.py::test_pub_manager_reviewer_requires_exact_approved_request PASSED [  5%]
+tests/test_pub_manager_decision_engine.py::test_permanent_actions_remain_human_required_even_during_critical_incident PASSED [ 10%]
+tests/test_pub_manager_decision_engine.py::test_reversible_action_auto_approves_only_with_risk_urgency_and_bounded_lease PASSED [ 15%]
+tests/test_pub_manager_decision_engine.py::test_new_evidence_can_change_an_unconsumed_decision PASSED [ 20%]
+tests/test_pub_manager_decision_engine.py::test_blackbox_failure_blocks_automatic_authority PASSED [ 25%]
+tests/test_pub_manager_decision_engine.py::test_conditional_preferences_require_repeated_human_review_and_do_not_escalate_class_d PASSED [ 30%]
+tests/test_pub_manager_decision_engine.py::test_governance_consumes_exact_auto_approval_once PASSED [ 35%]
+tests/test_pub_manager_decision_engine.py::test_human_approval_is_required_for_ban_then_executes_once PASSED [ 40%]
+tests/test_pub_manager_decision_engine.py::test_engineering_action_executes_through_registered_callback PASSED [ 45%]
+tests/test_alex_jeremy_bridge_contract.py::test_entry_packet_logs_scrubbed_bridge_event PASSED [ 50%]
+tests/test_alex_jeremy_bridge_contract.py::test_nonurgent_jeremy_signal_is_cooldown_suppressed PASSED [ 55%]
+tests/test_alex_jeremy_bridge_contract.py::test_unapproved_authority_request_is_blocked_not_executable PASSED [ 60%]
+tests/test_alex_jeremy_bridge_contract.py::test_approved_authority_request_becomes_explicitly_executable PASSED [ 65%]
+tests/test_alex_jeremy_bridge_contract.py::test_private_signal_payload_is_not_written_to_bridge_event_or_latest_signal PASSED [ 70%]
+tests/test_alex_jeremy_bridge_contract.py::test_blackbox_failure_is_visible_on_packet_and_bridge_health PASSED [ 75%]
+tests/test_alex_jeremy_bridge_contract.py::test_reviewer_cannot_downgrade_hard_authority_action PASSED [ 80%]
+tests/test_alex_jeremy_bridge_contract.py::test_approved_authority_request_is_blocked_when_blackbox_recording_fails PASSED [ 85%]
+tests/test_alex_jeremy_bridge_contract.py::test_governance_freeze_route_rejects_unapproved_bridge_packet_before_mutation PASSED [ 90%]
+tests/test_alex_jeremy_bridge_contract.py::test_governance_freeze_route_accepts_server_loaded_approved_bridge_packet PASSED [ 95%]
+tests/test_alex_jeremy_bridge_contract.py::test_governance_freeze_route_rejects_client_supplied_authority_packet PASSED [100%]
+
+============================== 20 passed in 1.39s ==============================
+AUTHORITY_TEST_EXIT=0

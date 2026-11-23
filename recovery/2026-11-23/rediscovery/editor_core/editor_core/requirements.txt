@@ -1,0 +1,5 @@
+pyspellchecker>=0.8
+cmudict>=1.0
+nltk>=3.8
+pydantic>=2.0
+pytest>=7.0

@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "auth_setup": true,
+  "anonymous_pubpartner_rejected": true,
+  "persistent_signing_secret": true,
+  "login_after_restart": true,
+  "turns_after_restart": 1,
+  "exact_source_restored": true,
+  "data_dir": "/tmp/pubpartner_restart_a_j94_vh/data"
+}

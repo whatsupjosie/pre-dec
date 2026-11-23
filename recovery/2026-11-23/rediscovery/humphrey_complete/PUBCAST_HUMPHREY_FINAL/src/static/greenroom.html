@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Room | PubCast</title>
+    <link rel="stylesheet" href="/static/greenroom.css">
+</head>
+<body>
+    <div id="green-room">
+        <!-- Hallway Background -->
+        <div class="hallway">
+            <!-- Background decorative elements -->
+            <div class="wall-lights">
+                <div class="wall-light"></div>
+                <div class="wall-light"></div>
+                <div class="wall-light"></div>
+                <div class="wall-light"></div>
+            </div>
+            
+            <!-- Floor -->
+            <div class="floor"></div>
+            
+            <!-- Left Door - Back to Dressing Room -->
+            <div class="door left-door" id="dressing-door">
+                <div class="door-frame">
+                    <div class="door-panel">
+                        <div class="door-window"></div>
+                    </div>
+                    <div class="door-handle"></div>
+                    <div class="door-sign">← Dressing Room</div>
+                </div>
+            </div>
+            
+            <!-- Right Door - To Control Room -->
+            <div class="door right-door" id="control-door">
+                <div class="door-frame">
+                    <div class="door-panel">
+                        <div class="door-window"></div>
+                    </div>
+                    <div class="door-handle"></div>
+                    <div class="door-sign">Control Room →</div>
+                </div>
+            </div>
+            
+            <!-- Player Avatar - Detective Humphrey -->
+            <div id="player" class="player humphrey-avatar">
+                <div class="player-shadow"></div>
+                <div class="player-body">
+                    <!-- Detective Humphrey silhouette -->
+                    <div class="humphrey-hat">🎩</div>
+                    <div class="humphrey-head">👶</div>
+                    <div class="humphrey-coat">🧥</div>
+                    <div class="humphrey-legs walking"></div>
+                    <div class="humphrey-prop">🔍</div>
+                </div>
+                <div class="character-label">Detective Humphrey</div>
+            </div>
+            
+            <!-- Instructions overlay -->
+            <div class="instructions" id="instructions">
+                <div class="instruction-box">
+                    <h3>Green Room</h3>
+                    <p>Use <strong>← →</strong> arrow keys or <strong>A D</strong> to walk</p>
+                    <p>Walk to a door and press <strong>SPACE</strong> or <strong>ENTER</strong> to enter</p>
+                    <button id="close-instructions">Got it!</button>
+                </div>
+            </div>
+            
+            <!-- Door prompt -->
+            <div class="door-prompt" id="door-prompt">
+                Press SPACE to enter
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/greenroom.js"></script>
+</body>
+</html>

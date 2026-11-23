@@ -1,0 +1,2 @@
+ 1695  1638 Sl   tini -- /opt/pyvenv-python-tool/bin/python -m uvicorn --host 0.0.0.0 --port 8080 --log-config /opt/python-tool/uvicorn_logging.config jupyter_server.app:app
+ 1836  1695 Sl   /opt/pyvenv-python-tool/bin/python -m uvicorn --host 0.0.0.0 --port 8080 --log-config /opt/python-tool/uvicorn_logging.config jupyter_server.app:app

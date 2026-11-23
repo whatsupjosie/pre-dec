@@ -1,0 +1,27 @@
+.....F................                                                   [100%]
+=================================== FAILURES ===================================
+________________ TestCharacterEngine.test_low_signals_step_down ________________
+
+self = <test_hardening.TestCharacterEngine object at 0x7eb691a645a0>
+engine = <character_engine.CharacterEngine object at 0x7eb691b77410>
+
+    @pytest.mark.asyncio
+    async def test_low_signals_step_down(self, engine):
+        from character_engine import Mode, VarianceSignal
+        # Escalate
+        for _ in range(2):
+            await engine.ingest_signal(VarianceSignal(
+                timestamp=time.time(), complexity_score=0.70, emotional_velocity=0.60
+            ))
+>       assert engine.current_mode != Mode.AMBIENT
+E       AssertionError: assert <Mode.AMBIENT: 'AMBIENT'> != <Mode.AMBIENT: 'AMBIENT'>
+E        +  where <Mode.AMBIENT: 'AMBIENT'> = <character_engine.CharacterEngine object at 0x7eb691b77410>.current_mode
+E        +  and   <Mode.AMBIENT: 'AMBIENT'> = <enum 'Mode'>.AMBIENT
+
+test_hardening.py:122: AssertionError
+=========================== short test summary info ============================
+FAILED test_hardening.py::TestCharacterEngine::test_low_signals_step_down - AssertionError: assert <Mode.AMBIENT: 'AMBIENT'> != <Mode.AMBIENT: 'AMBIENT'>
+ +  where <Mode.AMBIENT: 'AMBIENT'> = <character_engine.CharacterEngine object at 0x7eb691b77410>.current_mode
+ +  and   <Mode.AMBIENT: 'AMBIENT'> = <enum 'Mode'>.AMBIENT
+1 failed, 21 passed in 0.49s
+EXIT=1

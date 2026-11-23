@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pubpartner.local/schema/alex-profile-v1.json",
+  "title": "PubPartner Layered Friend Profile",
+  "type": "object",
+  "required": ["profile_id", "identity", "voice", "boundaries", "modes", "provenance"],
+  "properties": {
+    "profile_id": {"type": "string"},
+    "profile_version": {"type": "string"},
+    "identity": {"type": "object"},
+    "voice": {"type": "object"},
+    "boundaries": {"type": "object"},
+    "modes": {"type": "object"},
+    "relationship_rules": {"type": "array", "items": {"$ref": "#/$defs/evidenceItem"}},
+    "positive_exemplars": {"type": "array", "items": {"$ref": "#/$defs/exemplar"}},
+    "negative_exemplars": {"type": "array", "items": {"$ref": "#/$defs/exemplar"}},
+    "provenance": {"type": "object"}
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "required": ["id", "statement", "status", "source"],
+      "properties": {
+        "id": {"type": "string"},
+        "statement": {"type": "string"},
+        "category": {"type": "string"},
+        "status": {"enum": ["confirmed", "provisional", "rejected", "contradicted", "historical"]},
+        "scope": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "source": {"type": "object"},
+        "sensitivity": {"type": "string"}
+      }
+    },
+    "exemplar": {
+      "type": "object",
+      "required": ["id", "context", "lesson", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "context": {"type": "string"},
+        "user_message": {"type": "string"},
+        "response": {"type": "string"},
+        "lesson": {"type": "array", "items": {"type": "string"}},
+        "status": {"enum": ["approved", "negative", "provisional"]},
+        "source": {"type": "object"}
+      }
+    }
+  }
+}

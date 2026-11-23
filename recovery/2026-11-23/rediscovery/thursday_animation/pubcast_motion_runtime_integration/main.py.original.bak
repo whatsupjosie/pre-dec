@@ -1,0 +1,1513 @@
+"""
+PubCast AI â€” main.py
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+Phase 1 complete + Phase 2 PubWorld/Voxel additions.
+
+Start:  uvicorn main:app --reload --port 8000
+Health: curl http://localhost:8000/api/health
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+import time
+import uuid
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import uvicorn
+from fastapi import FastAPI, File, Form, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from starlette.websockets import WebSocketState
+
+# â”€â”€ Module imports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+from modules.hub import Hub
+from modules.persistence import (
+    allowed_upload_extension,
+    append_jsonl,
+    ensure_dirs,
+    read_json,
+    sanitize_filename,
+    write_json,
+)
+from modules.models import BotConfig, ProductionState, UserState
+from modules.cameras import CameraManager, CameraSource, CameraStatus, CameraTransport, create_default_cameras
+from modules.recording import RecordingService, EncodingProfile, ContainerFormat
+from modules.avatar import AvatarState, list_presets, load_avatar, save_avatar
+from modules.bots import BotManager
+from modules.jeremy_cricket import JeremyConfig, JeremyCricket, create_jeremy_cricket
+from modules.orchestrator import ConversationOrchestrator
+from modules.rooms import Participant, Room, RoomManager
+from modules.schemas import ParticipantRole
+from modules.universal_memory_system import CharacterProfile, UniversalMemorySystem
+from modules.credentials import CredentialStore
+from modules import documents as docs
+import modules.pubworld_blocks as pwb
+import modules.voxel_llm_adapter as vla
+from modules.vision import PubcastVisionManager, create_vision_manager
+from modules.vision_router import create_vision_router
+from modules.ai_runtime import load_ai_runtime_config, validate_ai_runtime_config
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("pubcast.main")
+
+# â”€â”€ Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+BASE_DIR   = Path(__file__).resolve().parent
+DATA_DIR   = BASE_DIR / "data"
+ASSETS_DIR = BASE_DIR / "assets"
+STATIC_DIR = BASE_DIR / "static"
+
+# â”€â”€ FastAPI app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+app = FastAPI(
+    title="PubCast AI",
+    version="1.0.0",
+    description="Virtual broadcast studio with AI co-hosts, voxel world-building, and live production.",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static",  StaticFiles(directory=str(STATIC_DIR)),  name="static")
+app.mount("/assets",  StaticFiles(directory=str(ASSETS_DIR)),  name="assets")
+
+templates = Jinja2Templates(directory=str(STATIC_DIR))
+
+# â”€â”€ Service singletons (created at startup) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hub: Hub
+cam: CameraManager
+rec: RecordingService
+bot_mgr: BotManager
+room_mgr: RoomManager
+cred_store: CredentialStore
+vision_mgr: Optional[PubcastVisionManager] = None
+jeremy: Optional[JeremyCricket] = None
+MEMORY_SNAPSHOT_PATH = DATA_DIR / "memory_snapshot.json"
+
+
+async def _build_jeremy(hub: Hub, bot_manager: BotManager) -> JeremyCricket:
+    memory = UniversalMemorySystem()
+    restored = memory.restore(MEMORY_SNAPSHOT_PATH)
+
+    for config in bot_manager.list_configs():
+        memory.register_character(
+            CharacterProfile(
+                character_id=bot_manager.bot_user_id(config.bot_id),
+                name=config.name,
+                role="cohost",
+                personality={"provider": config.provider.value},
+            )
+        )
+
+    jeremy_instance = await create_jeremy_cricket(
+        memory_system=memory,
+        bot_manager=bot_manager,
+        hub=hub,
+        config=JeremyConfig(),
+    )
+    bot_manager.attach_jeremy(jeremy_instance)
+    hub.set_jeremy(jeremy_instance)
+    if restored:
+        hub.set_startup_notice(f"Memory restored: loaded {restored} saved entries from previous sessions.")
+    else:
+        hub.set_startup_notice("Memory is live for this chat. Saved context will be available after future restarts.")
+    return jeremy_instance
+
+
+@app.on_event("startup")
+async def _startup() -> None:
+    global hub, cam, rec, bot_mgr, room_mgr, cred_store, vision_mgr, jeremy
+
+    ensure_dirs(DATA_DIR, ASSETS_DIR)
+    ai_runtime = validate_ai_runtime_config(load_ai_runtime_config(BASE_DIR))
+
+    hub        = Hub(DATA_DIR)
+    cam        = create_default_cameras()
+    rec        = RecordingService(DATA_DIR / "recordings", cam)
+    bot_mgr    = BotManager(DATA_DIR, hub)
+    hub.set_bot_manager(bot_mgr)
+    room_mgr   = RoomManager()
+    cred_store = CredentialStore(DATA_DIR / "credentials")
+    vision_mgr = create_vision_manager(cam, DATA_DIR, broadcast_event=hub.broadcast_system_event)
+    jeremy     = await _build_jeremy(hub, bot_mgr)
+
+    for room_id in hub.active_rooms():
+        await jeremy.watch_room(room_id)
+
+    # Register standard encoding profiles
+    rec.register_profile(EncodingProfile(
+        profile_id="1080p30",
+        name="1080p 30fps",
+        container=ContainerFormat.MP4,
+        video_codec="h264",
+        audio_codec="aac",
+        video_bitrate="6000k",
+        audio_bitrate="192k",
+        resolution="1920x1080",
+        frame_rate="30",
+        description="Broadcast-quality HD",
+    ))
+    rec.register_profile(EncodingProfile(
+        profile_id="480i",
+        name="480i Fallback",
+        container=ContainerFormat.MP4,
+        video_codec="h264",
+        audio_codec="aac",
+        video_bitrate="2000k",
+        audio_bitrate="128k",
+        resolution="854x480",
+        frame_rate="30",
+        description="Low-bandwidth fallback",
+    ))
+    rec.register_profile(EncodingProfile(
+        profile_id="audio_only",
+        name="Audio Only",
+        container=ContainerFormat.WAV,
+        video_codec=None,
+        audio_codec="pcm_s16le",
+        video_bitrate=None,
+        audio_bitrate=None,
+        resolution=None,
+        frame_rate=None,
+        description="Raw audio recording",
+        is_audio_only=True,
+    ))
+
+    logger.info(
+        "PubCast AI started. DATA=%s AI_PROFILE=%s AI_BACKEND=%s AI_MODEL=%s",
+        DATA_DIR,
+        ai_runtime.active_profile,
+        ai_runtime.active().backend,
+        ai_runtime.active().model,
+    )
+
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    manager = globals().get("bot_mgr")
+    conductor = globals().get("jeremy")
+
+    if conductor is not None:
+        await conductor.shutdown()
+        conductor.memory.serialize(MEMORY_SNAPSHOT_PATH)
+
+    if manager is not None:
+        await manager.shutdown()
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# UTILITIES
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+def _get_or_set_uid(request: Request, response: Response) -> str:
+    uid = request.cookies.get("pubcast_uid")
+    if not uid:
+        uid = str(uuid.uuid4())
+        user_file = DATA_DIR / "users" / f"{uid}.json"
+        if not user_file.exists():
+            write_json(user_file, UserState(user_id=uid).dict())
+        response.set_cookie("pubcast_uid", uid, max_age=60 * 60 * 24 * 365, httponly=True, samesite="lax")
+    return uid
+
+
+def _detect_cloud_providers() -> Dict[str, bool]:
+    return {
+        "anthropic": bool(os.getenv("ANTHROPIC_API_KEY", "").strip()),
+        "openai":    bool(os.getenv("OPENAI_API_KEY",    "").strip()),
+        "gemini":    bool(
+            os.getenv("GEMINI_API_KEY",  "").strip() or
+            os.getenv("GOOGLE_API_KEY",  "").strip()
+        ),
+    }
+
+
+def _get_vision_manager() -> Optional[PubcastVisionManager]:
+    return vision_mgr
+
+
+app.include_router(create_vision_router(_get_vision_manager))
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# STATIC / PAGE ROUTES
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    resp = templates.TemplateResponse("index.html", {"request": request})
+    _get_or_set_uid(request, resp)
+    return resp
+
+
+@app.get("/control", response_class=HTMLResponse)
+async def control_page(request: Request):
+    return templates.TemplateResponse("control.html", {"request": request})
+
+
+@app.get("/dressing", response_class=HTMLResponse)
+async def dressing_page(request: Request):
+    return templates.TemplateResponse("dressing_foundry.html", {"request": request})
+
+
+@app.get("/bar", response_class=HTMLResponse)
+async def bar_page(request: Request):
+    return templates.TemplateResponse("bar.html", {"request": request})
+
+
+@app.get("/world", response_class=HTMLResponse)
+async def world_page(request: Request):
+    return templates.TemplateResponse("world.html", {"request": request})
+
+
+@app.get("/baby-game", response_class=HTMLResponse)
+async def baby_game_page(request: Request):
+    return templates.TemplateResponse("baby.html", {"request": request})
+
+
+@app.get("/builder", response_class=HTMLResponse)
+async def builder_page(request: Request):
+    return templates.TemplateResponse("builder.html", {"request": request})
+
+
+@app.get("/gallery", response_class=HTMLResponse)
+async def gallery_page(request: Request):
+    return templates.TemplateResponse("gallery.html", {"request": request})
+
+
+@app.get("/analytics", response_class=HTMLResponse)
+async def analytics_page(request: Request):
+    return templates.TemplateResponse("analytics.html", {"request": request})
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# HEALTH
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/health")
+async def health():
+    providers = _detect_cloud_providers()
+    vision = _get_vision_manager()
+    return {
+        "status": "ok",
+        "timestamp": time.time(),
+        "cameras": {
+            "program": cam.get_program_source().source_id if cam.get_program_source() else None,
+            "preview": cam.get_preview_source().source_id if cam.get_preview_source() else None,
+            "count":   len(cam.list_sources()),
+        },
+        "vision": {
+            "enabled": vision is not None,
+            "broadcasting": bool(vision.is_broadcasting) if vision else False,
+            "primary_camera": vision.primary_camera if vision else None,
+            "tracked_cameras": len(vision.vision_cameras) if vision else 0,
+        },
+        "recording": {
+            "active_sessions": sum(1 for s in rec.list_sessions() if s.state.value == "active"),
+        },
+        "ai_providers": providers,
+        "ws_rooms": {r: len(conns) for r, conns in hub.rooms.items()},
+        "jeremy": jeremy.get_stats() if jeremy else None,
+    }
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# USER / IDENTITY
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/me")
+async def get_me(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    f = DATA_DIR / "users" / f"{uid}.json"
+    data = read_json(f) if f.exists() else {"user_id": uid, "display_name": "New User"}
+    return JSONResponse(data)
+
+
+@app.get("/api/state/user")
+async def read_user_state(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    f = DATA_DIR / "users" / f"{uid}.json"
+    return read_json(f) if f.exists() else {"user_id": uid, "display_name": "New User"}
+
+
+@app.post("/api/state/user")
+async def save_user_state(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    user_file = DATA_DIR / "users" / f"{uid}.json"
+    current = read_json(user_file) if user_file.exists() else {}
+    current.update(payload or {})
+    write_json(user_file, current)
+    await hub.broadcast_presence_update(uid, current.get("display_name", "User"))
+    return {"ok": True}
+
+
+@app.get("/api/docs/bootstrap")
+async def docs_bootstrap(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    return docs.load_state(DATA_DIR, uid)
+
+
+@app.post("/api/docs/folders")
+async def create_docs_folder(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    folder = docs.create_folder(
+        DATA_DIR,
+        uid,
+        str(payload.get("name") or "Untitled Folder"),
+        str(payload.get("kind") or "document"),
+    )
+    return {"ok": True, "folder": folder}
+
+
+@app.get("/api/docs/documents")
+async def list_docs_documents(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    return {"documents": docs.list_documents(DATA_DIR, uid)}
+
+
+@app.get("/api/docs/documents/{doc_id}")
+async def get_docs_document(doc_id: str, request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    try:
+        return docs.get_document(DATA_DIR, uid, doc_id)
+    except KeyError:
+        return JSONResponse({"error": "not found"}, status_code=404)
+
+
+@app.post("/api/docs/documents")
+async def create_docs_document(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    doc = docs.upsert_document(DATA_DIR, uid, payload or {})
+    return {"ok": True, "document": doc}
+
+
+@app.put("/api/docs/documents/{doc_id}")
+async def update_docs_document(doc_id: str, request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    merged = {**(payload or {}), "doc_id": doc_id}
+    doc = docs.upsert_document(DATA_DIR, uid, merged)
+    return {"ok": True, "document": doc}
+
+
+@app.post("/api/docs/import")
+async def import_docs_document(request: Request, response: Response, file: UploadFile = File(...)):
+    uid = _get_or_set_uid(request, response)
+    raw = await file.read()
+    content = raw.decode("utf-8", errors="ignore")
+    doc = docs.import_document(DATA_DIR, uid, file.filename or "import.txt", content)
+    return {"ok": True, "document": doc}
+
+
+@app.get("/api/docs/documents/{doc_id}/export")
+async def export_docs_document(doc_id: str, request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    try:
+        exported = docs.export_document(DATA_DIR, uid, doc_id)
+    except KeyError:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    headers = {"Content-Disposition": f"attachment; filename={exported['filename']}"}
+    return Response(content=exported["content"], media_type="text/plain; charset=utf-8", headers=headers)
+
+
+@app.get("/api/docs/messages")
+async def list_docs_messages(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    return {"messages": docs.list_messages(DATA_DIR, uid)}
+
+
+@app.post("/api/docs/messages/send")
+async def send_docs_message(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    msg = docs.send_message(DATA_DIR, uid, payload or {})
+    return {"ok": True, "message": msg}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PRODUCTION STATE
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/state/production")
+async def get_production_state():
+    return hub.get_production_state()
+
+
+@app.post("/api/state/production")
+async def set_production_state(payload: Dict[str, Any]):
+    updated = hub.update_production_state(payload)
+    await hub.broadcast_system_event({"type": "production_state", "payload": updated})
+    return {"ok": True, "state": updated}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# CAMERAS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/cameras")
+async def list_cameras():
+    sources = cam.list_sources()
+    statuses = {s.source_id: s for s in cam.list_status()}
+    program = cam.get_program_source()
+    preview = cam.get_preview_source()
+    return {
+        "sources": [
+            {**vars(src), "transport": src.transport.value,
+             "online": statuses.get(src.source_id, {}).online if src.source_id in {s.source_id for s in cam.list_status()} else None}
+            for src in sources
+        ],
+        "program": program.source_id if program else None,
+        "preview": preview.source_id if preview else None,
+    }
+
+
+@app.get("/api/cameras/program")
+async def get_program():
+    src = cam.get_program_source()
+    return {"program": vars(src) if src else None}
+
+
+@app.post("/api/cameras/program")
+async def set_program(payload: Dict[str, Any]):
+    source_id = payload.get("source_id", "")
+    ok = cam.set_program_source(source_id)
+    if ok:
+        await hub.broadcast_system_event({"type": "camera_program", "payload": {"source_id": source_id}})
+    return {"ok": ok}
+
+
+@app.get("/api/cameras/preview")
+async def get_preview():
+    src = cam.get_preview_source()
+    return {"preview": vars(src) if src else None}
+
+
+@app.post("/api/cameras/preview")
+async def set_preview(payload: Dict[str, Any]):
+    source_id = payload.get("source_id", "")
+    ok = cam.set_preview_source(source_id)
+    return {"ok": ok}
+
+
+@app.post("/api/cameras/cut")
+async def cut():
+    """Swap program and preview (hard cut)."""
+    prog = cam.get_program_source()
+    prev = cam.get_preview_source()
+    if prog and prev:
+        cam.set_program_source(prev.source_id)
+        cam.set_preview_source(prog.source_id)
+        await hub.broadcast_system_event({
+            "type": "camera_cut",
+            "payload": {"new_program": prev.source_id, "new_preview": prog.source_id}
+        })
+        return {"ok": True, "program": prev.source_id, "preview": prog.source_id}
+    return JSONResponse({"ok": False, "error": "Need both program and preview set to cut."}, status_code=400)
+
+
+@app.put("/api/cameras/{source_id}/status")
+async def update_camera_status(source_id: str, payload: Dict[str, Any]):
+    cam.set_status(
+        source_id,
+        online=bool(payload.get("online", True)),
+        latency_ms=payload.get("latency_ms"),
+        frame_rate=payload.get("frame_rate"),
+        notes=payload.get("notes"),
+    )
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# RECORDING
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/recording/profiles")
+async def list_recording_profiles():
+    return {"profiles": [vars(p) for p in rec.list_profiles()]}
+
+
+@app.get("/api/recording/sessions")
+async def list_sessions():
+    return {"sessions": [s.to_dict() for s in rec.list_sessions()]}
+
+
+class _StartSessionRequest(BaseModel):
+    sources: List[str]
+    profile_id: str = "1080p30"
+    operator: str = "host"
+    session_id: Optional[str] = None
+    preset: Optional[str] = None
+    host_override: bool = False
+    countdown_seconds: int = 5
+
+
+@app.post("/api/recording/sessions")
+async def start_session(payload: _StartSessionRequest):
+    session = rec.start_session(
+        session_id=payload.session_id,
+        sources=payload.sources,
+        profile_id=payload.profile_id,
+        operator=payload.operator,
+        preset=payload.preset,
+        host_override=payload.host_override,
+        countdown_seconds=payload.countdown_seconds,
+    )
+    await hub.broadcast_system_event({"type": "recording_start", "payload": session.to_dict()})
+    return {"session": session.to_dict()}
+
+
+@app.post("/api/recording/sessions/{session_id}/activate")
+async def activate_session(session_id: str):
+    session = rec.activate_session(session_id)
+    await hub.broadcast_system_event({"type": "recording_active", "payload": session.to_dict()})
+    return {"session": session.to_dict()}
+
+
+@app.post("/api/recording/sessions/{session_id}/stop")
+async def stop_session(session_id: str):
+    session = rec.stop_session(session_id)
+    await hub.broadcast_system_event({"type": "recording_stop", "payload": session.to_dict()})
+    return {"session": session.to_dict()}
+
+
+@app.post("/api/recording/sessions/{session_id}/pause")
+async def pause_session(session_id: str, payload: Dict[str, Any]):
+    paused = bool(payload.get("paused", True))
+    session = rec.pause_session(session_id, paused)
+    return {"session": session.to_dict()}
+
+
+@app.post("/api/recording/sessions/{session_id}/marker")
+async def add_marker(session_id: str, payload: Dict[str, Any]):
+    marker = rec.mark_moment(
+        session_id,
+        label=payload.get("label", "mark"),
+        operator=payload.get("operator"),
+    )
+    return {"marker": vars(marker)}
+
+
+@app.post("/api/recording/sessions/{session_id}/archive")
+async def archive_session(session_id: str):
+    session = rec.archive_session(session_id)
+    return {"session": session.to_dict()}
+
+
+@app.get("/api/recording/sessions/{session_id}/export")
+async def export_session(session_id: str, container: str = "mp4"):
+    fmt = ContainerFormat(container)
+    zip_path = rec.export_session(session_id, container=fmt)
+    return FileResponse(str(zip_path), media_type="application/zip",
+                        filename=f"session_{session_id}.zip")
+
+
+@app.get("/api/recording/storage")
+async def recording_storage():
+    base = rec.base_dir if hasattr(rec, "base_dir") else Path("data/recordings")
+    try:
+        total = sum(f.stat().st_size for f in base.rglob("*") if f.is_file())
+        return {"bytes": total, "mb": round(total / (1024 * 1024), 2)}
+    except Exception:
+        return {"bytes": 0, "mb": 0}
+
+
+@app.get("/api/recording/privacy")
+async def recording_privacy():
+    return {"privacy": rec.privacy_matrix()}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# AVATARS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/avatars/presets")
+async def avatar_presets():
+    return {"presets": [p.dict() for p in list_presets()]}
+
+
+@app.get("/api/avatars/me")
+async def get_my_avatar(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    return load_avatar(DATA_DIR, uid).dict()
+
+
+@app.post("/api/avatars/me")
+async def save_my_avatar(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    state = save_avatar(DATA_DIR, uid, payload)
+    await hub.broadcast_system_event({"type": "avatar_update", "payload": {"user_id": uid, **state.dict()}})
+    return state.dict()
+
+
+@app.get("/api/avatars/{user_id}")
+async def get_user_avatar(user_id: str):
+    return load_avatar(DATA_DIR, user_id).dict()
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# BOTS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/bots")
+async def list_bots(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    bots = bot_mgr.list_configs()
+    return {"bots": [b.dict() for b in bots if b.owner_id == uid]}
+
+
+@app.post("/api/bots")
+async def create_bot(request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    payload["owner_id"] = uid
+    config = BotConfig(**payload)
+    bot_mgr.upsert_config(config)
+    return {"ok": True, "bot": config.dict()}
+
+
+@app.get("/api/bots/{bot_id}")
+async def get_bot(bot_id: str, request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    config = bot_mgr.get_config(bot_id)
+    if not config:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    if config.owner_id != uid:
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return config.dict()
+
+
+@app.put("/api/bots/{bot_id}")
+async def update_bot(bot_id: str, request: Request, response: Response, payload: Dict[str, Any]):
+    uid = _get_or_set_uid(request, response)
+    existing = bot_mgr.get_config(bot_id)
+    if not existing:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    if existing.owner_id != uid:
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    merged = {**existing.dict(), **payload, "bot_id": bot_id, "owner_id": uid}
+    config = BotConfig(**merged)
+    bot_mgr.upsert_config(config)
+    return {"ok": True, "bot": config.dict()}
+
+
+@app.delete("/api/bots/{bot_id}")
+async def delete_bot(bot_id: str, request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    config = bot_mgr.get_config(bot_id)
+    if not config:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    if config.owner_id != uid:
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    bot_mgr.delete_config(bot_id)
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# CREDENTIALS (BYOK)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.post("/api/credentials")
+async def store_credential(request: Request, response: Response, payload: Dict[str, Any]):
+    from modules.credentials import StoredModel, SecretReference
+    uid = _get_or_set_uid(request, response)
+    model_id  = str(payload.get("model_id",  payload.get("key_name", "")))
+    provider  = str(payload.get("provider", "custom"))
+    api_key   = str(payload.get("api_key",  payload.get("key_value", "")))
+    if not model_id or not api_key:
+        return JSONResponse({"error": "model_id and api_key required"}, status_code=400)
+    import time as _t
+    model = StoredModel(
+        model_id=model_id,
+        provider=provider,
+        model_name=str(payload.get("model_name", model_id)),
+        status="active",
+        created_at=_t.time(),
+    )
+    cred_store.upsert_model(uid, model, secrets={"api_key": api_key})
+    return {"ok": True, "model_id": model_id}
+
+
+@app.get("/api/credentials")
+async def list_credentials(request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    models = cred_store.list_models(uid)
+    return {"credentials": [
+        {"model_id": m.model_id, "provider": m.provider, "model_name": m.model_name,
+         "status": m.status, "created_at": m.created_at}
+        for m in models
+    ]}
+
+
+@app.delete("/api/credentials/{model_id}")
+async def delete_credential(model_id: str, request: Request, response: Response):
+    uid = _get_or_set_uid(request, response)
+    cred_store.delete_model(uid, model_id)
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# UPLOADS / VOD
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.post("/api/upload")
+async def upload_file(
+    request: Request,
+    response: Response,
+    file: UploadFile = File(...),
+    target: Optional[str] = Form(None),
+):
+    uid = _get_or_set_uid(request, response)
+    filename = sanitize_filename(file.filename)
+    if not allowed_upload_extension(filename):
+        return JSONResponse({"ok": False, "error": "Unsupported file type."}, status_code=400)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        return JSONResponse({"ok": False, "error": "File too large (limit 5 MB)."}, status_code=400)
+    dst_dir = ASSETS_DIR / "vod" if target == "vod" else ASSETS_DIR / "uploads" / uid
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    with open(dst_dir / filename, "wb") as f:
+        f.write(content)
+    return {"ok": True, "path": f"assets/{'vod' if target == 'vod' else f'uploads/{uid}'}/{filename}"}
+
+
+@app.get("/api/vod")
+async def list_vod():
+    vod_dir = ASSETS_DIR / "vod"
+    if not vod_dir.exists():
+        return {"files": []}
+    files = [
+        {"name": f.name, "size": f.stat().st_size, "url": f"/assets/vod/{f.name}"}
+        for f in sorted(vod_dir.iterdir()) if f.is_file() and not f.name.startswith(".")
+    ]
+    return {"files": files}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” SCENES
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/pubworld/scenes")
+async def list_scenes():
+    from modules.pubworld import list_scenes as _list_scenes
+    scenes = _list_scenes(DATA_DIR)
+    return {"scenes": [s.dict() for s in scenes]}
+
+
+@app.post("/api/pubworld/scenes")
+async def create_scene(payload: Dict[str, Any]):
+    from modules.pubworld import create_scene as _create_scene
+    scene = _create_scene(DATA_DIR, payload.get("name", "Untitled"), payload.get("description", ""))
+    return {"scene": scene.dict()}
+
+
+@app.get("/api/pubworld/scenes/{scene_id}")
+async def get_scene(scene_id: str):
+    from modules.pubworld import get_scene as _get_scene
+    scene = _get_scene(DATA_DIR, scene_id)
+    if not scene:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return scene.dict()
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” PROPS (Voxel objects in scenes)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/pubworld/props")
+async def list_props(scene_id: Optional[str] = None):
+    props = pwb.list_props(DATA_DIR, scene_id=scene_id)
+    return {"props": [p.dict() for p in props]}
+
+
+@app.get("/api/pubworld/props/{prop_id}")
+async def get_prop(prop_id: str):
+    try:
+        prop = pwb.get_prop(DATA_DIR, prop_id)
+        return prop.dict()
+    except FileNotFoundError:
+        return JSONResponse({"error": "not found"}, status_code=404)
+
+
+class _CreatePropRequest(BaseModel):
+    scene_id: str
+    label: str
+    description: str = ""
+    blocks: List[Dict[str, Any]]
+    variants: Optional[List[Dict[str, Any]]] = None
+
+
+@app.post("/api/pubworld/props")
+async def create_prop(payload: _CreatePropRequest):
+    prop = pwb.create_prop(
+        DATA_DIR,
+        payload.scene_id,
+        payload.label,
+        payload.description,
+        payload.blocks,
+        variants=payload.variants,
+    )
+    return {"prop": prop.dict()}
+
+
+@app.put("/api/pubworld/props/{prop_id}/variants")
+async def update_variants(prop_id: str, payload: Dict[str, Any]):
+    prop = pwb.update_prop_variants(DATA_DIR, prop_id, payload.get("variants", []))
+    return {"prop": prop.dict()}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” PROTOTYPES (shared prop library)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+class _SavePrototypeRequest(BaseModel):
+    label: str
+    description: str = ""
+    blocks: List[Dict[str, Any]]
+    links: Optional[List[Dict[str, Any]]] = None
+    category: Optional[str] = None
+    era: Optional[str] = None
+    vibe: Optional[str] = None
+    size: Optional[str] = None
+    region: Optional[str] = None
+    tags: Optional[List[str]] = None
+    contributed_by: Optional[str] = None
+    shared: bool = False
+    source_prompt: Optional[str] = None
+    generation_source: str = "manual"
+
+
+@app.post("/api/pubworld/prototypes")
+async def save_prototype(payload: _SavePrototypeRequest):
+    proto = pwb.save_prototype(
+        DATA_DIR,
+        payload.label,
+        payload.description,
+        payload.blocks,
+        links=payload.links,
+        category=payload.category,
+        era=payload.era,
+        vibe=payload.vibe,
+        size=payload.size,
+        region=payload.region,
+        tags=payload.tags,
+        contributed_by=payload.contributed_by,
+        shared=payload.shared,
+        source_prompt=payload.source_prompt,
+        generation_source=payload.generation_source,
+    )
+    return {"prototype": proto.dict()}
+
+
+@app.get("/api/pubworld/prototypes")
+async def list_prototypes(
+    category: Optional[str] = None,
+    era: Optional[str] = None,
+    vibe: Optional[str] = None,
+    size: Optional[str] = None,
+    region: Optional[str] = None,
+    tag: Optional[str] = None,
+    shared_only: bool = False,
+    generation_source: Optional[str] = None,
+    search: Optional[str] = None,
+):
+    protos = pwb.list_prototypes(DATA_DIR)
+    # Client-side filtering (the pubworld_blocks version is simple)
+    if category:
+        protos = [p for p in protos if getattr(p, "category", None) == category]
+    if era:
+        protos = [p for p in protos if getattr(p, "era", None) == era]
+    if vibe:
+        protos = [p for p in protos if getattr(p, "vibe", None) == vibe]
+    if tag:
+        protos = [p for p in protos if tag in getattr(p, "tags", [])]
+    if search:
+        q = search.lower()
+        protos = [p for p in protos if q in p.label.lower() or q in (p.description or "").lower()]
+    return {"prototypes": [p.dict() for p in protos]}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” VOXEL GENERATION (AI text-to-blocks)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/pubworld/generate/status")
+async def voxel_gen_status():
+    providers = _detect_cloud_providers()
+    return {
+        "local_available": True,
+        "cloud_available": any(providers.values()),
+        "providers": providers,
+        "default": "local",
+    }
+
+
+class _GenerateRequest(BaseModel):
+    prompt: str
+    scene_id: Optional[str] = None
+    label: Optional[str] = None
+    description: str = ""
+    use_cloud: bool = False
+    provider: str = "auto"
+
+
+@app.post("/api/pubworld/generate")
+async def generate_voxel(payload: _GenerateRequest):
+    if payload.use_cloud and any(_detect_cloud_providers().values()):
+        result, provider_used = await vla.generate_with_cloud(payload.prompt, provider=payload.provider)
+        if result:
+            label, blocks = result
+            source = f"ai_cloud:{provider_used}"
+        else:
+            label, blocks_obj = pwb.generate_from_prompt(payload.prompt)
+            blocks = [b.dict() for b in blocks_obj]
+            source = "local_fallback"
+    else:
+        label, blocks_obj = pwb.generate_from_prompt(payload.prompt)
+        blocks = [b.dict() for b in blocks_obj]
+        source = "local"
+
+    label = payload.label or label
+
+    if payload.scene_id:
+        prop = pwb.create_prop(DATA_DIR, payload.scene_id, label, payload.description, blocks)
+        return {"prop": prop.dict(), "generated": blocks, "label": label, "source": source}
+    return {"label": label, "generated": blocks, "source": source}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” TRACKERS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.post("/api/pubworld/trackers")
+async def create_tracker(payload: Dict[str, Any]):
+    tracker = pwb.attach_tracker(
+        DATA_DIR,
+        kind=payload.get("kind", "prop"),
+        target_prop=payload.get("target_prop"),
+        target_block_index=payload.get("target_block_index"),
+    )
+    return {"tracker": tracker.dict()}
+
+
+@app.get("/api/pubworld/trackers/{tracker_id}")
+async def get_tracker(tracker_id: str):
+    try:
+        return pwb.get_tracker(DATA_DIR, tracker_id).dict()
+    except FileNotFoundError:
+        return JSONResponse({"error": "not found"}, status_code=404)
+
+
+@app.post("/api/pubworld/trackers/{tracker_id}/samples")
+async def push_samples(tracker_id: str, payload: Dict[str, Any]):
+    tracker = pwb.append_samples(
+        DATA_DIR, tracker_id,
+        samples=payload.get("samples", []),
+        set_baseline=bool(payload.get("set_baseline", False)),
+    )
+    delta = pwb.continuity_delta(tracker)
+    return {"tracker": tracker.dict(), "delta": delta}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PUBWORLD â€” BUILDER PRESETS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/pubworld/presets")
+async def list_builder_presets():
+    presets = pwb.list_builder_presets(DATA_DIR)
+    return {"presets": [p.dict() for p in presets]}
+
+
+@app.post("/api/pubworld/presets")
+async def save_builder_preset(payload: Dict[str, Any]):
+    preset = pwb.save_builder_preset(
+        DATA_DIR,
+        name=payload.get("name", "Untitled"),
+        blocks_data=payload.get("blocks", []),
+        links_data=payload.get("links"),
+    )
+    return {"preset": preset.dict()}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# WEBSOCKET â€” main event bus
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.websocket("/ws/{room}")
+async def websocket_endpoint(ws: WebSocket, room: str):
+    uid = ws.cookies.get("pubcast_uid") or f"anon-{uuid.uuid4().hex[:8]}"
+    await hub.connect(ws, room, user_id=uid)
+    try:
+        while True:
+            msg = await ws.receive_text()
+            await hub.handle_message(ws, room, msg)
+    except WebSocketDisconnect:
+        await hub.disconnect(ws, room)
+    except Exception:
+        if ws.application_state == WebSocketState.CONNECTED:
+            await ws.close(code=1011)
+        await hub.disconnect(ws, room)
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ENTRYPOINT
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False, log_level="info")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIGHTING SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from modules.lighting import LightingManager as _LightingManager
+_lighting_mgr = _LightingManager()
+
+
+@app.get("/api/lighting/presets")
+async def lighting_list_presets():
+    """List all available lighting presets."""
+    presets = []
+    for pid in _lighting_mgr.list_presets():
+        p = _lighting_mgr.get_preset(pid)
+        if p:
+            presets.append({"preset_id": p.preset_id, "name": p.name, "description": p.description})
+    return {"presets": presets}
+
+
+@app.get("/api/lighting/active")
+async def lighting_get_active():
+    """Get the currently active lighting preset."""
+    p = _lighting_mgr.get_active()
+    if not p:
+        return {"active": None}
+    return {"active": p.to_dict()}
+
+
+@app.post("/api/lighting/apply/{preset_id}")
+async def lighting_apply(preset_id: str):
+    """Apply a lighting preset and broadcast to all rooms."""
+    result = await _lighting_mgr.apply_preset(preset_id)
+    if result.get("ok"):
+        await hub.broadcast_system_event({
+            "type": "lighting_update",
+            "preset_id": preset_id,
+            "preset": result.get("preset"),
+        })
+    return result
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# VOXEL BRIDGE (Twin Engine â€” C++ renderer connection)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+_bridge: Optional[Any] = None  # VoxelBridge instance, lazy-init
+
+
+def _get_bridge():
+    global _bridge
+    if _bridge is None:
+        from modules.bridge import VoxelBridge
+        _bridge = VoxelBridge(DATA_DIR)
+    return _bridge
+
+
+@app.get("/api/bridge/status")
+async def bridge_status():
+    """Connection status of the twin-engine C++ bridge."""
+    try:
+        b = _get_bridge()
+        metrics = b._metrics
+        return {
+            "status":          b._status.value,
+            "commands_sent":   metrics.commands_sent,
+            "commands_failed": metrics.commands_failed,
+            "avg_latency_ms":  metrics.avg_latency_ms,
+            "fps":             metrics.fps,
+            "gpu_health":      metrics.gpu_health,
+            "queue_depth":     metrics.queue_depth,
+        }
+    except Exception as exc:
+        return {"status": "unavailable", "error": str(exc)}
+
+
+@app.post("/api/bridge/connect")
+async def bridge_connect(payload: Dict[str, Any]):
+    """Attempt to connect the Python â†” C++ bridge."""
+    try:
+        b = _get_bridge()
+        create = bool(payload.get("create_shared", False))
+        ok = b.connect(create_shared=create)
+        return {"ok": ok, "status": b._status.value}
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+
+
+@app.post("/api/bridge/command")
+async def bridge_command(payload: Dict[str, Any]):
+    """Send a command to the C++ engine via the bridge."""
+    try:
+        cmd_type_str = str(payload.get("command", "HEARTBEAT")).upper()
+        b = _get_bridge()
+        success = b.send_command(cmd_type_str, payload.get("payload", {}), int(payload.get("priority", 0)))
+        return {"ok": success, "command": cmd_type_str}
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+
+
+@app.post("/api/bridge/ptz")
+async def bridge_ptz(payload: Dict[str, Any]):
+    """PTZ (pan/tilt/zoom) control command to the C++ renderer."""
+    try:
+        b = _get_bridge()
+        ok = b.send_command("PTZ", {
+            "camera_id": payload.get("camera_id", "main"),
+            "pan":       float(payload.get("pan",  0.0)),
+            "tilt":      float(payload.get("tilt", 0.0)),
+            "zoom":      float(payload.get("zoom", 1.0)),
+        }, priority=1)
+        return {"ok": ok}
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# CIRCUIT BREAKER STATUS (system health endpoint)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/health/breakers")
+async def breaker_health():
+    """Returns the state of all registered circuit breakers."""
+    from modules.circuit_breaker import all_breaker_stats
+    return {"breakers": all_breaker_stats()}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ADVANCED CAMERAS (cameras_advanced.py â€” full PTZ + monitoring)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+_adv_cam: Optional[Any] = None  # AdvancedCameraManager, lazy-init
+
+
+def _get_adv_cam():
+    global _adv_cam
+    if _adv_cam is None:
+        from modules.cameras_advanced import create_default_cameras as _create_adv
+        _adv_cam = _create_adv()
+    return _adv_cam
+
+
+@app.get("/api/cameras/advanced")
+async def advanced_cameras():
+    """Full camera stats from the advanced camera manager (PTZ, health, etc.)"""
+    try:
+        mgr = _get_adv_cam()
+        return mgr.get_all_stats()
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.post("/api/cameras/advanced/cut/{camera_id}")
+async def advanced_cut(camera_id: str):
+    """Hard cut to camera via advanced manager."""
+    try:
+        mgr = _get_adv_cam()
+        ok = await mgr.cut_to_camera(camera_id)
+        if ok:
+            await hub.broadcast_system_event({"type": "camera_cut", "payload": {"camera_id": camera_id}})
+        return {"ok": ok}
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+
+
+@app.post("/api/cameras/advanced/transition")
+async def advanced_transition(payload: Dict[str, Any]):
+    """Auto-transition (dissolve) to preview camera."""
+    try:
+        mgr = _get_adv_cam()
+        duration = float(payload.get("duration_seconds", 1.0))
+        ok = await mgr.auto_transition(duration)
+        return {"ok": ok, "duration": duration}
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# MOTION CAPTURE / AVATAR SYSTEM (avatar_motion.py)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/motion/avatars")
+async def list_motion_avatars():
+    """List available motion-capture avatar presets."""
+    try:
+        from modules.avatar_motion import AvatarPreset
+        return {"presets": [p.value for p in AvatarPreset]}
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.post("/api/motion/frame")
+async def push_motion_frame(payload: Dict[str, Any]):
+    """Ingest a live motion-capture frame and broadcast it to all rooms."""
+    await hub.broadcast_system_event({"type": "motion_frame", "payload": payload})
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# SURFACES (placeable media surfaces in PubWorld rooms)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+_surface_mgr: Optional[Any] = None
+
+def _get_surfaces():
+    global _surface_mgr
+    if _surface_mgr is None:
+        from modules.surfaces import SurfaceManager
+        _surface_mgr = SurfaceManager(DATA_DIR)
+    return _surface_mgr
+
+
+@app.get("/api/surfaces")
+async def list_surfaces(room_id: Optional[str] = None):
+    mgr = _get_surfaces()
+    surfaces = await mgr.list_surfaces(room_id=room_id)
+    return {"surfaces": [s.dict() for s in surfaces]}
+
+
+@app.post("/api/surfaces")
+async def create_surface(payload: Dict[str, Any]):
+    mgr = _get_surfaces()
+    try:
+        surface = await mgr.create_surface(
+            room_id=str(payload.get("room_id", "default")),
+            label=str(payload.get("label", "Surface")),
+            kind=str(payload.get("kind", "custom")),
+            quad=payload.get("quad", [[0,0,0],[1,0,0],[1,1,0],[0,1,0]]),
+            creator_id=payload.get("creator_id"),
+            media_mode=str(payload.get("media_mode", "video")),
+            locked=bool(payload.get("locked", False)),
+            expires_at=payload.get("expires_at"),
+            metadata=payload.get("metadata"),
+        )
+        await hub.broadcast_system_event({"type": "surface_created", "payload": surface.dict()})
+        return surface.dict()
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.get("/api/surfaces/{surface_id}")
+async def get_surface(surface_id: str):
+    mgr = _get_surfaces()
+    s = await mgr.get_surface(surface_id)
+    if not s:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return s.dict()
+
+
+@app.post("/api/surfaces/{surface_id}/bind")
+async def bind_surface_stream(surface_id: str, payload: Dict[str, Any]):
+    mgr = _get_surfaces()
+    try:
+        surface = await mgr.bind_stream(
+            surface_id,
+            stream_id=payload.get("stream_id"),
+            stream_uri=payload.get("stream_uri"),
+            metadata=payload.get("metadata"),
+        )
+        await hub.broadcast_system_event({"type": "surface_bound", "payload": surface.dict()})
+        return surface.dict()
+    except KeyError:
+        return JSONResponse({"error": "Surface not found"}, status_code=404)
+
+
+@app.patch("/api/surfaces/{surface_id}")
+async def update_surface_state(surface_id: str, payload: Dict[str, Any]):
+    mgr = _get_surfaces()
+    try:
+        surface = await mgr.update_surface_state(surface_id, changes=payload)
+        await hub.broadcast_system_event({"type": "surface_updated", "payload": surface.dict()})
+        return surface.dict()
+    except (KeyError, ValueError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.delete("/api/surfaces/{surface_id}")
+async def delete_surface(surface_id: str):
+    mgr = _get_surfaces()
+    await mgr.delete_surface(surface_id)
+    await hub.broadcast_system_event({"type": "surface_deleted", "payload": {"surface_id": surface_id}})
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# CHOREOGRAPHY CONTROLLER (server-side avatar animation tick)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+_choreo_ctrl: Optional[Any] = None
+
+def _get_choreo():
+    global _choreo_ctrl
+    if _choreo_ctrl is None:
+        from modules.choreography_controller import ChoreoController
+        _choreo_ctrl = ChoreoController(hub, tick_hz=30.0)
+    return _choreo_ctrl
+
+
+@app.get("/api/choreo/status")
+async def choreo_status():
+    return _get_choreo().status()
+
+
+@app.get("/api/choreo/plans/{scene_id}")
+async def get_choreo_plan(scene_id: str):
+    from modules.choreography import get_plan
+    return get_plan(DATA_DIR, scene_id).dict()
+
+
+@app.put("/api/choreo/plans/{scene_id}")
+async def put_choreo_plan(scene_id: str, payload: Dict[str, Any]):
+    from modules.choreography import update_plan
+    return update_plan(DATA_DIR, scene_id, payload or {}).dict()
+
+
+@app.post("/api/choreo/start")
+async def choreo_start(payload: Dict[str, Any]):
+    ctrl = _get_choreo()
+    result = await ctrl.start(
+        room=str(payload.get("room", "studio")),
+        avatars=payload.get("avatars"),
+        steps=payload.get("steps", []),
+        tick_hz=payload.get("tick_hz"),
+    )
+    return result
+
+
+@app.post("/api/choreo/stop")
+async def choreo_stop():
+    await _get_choreo().stop()
+    return {"ok": True}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# PROJECTS (autosave & restore for builder sessions)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/projects/{slug}/autosaves")
+async def list_project_autosaves(slug: str):
+    from modules.projects import list_autosaves
+    return {"autosaves": list_autosaves(DATA_DIR, slug)}
+
+
+@app.post("/api/projects/{slug}/autosave")
+async def project_autosave(slug: str, payload: Dict[str, Any]):
+    from modules.projects import save_autosave_snapshot
+    path = await save_autosave_snapshot(DATA_DIR, slug, payload)
+    return {"ok": True, "path": str(path)}
+
+
+@app.get("/api/projects/{slug}/autosave/latest")
+async def project_latest_autosave(slug: str):
+    from modules.projects import latest_autosave_path
+    from modules.persistence import read_json
+    path = latest_autosave_path(DATA_DIR, slug)
+    if not path or not path.exists():
+        return JSONResponse({"error": "No autosave found"}, status_code=404)
+    data = read_json(path)
+    return {"data": data, "path": str(path)}
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# INFERENCE MANAGER (LLM / STT / TTS worker process)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+_inference: Optional[Any] = None
+
+def _get_inference():
+    global _inference
+    if _inference is None:
+        from modules.inference import InferenceManager
+        _inference = InferenceManager()
+    return _inference
+
+
+@app.get("/api/inference/status")
+async def inference_status():
+    return _get_inference().status()
+
+
+@app.post("/api/inference/generate")
+async def inference_generate(payload: Dict[str, Any]):
+    mgr = _get_inference()
+    if not mgr.status()["worker_alive"]:
+        await mgr.startup()
+    try:
+        result = await mgr.generate_text(
+            str(payload.get("prompt", "")),
+            temperature=float(payload.get("temperature", 0.7)),
+            max_tokens=int(payload.get("max_tokens", 256)),
+        )
+        return result
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.post("/api/inference/tts")
+async def inference_tts(payload: Dict[str, Any]):
+    mgr = _get_inference()
+    if not mgr.status()["worker_alive"]:
+        await mgr.startup()
+    try:
+        result = await mgr.synthesize_speech(
+            str(payload.get("text", "")),
+            voice=str(payload.get("voice", "default")),
+        )
+        return result
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# DISTRIBUTED ENGINE STATUS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/engine/status")
+async def engine_status():
+    """Health and mode of distributed engine nodes."""
+    from modules.irm import IRMController
+    ctrl = IRMController()
+    report = ctrl.check()
+    bridge_stat = "unavailable"
+    try:
+        b = _get_bridge()
+        bridge_stat = b._status.value
+    except Exception:
+        pass
+    return {
+        "engine":    "distributed_v1",
+        "health":    report.to_dict(),
+        "bridge":    bridge_stat,
+    }
+
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# AVATAR ASSETS (GLB manifest)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+@app.get("/api/avatars/assets")
+async def list_avatar_assets():
+    from modules.avatar_assets import load_manifest, refresh_manifest_cache
+    manifest = load_manifest(DATA_DIR)
+    return {"packs": [p.dict() for p in manifest.packs]}
+
+
+@app.post("/api/avatars/assets/refresh")
+async def refresh_avatar_assets():
+    from modules.avatar_assets import refresh_manifest_cache
+    refresh_manifest_cache()
+    return {"ok": True}

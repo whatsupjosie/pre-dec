@@ -1,0 +1,5 @@
+--- static/control.html
++++ static/control.html
+@@
+ <script src="/static/avatar_motion_runtime.js"></script>
++<script src="/static/avatar_glb_motion_consumer.js"></script>

@@ -1,0 +1,45 @@
+PubPartner Activation Preflight
+================================
+Overall: OK
+App root: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712
+Data dir: /tmp/pubpartner_packaged_preflight_Wt3o/data
+
+[OK] python_version: 3.13.5
+[OK] platform: Linux 4.4.0 / x86_64
+[OK] data_dir_writable: /tmp/pubpartner_packaged_preflight_Wt3o/data
+[OK] pubpartner_data_writable: /tmp/pubpartner_packaged_preflight_Wt3o/data/pubpartner
+[OK] receipt_dir_writable: /tmp/pubpartner_packaged_preflight_Wt3o/data/pubpartner/receipts
+[OK] verbatim_dir_writable: /tmp/pubpartner_packaged_preflight_Wt3o/data/pubpartner/verbatim
+[OK] module:fastapi: fastapi
+[OK] module:pydantic: pydantic
+[OK] module:uvicorn: uvicorn
+[OK] optional_module:httpx: httpx
+[OK] optional_module:pytest: pytest
+[WARN] optional_module:openai: openai
+      Fix: Install optional support with: python -m pip install openai
+[OK] disk_space: virtual filesystem capacity; writable probe passed
+[OK] file:pubpartner_app.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/pubpartner_app.py
+[OK] file:main.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/main.py
+[OK] file:static/pubpartner.html: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/static/pubpartner.html
+[OK] file:static/pubpartner.css: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/static/pubpartner.css
+[OK] file:static/pubpartner.js: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/static/pubpartner.js
+[OK] file:modules/pubpartner_core.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/pubpartner_core.py
+[OK] file:modules/pubpartner_routes.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/pubpartner_routes.py
+[OK] file:modules/pubpartner_provider.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/pubpartner_provider.py
+[OK] file:modules/provider_neutralizer.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/provider_neutralizer.py
+[OK] file:modules/provider_capabilities.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/provider_capabilities.py
+[OK] file:modules/openai_compatible_provider.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/openai_compatible_provider.py
+[OK] file:modules/pubpartner_relationship.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/pubpartner_relationship.py
+[OK] file:modules/pub_manager_authority.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/pub_manager_authority.py
+[OK] file:modules/auth.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/auth.py
+[OK] file:modules/auth_routes.py: /mnt/data/PubPartner_Canonical_Reconciliation_20260712/release/PubPartner_CANONICAL_RC7_RECONCILED_20260712/modules/auth_routes.py
+[OK] port_available: 127.0.0.1:8865
+[WARN] openai_key_optional: OPENAI_API_KEY
+      Fix: Only needed for provider=openai. Local mock/offline/Ollama can run without it.
+[OK] ollama_host_configured: http://localhost:11434
+[OK] local_runtime_secret: configured
+[OK] auth_enforced: 1
+[OK] cors_not_wildcard: http://127.0.0.1:8865
+
+Report: /tmp/pubpartner_packaged_preflight_Wt3o/data/pubpartner/preflight_latest.json
+Security: AUTHENTICATED LOCAL OWNER MODE

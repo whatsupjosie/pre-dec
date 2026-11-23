@@ -1,0 +1,8 @@
+{
+  "source_snapshot": "Frozen_PubPartner_Pre-Beta_Snapshot_v0.1.0-prebeta.10_2026-07-28_15-20-00_PDT.zip",
+  "source_sha256": "865ae53e3f150fce9e9b14aafaaa8321556dff0ce317a01a83dbbfbb200e3e76",
+  "source_size_bytes": 3622100,
+  "audit_date": "2026-08-09",
+  "working_version": "0.1.0-prebeta.11-event-agency-v1",
+  "change_scope": "V1: typed persistent Event + append-only ledger + nudge instrumentation"
+}

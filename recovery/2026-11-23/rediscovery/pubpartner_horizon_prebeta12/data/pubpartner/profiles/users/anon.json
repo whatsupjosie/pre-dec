@@ -1,0 +1,19 @@
+{
+  "id": "anon",
+  "rules": [
+    "direct",
+    "warm",
+    "no_fluff"
+  ],
+  "workflow": [
+    "preserve_exact_text",
+    "show_done_not_vibes",
+    "say_uncertain_when_uncertain"
+  ],
+  "accessibility": [
+    "low_cog_load"
+  ],
+  "language": "en-US",
+  "created_at": 1786295416.8985744,
+  "updated_at": 1786295416.8985744
+}

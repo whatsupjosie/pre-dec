@@ -1,0 +1,91 @@
+{
+  "furniture": {
+    "standard": [
+      "couch",
+      "chair",
+      "recliner",
+      "crib",
+      "dining_table",
+      "coffee_table",
+      "bookshelf",
+      "dresser",
+      "nightstand",
+      "tv_stand"
+    ],
+    "fancy": [
+      "sectional_couch",
+      "leather_recliner",
+      "canopy_bed",
+      "marble_dining_table",
+      "glass_coffee_table",
+      "ornate_bookshelf"
+    ]
+  },
+  "home_structure": {
+    "standard": [
+      "wall",
+      "window",
+      "door",
+      "floor",
+      "ceiling",
+      "tile_floor",
+      "wood_paneling",
+      "stairs",
+      "garage_door"
+    ],
+    "fancy": [
+      "arched_window",
+      "double_door",
+      "skylight",
+      "marble_floor",
+      "decorative_columns"
+    ]
+  },
+  "rooms": [
+    "master_bedroom",
+    "nursery",
+    "game_room",
+    "tv_room",
+    "dining_room",
+    "kitchen",
+    "bathroom",
+    "garage",
+    "backyard"
+  ],
+  "outdoor": {
+    "standard": [
+      "tree",
+      "sidewalk",
+      "light_pole",
+      "mailbox",
+      "fence",
+      "grass_patch"
+    ],
+    "fancy": [
+      "garden_fountain",
+      "stone_path",
+      "decorative_lamp_post",
+      "gazebo"
+    ]
+  },
+  "vehicles": {
+    "standard": [
+      "car",
+      "truck",
+      "motorcycle"
+    ],
+    "fancy": [
+      "sports_car",
+      "luxury_suv",
+      "pickup_with_lift"
+    ]
+  },
+  "props": [
+    "phone",
+    "lamp",
+    "glass",
+    "cake",
+    "horse",
+    "potty"
+  ]
+}

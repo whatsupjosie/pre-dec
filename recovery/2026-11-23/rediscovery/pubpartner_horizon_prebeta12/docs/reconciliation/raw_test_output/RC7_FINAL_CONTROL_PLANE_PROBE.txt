@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "setup_status": 201,
+  "health": {
+    "ok": true,
+    "runtime": "pubpartner_only",
+    "friend_layer": "ready",
+    "control_plane": "alex_jeremy_pub_manager_governance",
+    "optional_pubcast_studio_started": false,
+    "default_friend": "alex"
+  },
+  "policy_status": 200,
+  "ban": {
+    "status": 200,
+    "approved": false,
+    "decision": "human_required"
+  },
+  "freeze": {
+    "status": 200,
+    "approved": true,
+    "decision": "auto_approved"
+  },
+  "execute_status": 200,
+  "replay_status": 403
+}

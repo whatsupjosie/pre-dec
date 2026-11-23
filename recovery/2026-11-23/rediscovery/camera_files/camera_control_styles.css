@@ -1,0 +1,723 @@
+/* PubCast Camera Control System Styling */
+/* Professional broadcast aesthetic with Art Deco elements */
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* CAMERA STATION */
+/* ═══════════════════════════════════════════════════════════════ */
+
+#station-cameras {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+.camera-grid {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.camera-sources {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.camera-source {
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.9) 0%, 
+        rgba(22, 33, 62, 0.9) 100%);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.camera-source::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        rgba(0, 255, 255, 0.6) 0%, 
+        rgba(255, 215, 0, 0.6) 50%, 
+        rgba(0, 255, 255, 0.6) 100%);
+}
+
+.camera-source:hover {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.camera-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.camera-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #e0e6ed;
+}
+
+.camera-transport {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.camera-transport.ndi {
+    background: rgba(0, 200, 100, 0.2);
+    color: #00c864;
+    border: 1px solid rgba(0, 200, 100, 0.3);
+}
+
+.camera-transport.rtmp {
+    background: rgba(255, 100, 100, 0.2);
+    color: #ff6464;
+    border: 1px solid rgba(255, 100, 100, 0.3);
+}
+
+.camera-transport.srt {
+    background: rgba(100, 150, 255, 0.2);
+    color: #6496ff;
+    border: 1px solid rgba(100, 150, 255, 0.3);
+}
+
+.camera-transport.virtual {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.camera-transport.voxel {
+    background: rgba(150, 100, 255, 0.2);
+    color: #9664ff;
+    border: 1px solid rgba(150, 100, 255, 0.3);
+}
+
+.camera-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: rgba(224, 230, 237, 0.7);
+}
+
+.camera-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.status-indicator {
+    font-size: 10px;
+    transition: color 0.3s ease;
+}
+
+.status-indicator.online {
+    color: #00ff80;
+    text-shadow: 0 0 4px rgba(0, 255, 128, 0.6);
+}
+
+.status-indicator.offline {
+    color: #ff6b6b;
+    text-shadow: 0 0 4px rgba(255, 107, 107, 0.6);
+}
+
+.camera-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.camera-actions button {
+    flex: 1;
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SWITCHER CONTROLS */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.switcher-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.switcher-status {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.status-item span:first-child {
+    color: rgba(224, 230, 237, 0.7);
+    font-weight: 500;
+}
+
+.status-value {
+    color: #00ffff;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(0, 255, 255, 0.3);
+}
+
+.switcher-inputs {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.camera-input-grid {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.switcher-input {
+    background: linear-gradient(135deg, 
+        rgba(15, 20, 25, 0.9) 0%, 
+        rgba(26, 26, 46, 0.9) 100%);
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+}
+
+.switcher-input::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.switcher-input.program {
+    border-color: #ff4444;
+    box-shadow: 
+        0 0 15px rgba(255, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.switcher-input.program::before {
+    background: linear-gradient(90deg, 
+        #ff4444 0%, 
+        #ff6666 50%, 
+        #ff4444 100%);
+}
+
+.switcher-input.preview {
+    border-color: #00ff80;
+    box-shadow: 
+        0 0 15px rgba(0, 255, 128, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.switcher-input.preview::before {
+    background: linear-gradient(90deg, 
+        #00ff80 0%, 
+        #00ffaa 50%, 
+        #00ff80 100%);
+}
+
+.switcher-input:hover {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.input-number {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 8px;
+    border-radius: 4px;
+    min-width: 32px;
+    text-align: center;
+}
+
+.input-name {
+    font-size: 11px;
+    color: #e0e6ed;
+    font-weight: 500;
+    flex: 1;
+    text-align: right;
+}
+
+.input-preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    min-height: 45px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-placeholder {
+    font-size: 10px;
+    color: rgba(224, 230, 237, 0.5);
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.input-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.input-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    color: #e0e6ed;
+    padding: 4px 6px;
+    font-size: 9px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-btn:hover {
+    background: linear-gradient(135deg, #0099cc 0%, #00b4d8 100%);
+    border-color: #00ffff;
+    color: #000;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+}
+
+.input-btn:active {
+    transform: translateY(1px);
+}
+
+.preview-btn.active {
+    background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+    border-color: #00ff80;
+    color: #000;
+    box-shadow: 0 0 10px rgba(0, 255, 128, 0.5);
+}
+
+.program-btn.active {
+    background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%);
+    border-color: #ff4444;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.input-status {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 8px;
+}
+
+.recording-indicator {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+    animation: recordingPulse 2s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.disabled-indicator {
+    background: rgba(128, 128, 128, 0.3);
+    color: #888;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+.switcher-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.switcher-controls button {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.switcher-controls #transition-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border: 1px solid #ff6b6b;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.switcher-controls #transition-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    transform: translateY(-1px);
+}
+
+.switcher-controls #transition-btn:disabled {
+    background: rgba(128, 128, 128, 0.3);
+    border-color: rgba(128, 128, 128, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.switcher-controls select,
+.switcher-controls input {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    color: #e0e6ed;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.switcher-controls input[type="number"] {
+    width: 80px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* RECORDING CONTROLS */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.recording-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.recording-status {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+#recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.record-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(128, 128, 128, 0.5);
+    transition: all 0.3s ease;
+}
+
+.record-light.active {
+    background: #ff4444;
+    box-shadow: 
+        0 0 10px rgba(255, 68, 68, 0.6),
+        inset 0 0 6px rgba(255, 255, 255, 0.3);
+    animation: recordingPulse 2s ease-in-out infinite;
+}
+
+.recording-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#start-recording-btn {
+    background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%);
+    border: 1px solid #ff4444;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#start-recording-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff3333 0%, #b32222 100%);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+    transform: translateY(-1px);
+}
+
+#start-recording-btn:disabled {
+    background: rgba(128, 128, 128, 0.3);
+    border-color: rgba(128, 128, 128, 0.3);
+    cursor: not-allowed;
+}
+
+.recording-sessions {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.recording-sessions h4 {
+    color: #ffd700;
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+}
+
+.session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recording-session {
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-name {
+    font-weight: 500;
+    font-size: 12px;
+    color: #e0e6ed;
+}
+
+.session-duration {
+    font-size: 10px;
+    color: rgba(224, 230, 237, 0.7);
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* UTILITY STYLES */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(224, 230, 237, 0.6);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.no-cameras,
+.no-inputs {
+    text-align: center;
+    color: rgba(224, 230, 237, 0.5);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.small {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+}
+
+.danger {
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+}
+
+.danger:hover {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%) !important;
+    color: #fff !important;
+}
+
+/* Status Toast */
+.camera-status-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 10001;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.camera-status-toast.show {
+    transform: translateX(0);
+}
+
+.camera-status-toast.success {
+    background: rgba(0, 255, 128, 0.15);
+    color: #00ff80;
+    border-color: rgba(0, 255, 128, 0.3);
+}
+
+.camera-status-toast.error {
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+    border-color: rgba(255, 68, 68, 0.3);
+}
+
+.camera-status-toast.warning {
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.camera-status-toast.info {
+    background: rgba(0, 255, 255, 0.15);
+    color: #00ffff;
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* RESPONSIVE DESIGN */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+    .camera-sources {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .input-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    #station-cameras {
+        padding: 15px;
+    }
+    
+    .camera-sources {
+        grid-template-columns: 1fr;
+        max-height: 300px;
+    }
+    
+    .input-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    
+    .switcher-status {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .switcher-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .recording-controls {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .camera-source {
+        padding: 10px;
+    }
+    
+    .camera-actions {
+        flex-direction: column;
+    }
+    
+    .switcher-input {
+        min-height: 100px;
+        padding: 8px;
+    }
+    
+    .input-number {
+        font-size: 14px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* PRINT STYLES */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+    #station-cameras,
+    .camera-status-toast {
+        display: none !important;
+    }
+}

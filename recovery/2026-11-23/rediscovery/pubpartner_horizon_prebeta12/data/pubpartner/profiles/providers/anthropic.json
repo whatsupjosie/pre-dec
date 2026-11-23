@@ -1,0 +1,11 @@
+{
+  "provider": "anthropic",
+  "model": "",
+  "fixes": [
+    "trim_overexplaining",
+    "limit_headers",
+    "preserve_alex_voice"
+  ],
+  "created_at": 1783837283.6554863,
+  "updated_at": 1783837283.6554863
+}
