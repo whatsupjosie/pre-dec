@@ -357,48 +357,6 @@
   },
   {
    "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/camera_sources.json",
-   "sha256": "2a42f8045204176df6fa3cfcc9e5e3f2138b49f59094077a0c99459f51a92259",
-   "bytes": 766,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/documents/1c957ca1-2980-4760-a6f3-1a3592cb57e9.json",
-   "sha256": "9fa87db9b041bd22d187e43a8fcc427c03e8360dc8088456f722d027f5f2a1d9",
-   "bytes": 266,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/documents/856c7c9d-b76f-4782-adb5-a2a4de6c9fdd.json",
-   "sha256": "fd96832714a8058669e7f04953c7583f20323b0e1c1d46973dde192dc975554a",
-   "bytes": 226,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/global/production.json",
-   "sha256": "8e1b5b7e766df316421b8604d176e1cf3181601731d4dfd1a25d723c57531a9f",
-   "bytes": 126,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/users/064ada7b-3457-4452-b49b-fb2f7b032841.json",
-   "sha256": "589270c5c665a183351675b82077c4ea2d2841693c4c05bb2672885f64047ccf",
-   "bytes": 156,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
-   "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/data/users/4d50c45b-a902-4ce3-9bec-d54aeb516baf.json",
-   "sha256": "8dbe0e7a66b74a7bddaf7601a294ec9f52ce660d8f00f2a30ac74056405f1786",
-   "bytes": 156,
-   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
-  },
-  {
-   "donor": "humphrey_complete",
    "path": "recovery/2026-11-23/rediscovery/humphrey_complete/PUBCAST_HUMPHREY_FINAL/src/main.py",
    "sha256": "0cb51c10810d65bf6e86ae2f61ad29dfc0058c115e772e61c39bdcafe41559ef",
    "bytes": 16511,
@@ -4094,20 +4052,6 @@
   },
   {
    "donor": "pubpartner_horizon_prebeta12",
-   "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/logs/production.jsonl",
-   "sha256": "23b55663c4903b6f4ac51af521de5ae2b77985888c3d4cd7b8abeff51aeff013",
-   "bytes": 2849,
-   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
-  },
-  {
-   "donor": "pubpartner_horizon_prebeta12",
-   "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/logs/.gitkeep",
-   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "bytes": 0,
-   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
-  },
-  {
-   "donor": "pubpartner_horizon_prebeta12",
    "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/vault/.gitkeep",
    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "bytes": 0,
@@ -4321,20 +4265,6 @@
    "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/pubpartner/profiles/providers/anthropic.json",
    "sha256": "882c204161860c7a263dffdae233bd1c6952e2a58d6443f4498e6807b8464135",
    "bytes": 209,
-   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
-  },
-  {
-   "donor": "pubpartner_horizon_prebeta12",
-   "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/recordings/test_session/edit_list.edl",
-   "sha256": "dab306d4ce21e2d326fddc30db6b8750aa2341f81481d3d0b482dd48a9f7a87c",
-   "bytes": 126,
-   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
-  },
-  {
-   "donor": "pubpartner_horizon_prebeta12",
-   "path": "recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/data/recordings/test_session/session.json",
-   "sha256": "ec1a5817e69a2e97a623f80ff7847ee7fe8b87254bbfffbaa18f935767ae1fcc",
-   "bytes": 567,
    "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
   },
   {
@@ -5030,6 +4960,66 @@
    "donor": "pubpartner_horizon_prebeta12",
    "path": "data/byok/secure/.gitkeep",
    "reason": "runtime-data or secret-shaped file, not copied",
+   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/camera_sources.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/documents/1c957ca1-2980-4760-a6f3-1a3592cb57e9.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/documents/856c7c9d-b76f-4782-adb5-a2a4de6c9fdd.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/global/production.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/users/064ada7b-3457-4452-b49b-fb2f7b032841.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "humphrey_complete",
+   "path": "PUBCAST_HUMPHREY_FINAL/src/data/users/4d50c45b-a902-4ce3-9bec-d54aeb516baf.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "Storage @7f1d764 pubcast_utilities_systems_part3.zip (zip sha256 b02e00632cf24a1a) > util3/PUBCAST_HUMPHREY_COMPLETE_tar.gz"
+  },
+  {
+   "donor": "pubpartner_horizon_prebeta12",
+   "path": "data/logs/production.jsonl",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
+  },
+  {
+   "donor": "pubpartner_horizon_prebeta12",
+   "path": "data/logs/.gitkeep",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
+  },
+  {
+   "donor": "pubpartner_horizon_prebeta12",
+   "path": "data/recordings/test_session/edit_list.edl",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
+   "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
+  },
+  {
+   "donor": "pubpartner_horizon_prebeta12",
+   "path": "data/recordings/test_session/session.json",
+   "reason": "runtime data (users, documents, logs, recordings); pre-dec's .gitignore excludes it, so it was not committed",
    "source": "The-Counter-and-2i @28790a9 PubPartner_Horizon_v0.1.0-prebeta.12.zip (zip sha256 57d0b9ece92ebeff)"
   }
  ]

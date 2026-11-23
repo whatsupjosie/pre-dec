@@ -2,7 +2,7 @@
 
 Branch: claude/rediscovery-early-repos-2026-11-23 (made from claude/bring-in-donor-finds-2026-11-23 at c812e22; main untouched).
 Folder: recovery/2026-11-23/rediscovery/
-Manifest: recovery/2026-11-23/rediscovery/MANIFEST_SHA256.json (691 files, SHA-256 each, source repo, commit and zip chain for each; every hash re-checked after writing, 0 mismatches).
+Manifest: recovery/2026-11-23/rediscovery/MANIFEST_SHA256.json (681 files committed, SHA-256 each, source repo, commit and zip chain for each; every hash re-checked after writing, 0 mismatches).
 
 ## Reason
 Josie asked to bring all the early-repo finds into pre-dec under a folder labelled rediscovery. Everything here is an additive donor copy. Nothing in an active module, route, launcher or test path was changed, and nothing was wired in. Per CLAUDE.md, moving any piece out of recovery/ needs her approval, targeted tests and regression checks.
@@ -25,6 +25,7 @@ Josie asked to bring all the early-repo finds into pre-dec under a folder labell
 - Cobbley_Case_Files_and_Handoff_8-8-26 (1).zip (The-Counter-and-2i): her legal case files. Private, and pre-dec is public.
 - curtsey_context (WHO_I_AM, PUBCAST_VISION, SONGS_AND_NOTES): personal files, in Pubcast-Phase-2- and in Storage part4. Not read, not copied. Her call.
 - ChatGPT Image Aug 12, 2026 PNG (2.5 MB), and the 20 to 23 MB whole-PubCast snapshot zips (Just-The-Pubcast-main.zip, Agent-Pass assets and merged zips): too big to be donors, and they are whole old builds.
+- Ten more runtime-data files (sample user and document records, logs, a test recording) that pre-dec's own .gitignore kept out of the commit: six JSON files under humphrey_complete/.../src/data, and four files under data/logs and data/recordings in the Horizon prebeta.12 tree. Also listed in the manifest under not_copied.
 - Seven runtime-data or secret-shaped files inside the Horizon prebeta.12 zip, caught by the copy script and left out: data/users.db, data/vault/vault.db, data/governance/governance.db, data/system/system_memory.db, data/byok/secure/master.key, and two .gitkeep placeholders in secure folders. Listed in the manifest under not_copied.
 - Python bytecode, caches, debug build output.
 
@@ -34,7 +35,7 @@ Josie asked to bring all the early-repo finds into pre-dec under a folder labell
 - Pub-Partner-Base-Horizon tests: 76 passed, matching its own letter.
 - All 316 Python files parse as Python 3 except one: motion_capture_v7/.../core/main_v7.py line 33 reads "from dotenv import load_load_dotenv()", which is a syntax error in the donor itself. Left as found.
 - intercom.py, virtual_camera_bus.py and camera_engine_bridge.py import cleanly on their own.
-- 149 of the 691 files are byte-identical to files already in pre-dec (flagged in the manifest with identical_to_existing_pre_dec_file). Notably, the memory layer's thinking_context package (mount, memory, sqlite_backend, protocols, circuit_breaker, nudge_queue) is already in pre-dec, and thinking_context/jeremy.py differs by one comment line. So pre-dec already has the server half of that layer. The parts pre-dec lacks are the conversation extractor, the browser-extension scraper and session endpoints, and install.py.
+- Of the files copied, 149 of the original 691 are byte-identical to files already in pre-dec (flagged in the manifest with identical_to_existing_pre_dec_file). Notably, the memory layer's thinking_context package (mount, memory, sqlite_backend, protocols, circuit_breaker, nudge_queue) is already in pre-dec, and thinking_context/jeremy.py differs by one comment line. So pre-dec already has the server half of that layer. The parts pre-dec lacks are the conversation extractor, the browser-extension scraper and session endpoints, and install.py.
 
 ## Untested
 - The Rearview Foresight extractor, extension and installer (no tests shipped, nothing run).
