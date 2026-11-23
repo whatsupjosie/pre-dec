@@ -32,6 +32,7 @@ from modules.pub_manager_authority import (
     create_pub_manager_control_router,
 )
 from modules.pubpartner_backup import create_friend_backup
+from modules.pubpartner_cartridges import create_pubpartner_cartridge_router
 from modules.pubpartner_vessel import PubPartnerVesselRuntime
 
 try:
@@ -147,6 +148,7 @@ async def lifespan(app: FastAPI):
     # yields, so the control plane is live before the first request is served.
     if not getattr(app.state, "control_plane_routes_registered", False):
         app.include_router(alex_routes.router)
+        app.include_router(create_pubpartner_cartridge_router(DATA_DIR))
         app.include_router(create_pub_manager_authority_router(pub_manager, alex_bridge))
         app.include_router(create_pub_manager_control_router(pub_manager, alex_bridge))
         app.include_router(
