@@ -56,14 +56,18 @@ def _click_manuscript_tool(page, selector):
     """Use the visible drawer UI, so tests exercise the current single-page design."""
     tab = page.locator("#twoiDrawerTabTools")
     assert tab.is_visible(), "The manuscript-tools drawer tab must be accessible"
-    assert tab.get_attribute("aria-expanded") == "false"
-    tab.click()
+    # The drawer may already be open (the _tools() helper opens it) or closed; the
+    # control has to be reachable either way, and it is left as it was found.
+    was_open = tab.get_attribute("aria-expanded") == "true"
+    if not was_open:
+        tab.click()
     assert tab.get_attribute("aria-expanded") == "true"
     control = page.locator(selector)
     assert control.is_visible(), f"{selector} was not exposed when the drawer opened"
     control.click()
-    tab.click()
-    assert tab.get_attribute("aria-expanded") == "false"
+    if not was_open:
+        tab.click()
+        assert tab.get_attribute("aria-expanded") == "false"
 
 
 def test_unlock_by_write_caret_without_selected_collab_line(editor):
