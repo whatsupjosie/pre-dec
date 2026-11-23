@@ -28,6 +28,19 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. LISTED =
 
 5. Loose-parts inventory (handoffs/LOOSE_PARTS_INVENTORY_2026-11-23.md, tools/loose_parts_inventory.py, tests/test_loose_parts_inventory.py). RAN: tool on this branch (440 Python files: 319 attached, 45 tests-only, 10 tools-only, 66 loose); 3 tests pass and one fails when the byte-order-mark handling is deliberately broken. Finding: the backends are attached; the studio's gap is screens (timeline transport buttons, readiness before a take, a link to the phone-camera page, and others). Nothing was attached, because each attachment needs a placement choice that is Josie's.
 
+6. Show clocks, step 1 of 3 (numbers only; no screen changed). Josie's design, in her words:
+   - "the top one would be how far into the show you are, and the bottom one would be how much longer you have till the end"
+   - "If you're not doing a TV show with a set length, it's less important." (so the time-left clock exists only for a show with a set length, like 24:10 or 5:35)
+   - "Everybody needs to see it. Everyone, even the actors"; "Usually there's a big physical clock in the control room, and then there's another one on set."
+   - "they both have to show seconds ... Usually they're digital, like an alarm clock."; the fraction is "for editing", so it is frames (HH:MM:SS:FF), and "24 default".
+   - The production clock (countdown to action) is a separate thing from this time code (position in the work).
+   Paths: modules/timeline.py (format_time_code, frame_rate and set_length on TimelineDefinition, TimelinePlayer.clocks), modules/timeline_routes.py (status, list, load and the websocket carry the clocks), tests/test_timeline_show_clocks.py. Old timeline files without the new keys load as 24 fps with no set length.
+   RAN: 33 new tests pass (spot-checked by hand: 20.5 s at 24 fps is 00:00:20:12; 1450 s is 00:24:10:00; a show at 20.5 s with a set length of 1450 has 00:23:49:12 left); breaking the frame count on purpose failed 2 of them; the 5 timeline-related test files pass together (65).
+   NOT done: the picture for Josie to approve, the clocks on screens (control room and the set screens stage.html, stage_3d.html, stage_panoramic.html), Play/Pause/Stop/jump for the director only. Tasks 12 and 13.
+   Not tested: the websocket feed (it needs a crew login).
+   Open, for Josie: (a) the timeline stops counting at its script length, so after the last cue the time-in clock freezes; should the show clock keep running past it? (b) time left goes negative with a minus sign once past the set length; this is my choice, not hers. (c) 29.97 drop-frame is not offered (only 24, 25, 30). (d) Who can read the clocks: the status route had no login check in the code I read, the websocket needs a crew login; cast screens would need one or the other.
+   Found while reading, not changed: static/director_switcher.html's clock counts from when the page opened, not from the show, and its frame field runs 00 to 30 (31 values); the control room's clock is the wall-clock time of day (its own comment says so); the stage pages' clocks are 0.6rem faint text.
+
 ## Known and not fixed
 
 - REGRESSION, needs Josie's decision. Eight browser tests (tests/test_human_profile_onboarding_browser.py, 6, and tests/test_human_profiles_browser.py, 2) pass on main and fail on this branch. Cause (READ and RAN): the slate launcher button (#pubcast-slate-open, "Open production slate") appears on member-facing screens for any signed-in user and intercepts clicks on the onboarding "Skip optional details" button. static/studio_slate.js says "One shared floor slate per top-level PubCast screen", so global placement is the written design; the clash with member screens is a consequence. Options: exempt the onboarding and profile pages (like the Counter); show the launcher only to floor roles; or move the launcher so it never covers page controls. Not changed.

@@ -14,6 +14,33 @@ from modules.route_security import require_role
 
 logger = logging.getLogger("pubcast.timeline")
 
+# Frame rates a show can run at. Time code counts whole frames, so each rate is a whole number.
+# 29.97 (US broadcast) needs drop-frame counting and is not offered until that is built and tested.
+SUPPORTED_FRAME_RATES = (24, 25, 30)
+DEFAULT_FRAME_RATE = 24
+
+
+def format_time_code(seconds: float, frame_rate: int = DEFAULT_FRAME_RATE) -> str:
+    """A position in seconds as editing time code, HH:MM:SS:FF.
+
+    The last field is frames (00 to rate-1), not hundredths of a second: a cut can only land on a frame.
+    Frames are counted down to the whole frame, so a clock never shows a frame that has not started.
+    A negative position (time left, once a show runs past its set length) keeps a leading minus.
+    """
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or not math.isfinite(seconds):
+        raise ValueError("Time code needs a finite number of seconds")
+    if isinstance(frame_rate, bool) or frame_rate not in SUPPORTED_FRAME_RATES:
+        raise ValueError(f"Frame rate must be one of {', '.join(str(r) for r in SUPPORTED_FRAME_RATES)}")
+    rate = int(frame_rate)
+    # The small addition absorbs binary rounding, so 20.5 s at 24 fps is frame 12, not frame 11.
+    frames = int(math.floor(abs(seconds) * rate + 1e-6))
+    whole_seconds, frame = divmod(frames, rate)
+    whole_minutes, second = divmod(whole_seconds, 60)
+    hour, minute = divmod(whole_minutes, 60)
+    sign = "-" if seconds < 0 and frames else ""
+    return f"{sign}{hour:02d}:{minute:02d}:{second:02d}:{frame:02d}"
+
+
 class TimelineState(str, Enum):
     IDLE="idle"; RUNNING="running"; PAUSED="paused"; COMPLETE="complete"; FAILED="failed"
 
@@ -39,8 +66,16 @@ class TimelineEvent:
 class TimelineDefinition:
     name: str; description: str=""; duration: float=60.0
     events: List[TimelineEvent]=field(default_factory=list); loop: bool=False; version: str="1.0"
+    # Frames per second for the show's time code. set_length is the run time the show must hit (a TV slot such
+    # as 24:10), in seconds; only a show that has one gets a time-left clock. Neither changes how cues play.
+    frame_rate: int=DEFAULT_FRAME_RATE; set_length: Optional[float]=None
     def validate(self):
         issues=[]
+        if isinstance(self.frame_rate,bool) or self.frame_rate not in SUPPORTED_FRAME_RATES:
+            issues.append("Frame rate must be one of "+", ".join(str(r) for r in SUPPORTED_FRAME_RATES))
+        if self.set_length is not None and (isinstance(self.set_length,bool) or not isinstance(self.set_length,(int,float))
+                                            or not math.isfinite(self.set_length) or self.set_length <= 0):
+            issues.append("Set length must be a finite positive number of seconds when given")
         if not math.isfinite(self.duration) or self.duration <= 0: issues.append("Duration must be finite and positive")
         if not self.events: issues.append("No events")
         for i,e in enumerate(self.events):
@@ -49,12 +84,14 @@ class TimelineDefinition:
         return issues
     def to_dict(self):
         return {"name":self.name,"description":self.description,"duration":self.duration,
-                "events":[e.to_dict() for e in self.events],"loop":self.loop,"version":self.version}
+                "events":[e.to_dict() for e in self.events],"loop":self.loop,"version":self.version,
+                "frame_rate":self.frame_rate,"set_length":self.set_length}
     @classmethod
     def from_dict(cls, d):
         return cls(name=d["name"],description=d.get("description",""),duration=d.get("duration",60),
                    events=[TimelineEvent.from_dict(e) for e in d.get("events",[])],
-                   loop=d.get("loop",False),version=d.get("version","1.0"))
+                   loop=d.get("loop",False),version=d.get("version","1.0"),
+                   frame_rate=d.get("frame_rate",DEFAULT_FRAME_RATE),set_length=d.get("set_length"))
     def save(self, path: Path):
         path.parent.mkdir(parents=True,exist_ok=True); path.write_text(json.dumps(self.to_dict(),indent=2))
     @classmethod
@@ -79,6 +116,18 @@ class TimelinePlayer:
     @property
     def progress(self):
         return min(1.0,self.elapsed/self._timeline.duration) if self._timeline else 0
+    def clocks(self):
+        """The two show clocks, or None when no timeline is loaded.
+
+        elapsed is how far into the show; remaining is how much is left to the show's set length, and is None for a
+        show with no set length. Remaining goes negative, shown with a minus, once the show runs past its set length."""
+        if not self._timeline: return None
+        tl=self._timeline; rate=tl.frame_rate; elapsed=max(0.0,self.elapsed)
+        remaining=None if tl.set_length is None else tl.set_length-elapsed
+        return {"frame_rate":rate,"set_length":tl.set_length,
+                "elapsed":round(elapsed,3),"elapsed_time_code":format_time_code(elapsed,rate),
+                "remaining":None if remaining is None else round(remaining,3),
+                "remaining_time_code":None if remaining is None else format_time_code(remaining,rate)}
     def register_handler(self,et,handler): self._handlers.setdefault(et,[]).append(handler)
     def on_complete(self,cb): self._on_complete.append(cb)
     def on_error(self,cb): self._on_error.append(cb)
@@ -136,7 +185,8 @@ class TimelinePlayer:
                 "elapsed":round(self.elapsed,2),"progress":round(self.progress,3),
                 "duration":self._timeline.duration if self._timeline else 0,
                 "events_fired":sum(1 for e in (self._timeline.events if self._timeline else []) if e.fired),
-                "events_failed":sum(1 for e in (self._timeline.events if self._timeline else []) if e.error)}
+                "events_failed":sum(1 for e in (self._timeline.events if self._timeline else []) if e.error),
+                "clocks":self.clocks()}
     def get_log(self): return list(self._log)
     async def _run(self):
         try:

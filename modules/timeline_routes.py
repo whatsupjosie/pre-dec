@@ -27,6 +27,12 @@ class TimelineStatus(BaseModel):
     progress: float
     timeline_name: Optional[str] = None
     duration: Optional[float] = None
+    # The show clocks: how far in and, for a show with a set length, how much is left. See TimelinePlayer.clocks.
+    frame_rate: Optional[int] = None
+    set_length: Optional[float] = None
+    elapsed_time_code: Optional[str] = None
+    remaining: Optional[float] = None
+    remaining_time_code: Optional[str] = None
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ROUTER & PLAYER SINGLETON
@@ -89,12 +95,18 @@ async def get_status():
     timeline_name = player._timeline.name if player._timeline else None
     duration = player._timeline.duration if player._timeline else None
     
+    clocks = player.clocks() or {}
     return TimelineStatus(
         state=player.state.value,
         elapsed=player.elapsed,
         progress=player.progress,
         timeline_name=timeline_name,
         duration=duration,
+        frame_rate=clocks.get("frame_rate"),
+        set_length=clocks.get("set_length"),
+        elapsed_time_code=clocks.get("elapsed_time_code"),
+        remaining=clocks.get("remaining"),
+        remaining_time_code=clocks.get("remaining_time_code"),
     )
 
 @router.get("/list")
@@ -112,6 +124,8 @@ async def list_timelines():
                 "filename": path.stem,
                 "description": tl.description,
                 "duration": tl.duration,
+                "frame_rate": tl.frame_rate,
+                "set_length": tl.set_length,
                 "event_count": len(tl.events),
                 "loop": tl.loop,
             })
@@ -141,6 +155,8 @@ async def load_timeline(req: TimelineLoadRequest, identity: Dict[str, Any] = Dep
         return {
             "loaded": timeline.name,
             "duration": timeline.duration,
+            "frame_rate": timeline.frame_rate,
+            "set_length": timeline.set_length,
             "events": len(timeline.events),
         }
     except HTTPException:
@@ -223,6 +239,7 @@ async def timeline_websocket(websocket: WebSocket):
             if player._timeline:
                 status["timeline"] = player._timeline.name
                 status["duration"] = player._timeline.duration
+                status["clocks"] = player.clocks()
             
             await websocket.send_json(status)
             await asyncio.sleep(0.1)  # 10Hz updates
