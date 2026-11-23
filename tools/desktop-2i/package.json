@@ -1,0 +1,46 @@
+{
+  "name": "twoi-desktop",
+  "productName": "2i",
+  "version": "0.1.0",
+  "private": true,
+  "description": "2i, Pubcast's writing program, as a standalone Windows app. Offline: no server, no internet.",
+  "author": "Rearview Foresight",
+  "main": "main.js",
+  "scripts": {
+    "stage": "node stage.mjs",
+    "start": "npm run stage && electron .",
+    "dist": "npm run stage && electron-builder --win dir --x64 --publish never && node make-installer.mjs"
+  },
+  "devDependencies": {
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.rearviewforesight.twoi",
+    "productName": "2i",
+    "copyright": "Rearview Foresight",
+    "asar": false,
+    "files": [
+      "main.js",
+      "package.json",
+      "app/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "electronLanguages": [
+      "en-US"
+    ]
+  }
+}
