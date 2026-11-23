@@ -707,6 +707,19 @@ let paused = false;
 let directorBlackout = false, directorPreviewBars = false;
 let fadeInProgress = false;
 let activeRecordingSessionId = "";
+// Cameras whose recording did not start or came back with problems. The backend names them
+// (capture_errors when a take starts, capture_report warnings when it stops); a take with any
+// of them is an incomplete take, and the control room says so instead of "REC CONFIRMED".
+let failedRecordingSources = [];
+function startFailures(result){
+  return (Array.isArray(result?.capture_errors) ? result.capture_errors : [])
+    .map(item => String(item?.source_id || item?.source || "a source"));
+}
+function stopFailures(result){
+  return (Array.isArray(result?.capture_report) ? result.capture_report : [])
+    .filter(item => Array.isArray(item?.warnings) && item.warnings.length)
+    .map(item => String(item.source_id || "a source"));
+}
 let clockStart = performance.now();
 let backendTruth = {
   health: null,
@@ -1008,6 +1021,7 @@ async function toggleRecord(btn) {
   if (!recording) {
     const camera=cameraById(program);
     if(!camera.sourceId){toast("NO VERIFIED CAMERA");log("Recording denied: no live Program source");return;}
+    failedRecordingSources = [];   // a new take starts clean
     const sessionId = `director_${Date.now()}`;
     const started = await runStudioAction("recording.start", {
       session_id: sessionId,
@@ -1019,9 +1033,11 @@ async function toggleRecord(btn) {
     });
     if (started?.result?.session_id) {
       activeRecordingSessionId = started.result.session_id;
+      failedRecordingSources = startFailures(started.result);
       recording = true;
       paused = false;
-      setTruthCard("truthRecording", "ok", "Backend REC", `Recording session ${activeRecordingSessionId} started`);
+      if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture failed to start for " + failedRecordingSources.join(", "));
+      else setTruthCard("truthRecording", "ok", "Backend REC", `Recording session ${activeRecordingSessionId} started`);
     } else {
       activeRecordingSessionId = "";
       recording = false;
@@ -1041,12 +1057,17 @@ async function toggleRecord(btn) {
     }
     recording = false;
     paused = false;
-    setTruthCard("truthRecording", stopped ? "ok" : "warn", "Idle", stopped ? `Stopped backend session ${activeRecordingSessionId}` : "Stopped local-only REC state");
+    failedRecordingSources = [...new Set([...failedRecordingSources, ...stopFailures(stopped?.result)])];
+    if (failedRecordingSources.length) {
+      const detail = "Capture problems with " + failedRecordingSources.join(", ") + " (see the take's capture report)";
+      setTruthCard("truthRecording", "bad", "Incomplete take", detail);
+      log(detail);
+    } else setTruthCard("truthRecording", stopped ? "ok" : "warn", "Idle", stopped ? `Stopped backend session ${activeRecordingSessionId}` : "Stopped local-only REC state");
   }
   btn.classList.toggle("live", recording);
   setTruthCard("truthExport", recording ? "bad" : "warn", recording ? "Locked" : "Check", exportDetail());
   log(recording ? "backend recording confirmed" : "recording stop outcome checked");
-  toast(recording ? "REC CONFIRMED" : "REC STOPPED");
+  toast(failedRecordingSources.length ? "CAPTURE PROBLEM: " + failedRecordingSources.join(", ") : recording ? "REC CONFIRMED" : "REC STOPPED");
 }
 
 async function pauseRecording(btn) {
@@ -1150,7 +1171,8 @@ async function refreshTruth() {
   if(!switcher.error) syncVideoSwitcherState(switcher);
   setTruthCard("truthHealth", health.error ? "bad" : "ok", health.error ? "Offline" : "OK", health.error || `cameras=${health.systems?.cameras ?? "?"} recording_profiles=${health.systems?.recording_profiles ?? "?"}`);
   const studioState = studio.state || studio.status || (studio.available ? "available" : "unavailable");
-  setTruthCard("truthRecording", recording ? "bad" : (studio.available ? "ok" : "warn"), recording ? "Local REC" : "Idle", `studio=${studioState}; duration=${Math.round(studio.recording_duration || 0)}s; recording pipeline not proven without browser/backend test`);
+  if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture problems with " + failedRecordingSources.join(", "));
+  else setTruthCard("truthRecording", recording ? "bad" : (studio.available ? "ok" : "warn"), recording ? "Local REC" : "Idle", `studio=${studioState}; duration=${Math.round(studio.recording_duration || 0)}s; recording pipeline not proven without browser/backend test`);
   setTruthCard("truthMocap", mocap.available ? "ok" : "bad", mocap.available ? "Available" : "Unavailable", mocap.error || JSON.stringify(mocap).slice(0, 90));
   await refreshAudioTruth();
   setTruthCard("truthTimeline", timeline.error ? "bad" : "ok", timeline.state || "Unknown", `progress=${Math.round((timeline.progress || 0) * 100)}% timeline=${timeline.timeline_name || timeline.timeline || "none"}`);
