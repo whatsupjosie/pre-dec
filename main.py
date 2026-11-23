@@ -61,6 +61,7 @@ from modules.recording import RecordingService, create_recording_service
 from modules.blackbox_runtime import BlackBoxRuntimeWitness, create_blackbox_witness
 from modules.blackbox_routes import create_blackbox_router
 from modules.production_routes import create_production_router
+from modules.studio_slate import SlateOverlayMiddleware, create_slate_router
 from modules.program_audio import ProgramAudioState, apply_audio_event
 from modules.studio25d_media_routes import create_studio25d_media_router
 from modules.governance import GovernanceEngine
@@ -1167,6 +1168,11 @@ async def lifespan(application: FastAPI):
     application.include_router(create_production_router(cameras, recording, hub, capture=capture, blackbox=blackbox_witness, program_audio_state=program_audio_state, include_overlapping_compat_routes=False))
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
+    # The recovered production slate is part of the live studio, not a donor-only file.
+    # Its own store preserves slate/take state across server restarts.
+    studio_slate_router = create_slate_router(DATA_DIR / "production_slates.sqlite3")
+    application.include_router(studio_slate_router)
+    application.state.studio_slate_store = studio_slate_router.slate_store
     from modules.pubcast_vision_integration import PubcastVisionManager
     from modules.pubcast_vision_routes import create_vision_router
     vision_manager = PubcastVisionManager(camera_manager=cameras, data_dir=DATA_DIR)
@@ -1187,6 +1193,9 @@ async def lifespan(application: FastAPI):
     application.state.camera_pool = camera_pool
     application.include_router(create_camera_pool_router(camera_pool))
     application.include_router(create_studio25d_media_router(cameras, pool=camera_pool))
+    # Restore approved 2.5D voxel prop placement API to the active app.
+    from modules.studio25d_voxel_props import create_voxel_placement_router
+    application.include_router(create_voxel_placement_router(DATA_DIR))
     # Every program/preview change, from any route, reaches the stage pages.
     from modules.camera_broadcast import CameraBroadcastBridge
     camera_broadcast = CameraBroadcastBridge(cameras, hub)
@@ -2005,6 +2014,7 @@ _cors_origins, _cors_credentials = _resolve_cors_origins()
 app.add_middleware(CORSMiddleware,
     allow_origins=_cors_origins, allow_credentials=_cors_credentials,
     allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(SlateOverlayMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(BodySizeLimitMiddleware)
 from modules.unicode_guard import UnicodeGuardMiddleware  # noqa: E402
