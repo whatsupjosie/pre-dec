@@ -161,6 +161,26 @@ def _ffmpeg_bitrate(value: Optional[str]) -> Optional[str]:
 
 
 # ── Encoding profile → FFmpeg output args ─────────────────────────────────────
+def _file_stem(name: str) -> str:
+    """A source or input name as a plain file name: no folder separators in either style, no drive colon."""
+    return str(name).replace("/", "_").replace("\\", "_").replace(":", "_")
+
+
+def _reserve_output_path(session_dir: Path, stem: str, ext: str, reserved: set) -> Path:
+    """The file this source records to, different from every file already given out in this take.
+
+    Two different source ids can clean to the same stem ("cam/a" and "cam_a"), and Windows and macOS
+    folders treat names that differ only in case as one file; either would make two cameras overwrite
+    each other's recording. The second and later ones get -2, -3 ... so every source keeps its own file.
+    """
+    candidate, number = session_dir / f"{stem}.{ext}", 2
+    while candidate.name.casefold() in reserved:
+        candidate = session_dir / f"{stem}-{number}.{ext}"
+        number += 1
+    reserved.add(candidate.name.casefold())
+    return candidate
+
+
 def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
     """Return FFmpeg codec/output arguments from an EncodingProfile."""
     args: List[str] = []
@@ -280,11 +300,11 @@ class FFmpegCaptureEngine:
         procs: List[_CaptureProcess] = []
         output_paths: List[Path] = []
         synthetic_paths: List[Path] = []
+        reserved_names: set = set()
 
         for src in sources:
             ext = profile.container.value          # mp4 / webm / wav / mov
-            safe_name = src.source_id.replace("/", "_").replace(":", "_")
-            out_path = session_dir / f"{safe_name}.{ext}"
+            out_path = _reserve_output_path(session_dir, _file_stem(src.source_id), ext, reserved_names)
 
             input_args  = _build_ffmpeg_input(src.transport.value, src.endpoint)
             if mic_pending:
@@ -331,7 +351,7 @@ class FFmpegCaptureEngine:
             return [cp.output_path for cp in self._active[session_id]]
         self._reports.pop(session_id, None)
         self._startup_failures.pop(session_id, None)
-        safe_name = str(name).replace("/", "_").replace(":", "_").replace("\\", "_")
+        safe_name = _file_stem(name)
         out_path = session_dir / f"{safe_name}.{profile.container.value}"
         args = _build_ffmpeg_output(profile, out_path)
         if "-vn" not in args:
