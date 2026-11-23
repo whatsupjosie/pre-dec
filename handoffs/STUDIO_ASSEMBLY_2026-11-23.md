@@ -1,0 +1,47 @@
+# Studio assembly, 2026-11-23
+
+Branch: claude/studio-assembly-2026-11-23 (pushed). Built on claude/one-source-2026-11-22 (eb691bf), which is 90 commits past pre-dec main 538a40f. Main has not moved since 538a40f as of 2026-11-23 05:40 Los Angeles time. Nothing here has been merged to main.
+
+Labels: RAN = I ran it and saw the result. READ = I opened and read it. LISTED = I saw only a name or count. GUESS = my reasoning, not checked.
+
+## What changed (three commits, all RAN against the tests named)
+
+1. static/pubpartner_calibration_ui.js. The calibration screen built '/api/pubpartner' + path. tests/test_frontend_contract_compat.py reads every /api literal in static/ and accepts a router base only when it ends in a slash. Now '/api/pubpartner/' + the path with leading slashes removed. Behavior unchanged. RAN: test_frontend_contract_compat.py and the calibration tests, 15 passed.
+
+2. modules/studio_slate.py and tests/test_studio_slate.py. The slate middleware added a stylesheet and a script to every 200 HTML response, including /foresight-counter, so the Counter no longer matched static/foresight_counter.html byte for byte. Added SLATE_EXEMPT_PATHS for /foresight-counter and /static/foresight_counter.html, plus a test. RAN: test_studio_slate.py, test_foresight_reach_runtime.py, test_frontend_startup_contracts.py, all passed.
+
+3. Timeline playback controls and the timeline recording cue.
+   - modules/timeline.py and modules/timeline_routes.py are the Beyond-October codex/main-debug-20261119 versions (the union-trial copy is byte-identical; git blobs b961e270 and 6fe81986), adopted whole. This branch carried an older player whose routes called player.play() and player.pause(), which do not exist, so play, pause, resume and stop through the HTTP routes could not work. The donor adds seek, monotonic timing, cue validation and critical-cue failure.
+   - main.py: the timeline camera cue follows the donor. The timeline record cue now tracks its own take and stops only that take. The previous handler stopped the most recent active session, which could end an operator's take. The cue fails the timeline when capture reports warnings or no media.
+   - modules/production_routes.py: new begin_take and end_take, exposed on the router and used by the stop route and the timeline, so a timeline take goes through the same capture pipeline as a control-room take. The donor's SessionCapture class does not exist on this branch, so the donor's record handler could not be used as written.
+   - RAN: tests/test_timeline_playback_controls.py, 3 passed, including a real encoded h264 take while an operator's countdown session stays untouched. RAN: 17 related test files, 128 passed; six Node tests (production25d core, wiring, switcher bridge, capture, archive, studio25d confidence), all passed.
+
+## Known and not fixed
+
+- REGRESSION, needs Josie's decision. Eight browser tests (tests/test_human_profile_onboarding_browser.py, 6, and tests/test_human_profiles_browser.py, 2) pass on main and fail on this branch. Cause (READ and RAN): the slate launcher button (#pubcast-slate-open, "Open production slate") appears on member-facing screens for any signed-in user and intercepts clicks on the onboarding "Skip optional details" button. static/studio_slate.js says "One shared floor slate per top-level PubCast screen", so global placement is the written design; the clash with member screens is a consequence. Options: exempt the onboarding and profile pages (like the Counter); show the launcher only to floor roles; or move the launcher so it never covers page controls. Not changed.
+- Failing on main too (RAN on main 538a40f): tests/test_2i_format_matrix.py audio and video decode for m4a, mp4 and mov (3); tests/test_clacker_recording_browser.py; tests/test_camera_pool_browser.py; tests/test_admitted_guest_recording_browser.py; tests/test_participant_audio_browser.py (2 fail on main, 1 on this branch). GUESS: this sandbox has no real cameras or the codecs; not diagnosed.
+- tests/test_pubpartner_connections.py (2 failures in the earlier full run): file does not exist on main, so no baseline. Not diagnosed.
+- tests/primp_chromium/test_mirror.py: 14 errors, "recursive dependency involving fixture browser_type_launch_args". No baseline on main. UNKNOWN whether it is this branch or the sandbox.
+- The full suite has NOT been rerun since the three commits. Last full run, before them: 22 failed, 3129 passed, 12 skipped, 6 xfailed, 14 errors (48 minutes).
+
+## Left behind from the never-merged branches (partly checked)
+
+Method: put each branch's own differing non-browser test files onto this branch's code and run them. RAN for codex/main-debug-20261119 only (27 files): 26 failed, 10 errors, 194 passed. Not run: console-touch-typewriter-keys, 2i-beta-polish, codex/2i-typewriter-visual-2026-11-17.
+
+Triage so far (READ the messages, did not diagnose each):
+- 10 errors in test_production_notes.py: the old test creates crew accounts and gets 410, "Invite guests through Guests and invitations. Each guest brings their own PubCast identity; new local crew accounts are retired." Newer deliberate behavior on this branch; the old tests are obsolete.
+- 4 in test_studio_console_action_routes.py import SessionCapture, the main-debug capture design this branch replaced with FFmpegCaptureEngine and the production router's capture tasks. These need rewriting against the current pipeline, not a code port.
+- Candidates for real gaps, NOT diagnosed: "encoding assigns distinct paths to sources with overlapping names" got 2 file names for 3 sources (a camera's media could be overwritten); three portable-bundle tests (metadata failure keeps a retryable session; same-named external source stays distinct after restart; legacy collapsed tracks cannot export the same bytes twice); recording import must not overwrite an existing zip; production pause rejects non-boolean; import sanitizes filename.
+
+## Not done
+
+- A real launch and a real recorded take through the control-room pages in all three modes.
+- The recording mode switch in the control room (names, placement, arm_preview default are Josie's to decide).
+- S2: consoles she means by name.
+- Landing on main.
+
+## Housekeeping
+
+- data/pubpartner/vessels/alex.pubpartner is rewritten by a test run in the working copy. The committed blob is the canonical 96fa66a728d07d5ff43b0d3d7fc17a466765cec1; I restored the working copy and checked the hash. GUESS: some test writes to that tracked file; not found which.
+- Untracked runtime data from test runs (data/byok/secure/master.key, databases, assets/vod) was never added. Use explicit paths when committing.
+- claude/studio-restore-2026-11-22 (local only, never pushed) was started on ChatGPT's recovery branch and abandoned; its two bugs do not exist on this branch.
