@@ -28,6 +28,10 @@ from .persistence import write_json
 logger = logging.getLogger(__name__)
 
 _SESSION_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
+# A take's non-media files: plain names only, never a path, never hidden.
+_DATA_FILE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+# The three ways a take can record picture (modules/recording_modes.py has what each does).
+RECORDING_MODES = ("camcorder", "data_only", "main_camera")
 
 
 class ContainerFormat(str, Enum):
@@ -97,6 +101,14 @@ class RecordingSession:
     markers: List[RecordingMarker] = field(default_factory=list)
     recovery: Optional[Dict[str, Any]] = None
     ingest: Optional[Dict[str, Any]] = None
+    # How picture is recorded (modules/recording_modes.py): "camcorder", "data_only" or
+    # "main_camera". Takes saved before recording modes existed were camcorder takes.
+    mode: str = "camcorder"
+    # Whether the show-data record ran under this take. Older takes had none.
+    record_data: bool = False
+    # Non-media files of this take (show data, the mode record), by file name in the
+    # session folder. They travel with the media on export and import.
+    data_files: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         return {
@@ -113,6 +125,9 @@ class RecordingSession:
             "ended_at": self.ended_at,
             "recovery": self.recovery,
             "ingest": self.ingest,
+            "mode": self.mode,
+            "record_data": self.record_data,
+            "data_files": list(self.data_files),
             "artifacts": [
                 {
                     "name": art.name,
@@ -292,8 +307,14 @@ class RecordingService:
         preset: Optional[str] = None,
         host_override: bool = False,
         countdown_seconds: int = 5,
+        mode: str = "camcorder",
+        record_data: bool = True,
     ) -> RecordingSession:
-        if not sources:
+        from .recording_modes import validate_mode_request  # recording_modes imports this module
+
+        mode = validate_mode_request(self, mode, sources, profile_id, record_data=record_data,
+                                     host_override=host_override)
+        if not sources and mode != "data_only":
             raise ValueError("At least one source is required")
         session_id = self._validated_session_id(
             session_id or f"rec_{uuid.uuid4().hex[:10]}"
@@ -314,6 +335,8 @@ class RecordingService:
             host_override=host_override,
             countdown_seconds=countdown_seconds,
             state=RecordingState.COUNTDOWN if countdown_seconds else RecordingState.ACTIVE,
+            mode=mode,
+            record_data=bool(record_data),
         )
         self._sessions[session_id] = session
         session_dir = self._session_dir(session_id)
@@ -572,6 +595,25 @@ class RecordingService:
         )
         return artifact
 
+    def attach_data_file(self, session_id: str, file_path: Path) -> str:
+        """Record a non-media file of a take (show data, the mode record) so it is kept with the take.
+
+        The file must already be a regular file directly in the session's own folder; only its name is stored,
+        the same way media artifacts are relinked after a restart or an import.
+        """
+        session = self.get_session(session_id)
+        path = Path(file_path)
+        session_dir = self._session_dir(session_id)
+        if path.parent.resolve() != session_dir.resolve() or not path.is_file() or path.is_symlink():
+            raise ValueError(f"Data file must be a regular file in the session folder: {path.name}")
+        if path.name == f"{session_id}.json" or not _DATA_FILE_NAME.fullmatch(path.name):
+            raise ValueError(f"Not a valid data file name: {path.name}")
+        if path.name not in session.data_files:
+            session.data_files.append(path.name)
+        session.updated_at = time.time()
+        self._write_metadata(session)
+        return path.name
+
     # ------------------------------------------------------------------
     # Import / export
     @staticmethod
@@ -726,13 +768,17 @@ class RecordingService:
         session = self.get_session(session_id)
         if session.state not in {RecordingState.STOPPED, RecordingState.ARCHIVED}:
             raise ValueError("Stop the recording before exporting immutable media")
-        if not session.artifacts:
+        if not session.artifacts and not session.data_files:
             raise ValueError("No recorded media is available for export")
         if session.ingest and session.ingest.get("state") != "complete":
             raise ValueError("Encoded take has not completed validation")
         for artifact in session.artifacts:
             if not artifact.file_path.is_file():
                 raise ValueError(f"Missing recording artifact: {artifact.name}")
+        data_paths = [self._session_dir(session_id) / name for name in session.data_files]
+        for path in data_paths:
+            if not path.is_file():
+                raise ValueError(f"Missing recording data file: {path.name}")
         profile = self._profiles.get(session.profile_id)
         archive_path = self.exports_dir / f"{session_id}.{container.value}.{uuid.uuid4().hex[:12]}.zip"
         metadata_name = f"{session_id}.json"
@@ -797,6 +843,16 @@ class RecordingService:
                                                         "audio_bitrate_setting": self._ffmpeg_bitrate(export_profile.audio_bitrate)})
                         else:
                             manifest["warnings"].append(f"Conversion failed for {artifact.name}; original media preserved")
+                # Show data and the mode record are part of the take, byte for byte; they are never converted.
+                for path in data_paths:
+                    member = "data/" + path.name
+                    digest, size = hashlib.sha256(), 0
+                    entry = ZipInfo(member)
+                    entry.compress_type = ZIP_STORED
+                    with path.open("rb") as source, bundle.open(entry, "w", force_zip64=True) as target:
+                        for block in iter(lambda: source.read(1 << 20), b""):
+                            target.write(block); digest.update(block); size += len(block)
+                    manifest["files"][member] = {"sha256": digest.hexdigest(), "bytes": size}
                 metadata_bytes = json.dumps(metadata, indent=2).encode("utf-8")
                 bundle.writestr(metadata_name, metadata_bytes)
                 manifest["files"][metadata_name] = {"sha256": hashlib.sha256(metadata_bytes).hexdigest(),
@@ -853,6 +909,15 @@ class RecordingService:
                     raise ValueError("Duplicate recording media names")
                 if any(artifact.file_path.name not in media_names for artifact in session.artifacts):
                     raise ValueError("Missing media referenced by recording metadata")
+                data_members = [name for name in names if name.startswith("data/") and not name.endswith("/")]
+                data_names = {name.removeprefix("data/") for name in data_members}
+                if (len(data_names) != len(data_members)
+                        or not all(_DATA_FILE_NAME.fullmatch(leaf) for leaf in data_names)
+                        or data_names & media_names or f"{session_id}.json" in data_names):
+                    raise ValueError("Invalid recording data path")
+                if set(session.data_files) != data_names:
+                    raise ValueError("Recording data files do not match the recording metadata")
+                media_members = media_members + data_members   # both are extracted and verified the same way
                 manifest = None
                 if "EXPORT_MANIFEST.json" in names:
                     if bundle.getinfo("EXPORT_MANIFEST.json").file_size > 8 * 1024 ** 2:
@@ -977,7 +1042,17 @@ class RecordingService:
             ended_at=payload.get("ended_at"),
             recovery=payload.get("recovery"),
             ingest=payload.get("ingest"),
+            mode=str(payload.get("mode") or "camcorder"),
+            record_data=bool(payload.get("record_data", False)),
         )
+        if session.mode not in RECORDING_MODES:
+            raise ValueError(f"Unknown recording mode {session.mode!r}")
+        data_files = payload.get("data_files") or []
+        if not isinstance(data_files, list) or not all(
+                isinstance(name, str) and _DATA_FILE_NAME.fullmatch(name) and name != f"{session.session_id}.json"
+                for name in data_files):
+            raise ValueError("Invalid recording data file list")
+        session.data_files = list(dict.fromkeys(data_files))
         session.artifacts = [
             RecordingArtifact(
                 name=item["name"],
