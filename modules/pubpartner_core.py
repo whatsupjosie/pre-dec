@@ -52,6 +52,7 @@ from .pubpartner_receipts import PubPartnerReceiptStore
 from .pubpartner_relationship import RelationshipEngine
 from .pubpartner_knowledge import PubPartnerKnowledgeBroker
 from .pubpartner_work_notes import WorkNotesStore
+from .pubpartner_cartridge_context import CartridgeContextBridge
 from .companion_advisory import CompanionAdvisor
 
 FCP_VERSION = "FCP1"
@@ -541,6 +542,7 @@ class FCP1Packet:
     vessel_context: Dict[str, Any] = field(default_factory=dict)
     conversation: List[Dict[str, str]] = field(default_factory=list)
     work_notes: Dict[str, Any] = field(default_factory=dict)
+    cartridge: Dict[str, Any] = field(default_factory=dict)
     created_at: float = field(default_factory=_now)
 
     def canonical(self, *, include_source_text: bool = False) -> Dict[str, Any]:
@@ -587,6 +589,8 @@ class FCP1Packet:
         # users without notes are byte-for-byte what they were before.
         if self.work_notes:
             packet["notes"] = self.work_notes
+        if self.cartridge:
+            packet["cartridge"] = self.cartridge
         return packet
 
     def as_compact_text(self, *, include_source_text: bool = True) -> str:
@@ -598,6 +602,8 @@ class FCP1Packet:
         lines.append(f"lang={data['lang']}")
         lines.append(f"u={j(data['u'])}")
         lines.append(f"f={j(data['f'])}")
+        if data.get("cartridge"):
+            lines.append(f"cartridge={j(data['cartridge'])}")
         if data["m"]:
             lines.append(f"m={j(data['m'])}")
         lines.append(f"proj={j(data['proj'])}")
@@ -686,6 +692,7 @@ class PubPartnerSpine:
         # User-owned project notes: shared by every friend and model the user
         # talks to, never stored inside a character cartridge or vessel.
         self.work_notes = WorkNotesStore(self.data_dir)
+        self.cartridges = CartridgeContextBridge(self.data_dir)
 
     def _default_vessel_friend(self) -> Dict[str, Any]:
         """Combine the single authored Alex voice with her persistent vessel.
@@ -829,6 +836,37 @@ class PubPartnerSpine:
         if friend is None and self.vessel_runtime is not None:
             friend = self._default_vessel_friend()
         friend = self.profiles.resolve_friend(friend)
+        # A cartridge is an authored character definition, not a new owner for
+        # private user memory. The existing loader validates it, and any
+        # stored cartridge recollections are exposed only to its creator in
+        # private turns. Relationship lessons remain in RelationshipEngine.
+        cartridge_context: Dict[str, Any] = {}
+        cartridge_memory_refs: List[MemoryRef] = []
+        cartridge_status: Dict[str, Any] = {"status": "not_cartridge", "in_context": 0}
+        try:
+            found = self.cartridges.resolve(
+                friend_id=str(friend.get("friend_id") or friend.get("id") or ""),
+                user_id=user_id,
+                query=message,
+                audience=_turn_audience(task, room_id),
+                max_memories=min(max_memories, 4),
+            )
+            if found is not None:
+                friend = self.cartridges.enrich_friend(friend, found)
+                cartridge_context = found.cartridge
+                cartridge_memory_refs = [MemoryRef(**row) for row in found.memories]
+                cartridge_status = {
+                    "status": "ok",
+                    "in_context": len(cartridge_memory_refs),
+                    "owner_matched": found.owner_matched,
+                }
+        except Exception as exc:
+            # Keep the original friend and verbatim path usable, but expose
+            # cartridge failures instead of quietly pretending it loaded.
+            cartridge_status = {
+                "status": "error", "in_context": 0,
+                "error": f"{type(exc).__name__}: {exc}"[:240],
+            }
         if self.vessel_runtime is not None and str(friend.get("friend_id") or friend.get("id")) == "alex" and not (friend.get("self_concept") or friend.get("identity")):
             friend = {**friend, "self_concept": self.vessel_runtime.friend_profile().get("self_concept", "")}
         user_primer = self.profiles.resolve_user(user_id, user_primer)
@@ -891,6 +929,7 @@ class PubPartnerSpine:
             self.memory_scope(user_id, profile.friend_id, project_id, room_id),
             message, history or [], max_memories=max_memories,
         )
+        memories.extend(cartridge_memory_refs)
         alex_packet = None
         whisper = ""
         if self.alex_bridge is not None:
@@ -1003,6 +1042,7 @@ class PubPartnerSpine:
             vessel_context=vessel_context,
             conversation=[{"role": row["role"], "content": row["content"]} for row in (history or [])],
             work_notes=work_notes_block,
+            cartridge=cartridge_context,
         )
         prompt_policy = self.prompt_policy(source, prompt_mode=prompt_mode)
         llm_prompt_text = packet.as_compact_text(include_source_text=prompt_policy["include_source_text"])
@@ -1031,6 +1071,7 @@ class PubPartnerSpine:
             "vessel_event_count": len(vessel_context.get("events") or []),
             "vessel_recorded_event_id": vessel_event_id,
             "work_notes_context": work_notes_status,
+            "cartridge_context": cartridge_status,
         }
         if log_turn:
             if companion is not None:
