@@ -39,6 +39,8 @@ function create(options={}){
    }
    if(!record){
     const session=JSON.parse(JSON.stringify(item.session));
+    if(item.take.title)session.archive_take={title:item.take.title,timecode:item.take.timecode,
+     filename:globalThis.PubCast25D?.takeFilename(item.take,item.take.id)};
     const spec={take_id:item.take.id,production_id:session.id,source_id:item.sourceId,
      mime:item.blob.type,bytes:item.blob.size,chain:chains.at(-1),width:item.blob.type.startsWith('audio/')?0:1280,height:item.blob.type.startsWith('audio/')?0:720,
      duration_ms:Math.max(1,Math.round(item.take.durationMs)),capture_incomplete:!!item.take.incomplete,manifest:session};

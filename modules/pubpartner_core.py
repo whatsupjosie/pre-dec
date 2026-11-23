@@ -1619,6 +1619,44 @@ class PubPartnerSpine:
                 break
         return [entry for pair in reversed(pairs) for entry in pair]
 
+    def export_chats(self, *, user_id: str) -> list[dict]:
+        """Resolve transcript text from the owner's sealed sources and matched live replies."""
+        owner_root = self.vault.root / _safe_slug(user_id)
+        sessions = {}
+        for candidate in sorted(owner_root.glob("*/*.json")):
+            metadata = json.loads(candidate.read_text(encoding="utf-8"))
+            if metadata.get("user_id") == user_id and "source_id" in metadata:
+                sessions.setdefault(metadata["session_id"], set()).add(metadata["source_id"])
+        result = []
+        for session_id, source_ids in sorted(sessions.items()):
+            path = self.session_dir / f"{_safe_slug(user_id)}_{_safe_slug(session_id)}_turns.jsonl"
+            if not path.is_file():
+                continue
+            turns = []
+            with path.open(encoding="utf-8") as log:
+                for line in log:
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    reference = row.get("source") or {}
+                    source_id = reference.get("id")
+                    if row.get("live_loop") is not True or source_id not in source_ids:
+                        continue
+                    original = self.vault.load(user_id=user_id, session_id=session_id, source_id=source_id)
+                    if original.user_id != user_id or original.session_id != session_id or reference.get("sha256") != original.sha256:
+                        continue
+                    packet = row.get("fcp1") or {}
+                    if (packet.get("proj") or {}).get("room") == "writers-room" and session_id.startswith("narrative_"):
+                        continue
+                    provider = row.get("provider_result") or {}
+                    reply = row.get("friend_response")
+                    turns.append({"turn_id": row.get("turn_id"), "sent_at": original.created_at,
+                                  "partner": (packet.get("f") or {}).get("id"), "user_text": original.text,
+                                  "reply": reply if provider.get("ok") is True and isinstance(reply, str) else None})
+            if turns:
+                result.append({"session_id": session_id, "turns": turns})
+        return result
+
     def list_turns(self, *, user_id: str, session_id: str, limit: int = 50) -> Dict[str, Any]:
         path = self.session_dir / f"{_safe_slug(user_id)}_{_safe_slug(session_id)}_turns.jsonl"
         rows: List[Dict[str, Any]] = []

@@ -25,7 +25,7 @@ import os
 import time
 from pathlib import Path
 from zipfile import BadZipFile
-from typing import Any, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import FileResponse
@@ -134,6 +134,7 @@ def create_production_router(
     blackbox: Optional[BlackBoxRuntimeWitness] = None,
     program_audio_state: Optional[ProgramAudioState] = None,
     include_overlapping_compat_routes: bool = True,
+    emergency_snapshot: Optional[Callable[[], Awaitable[Dict[str, Any]]]] = None,
 ) -> APIRouter:
     """Create the production API router."""
     async def protect_encoded_take(request: HTTPConnection):
@@ -180,29 +181,43 @@ def create_production_router(
 
     # Microphone chosen for a recording at start time (see modules/audio_input_spec.py), kept until the capture starts.
     session_audio_inputs: Dict[str, Any] = {}
+    capture_start_tasks: Dict[str, asyncio.Task] = {}
+    capture_stop_tasks: Dict[str, asyncio.Task] = {}
 
     async def _start_capture_for_session(session) -> List[str]:
-        if capture_engine is None or not getattr(capture_engine, "available", False):
-            return []
         if session.state != RecordingState.ACTIVE:
             return []
+        if capture_engine is None or not getattr(capture_engine, "available", False):
+            return []
+        session_id = session.session_id
         source_objects = [cameras.get(source_id) for source_id in session.sources]
         source_objects = [source for source in source_objects if source is not None]
         if not source_objects:
             return []
         profile = recording.get_profile(session.profile_id)
-        session_dir = recording._session_dir(session.session_id)
-        microphone = session_audio_inputs.get(session.session_id)
-        # Passed only when one was chosen, so capture engines without the keyword keep working.
-        paths = (await capture_engine.start(session.session_id, source_objects, profile, session_dir, audio_input=microphone)
-                 if microphone is not None else
-                 await capture_engine.start(session.session_id, source_objects, profile, session_dir))
+        session_dir = recording._session_dir(session_id)
+        microphone = session_audio_inputs.get(session_id)
+        task = capture_start_tasks.get(session_id)
+        if task is None:
+            # The microphone is passed only when one was chosen, so capture engines without the keyword keep working.
+            task = asyncio.create_task(
+                capture_engine.start(session_id, source_objects, profile, session_dir, audio_input=microphone)
+                if microphone is not None else
+                capture_engine.start(session_id, source_objects, profile, session_dir))
+            capture_start_tasks[session_id] = task
+            task.add_done_callback(lambda _: capture_start_tasks.pop(session_id, None))
+        paths = await asyncio.shield(task)
+        if session_id in capture_stop_tasks or session.state != RecordingState.ACTIVE:
+            raise HTTPException(409, "Recording was stopped while its cameras were starting")
         return [str(path) for path in paths]
 
-    async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
+    async def _collect_capture_artifacts(session_id: str) -> List[Dict[str, Any]]:
         session_audio_inputs.pop(session_id, None)
         if capture_engine is None or not getattr(capture_engine, "available", False):
             return []
+        starting = capture_start_tasks.get(session_id)
+        if starting is not None:
+            await asyncio.shield(starting)
         if not capture_engine.is_capturing(session_id):
             return []
         paths = await capture_engine.stop(session_id)
@@ -228,6 +243,14 @@ def create_production_router(
                 "synthetic": is_synthetic,
             })
         return artifacts
+
+    async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
+        task = capture_stop_tasks.get(session_id)
+        if task is None:
+            task = asyncio.create_task(_collect_capture_artifacts(session_id))
+            capture_stop_tasks[session_id] = task
+            task.add_done_callback(lambda _: capture_stop_tasks.pop(session_id, None))
+        return await asyncio.shield(task)
 
     # —
     # CAMERAS
@@ -736,19 +759,7 @@ def create_production_router(
         that FFmpeg and other capture workers actually stopped.
         """
         now = time.time()
-        stopped, capture_errors = [], []
-        for session in recording.list_sessions():
-            if session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED):
-                continue
-            try:
-                recording.stop_session(session.session_id)
-                stopped.append(session.session_id)
-                try:
-                    await _stop_capture_for_session(session.session_id)
-                except Exception as exc:
-                    capture_errors.append({"session_id": session.session_id, "error": str(exc)})
-            except Exception as exc:
-                capture_errors.append({"session_id": session.session_id, "error": str(exc)})
+        # Browser encoders follow these cues while server captures drain.
         apply_audio_event(program_audio_state, {"action": "stop_all"})
         program_audio_state.publish({"action": "stop_all"})
         apply_audio_event(program_audio_state, {"action": "set_volume", "bus": "master", "volume": 0})
@@ -762,6 +773,26 @@ def create_production_router(
                 "blackout": True,
                 "blackout_seq": now,
             })
+        stopped, capture_errors = [], []
+        for session in recording.list_sessions():
+            session_id = session.session_id
+            capturing = session_id in capture_start_tasks or bool(capture_engine and capture_engine.is_capturing(session_id))
+            finalizing = session_id in capture_stop_tasks
+            if (session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED)
+                    and not capturing and not finalizing):
+                continue
+            try:
+                try:
+                    artifacts = await _stop_capture_for_session(session_id)
+                    if capturing and not artifacts:
+                        capture_errors.append({"session_id": session_id, "error": "Capture produced no registered media"})
+                except Exception as exc:
+                    capture_errors.append({"session_id": session_id, "error": str(exc)})
+                recording.stop_session(session_id)
+                stopped.append(session_id)
+            except Exception as exc:
+                capture_errors.append({"session_id": session_id, "error": str(exc)})
+        if hub:
             await hub.broadcast_system_event({
                 "type": "production_panic",
                 "payload": {
@@ -777,6 +808,19 @@ def create_production_router(
         return {"ok": not capture_errors, "sessions_stopped": stopped,
                 "capture_errors": capture_errors, "audio_muted": True,
                 "blackout_cued": bool(hub), "panic_seq": now}
+
+    if emergency_snapshot is not None:
+        @router.post("/api/studio/emergency-save")
+        async def studio_emergency_save(identity: Dict[str, Any] = Depends(require_role("mod"))):
+            """Stop production and save the studio control state."""
+            stop = await production_panic(identity)
+            try:
+                snapshot = await emergency_snapshot()
+            except Exception:
+                logger.exception("Emergency studio state could not be saved")
+                snapshot = {"ok": False, "error": "Studio state could not be saved"}
+            return {"ok": stop["ok"] and bool(snapshot.get("ok")),
+                    "result": snapshot, "production_stop": stop}
 
     return router
 

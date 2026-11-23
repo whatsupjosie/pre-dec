@@ -38,7 +38,7 @@ def visual_patch_to_pubworld_prop(
     return {
         "scene_id": scene_id,
         "label": label or f"Visual Patch {patch_id}",
-        "description": _text(patch.get("reason"), "temporary visual patch"),
+        "description": _text(patch.get("description") or patch.get("reason"), "temporary visual patch"),
         "blocks": blocks,
         "variants": [
             {
@@ -46,6 +46,7 @@ def visual_patch_to_pubworld_prop(
                 "patch_id": patch_id,
                 "performer_id": patch.get("performer_id"),
                 "anchor_joint": patch.get("anchor_joint"),
+                **({"screen_region": _mapping(patch["screen_region"])} if "screen_region" in patch else {}),
                 "offset": _float_vector(patch.get("offset"), [0.0, 0.0, 0.0]),
                 "voxel_size": _finite_float(patch.get("voxel_size"), 0.035),
                 "opacity": _finite_float(patch.get("opacity"), 0.92),

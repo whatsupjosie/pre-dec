@@ -73,7 +73,7 @@
       li.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
       li.innerHTML = `
         <div>
-          <strong>${safeText(bot.display_name || bot.bot_id)}</strong>
+          <strong>${safeText(bot.name || bot.display_name || bot.bot_id)}</strong>
           <div style="font-size:12px;color:#98a2b3;">
             ${safeText(bot.provider)} · ${safeText(bot.model)} · rooms: ${safeText((bot.rooms || []).join(', ') || 'none')}
           </div>
@@ -89,7 +89,7 @@
 
       const opt = document.createElement('option');
       opt.value = bot.bot_id;
-      opt.textContent = bot.display_name || bot.bot_id;
+      opt.textContent = bot.name || bot.display_name || bot.bot_id;
       speakSelect.appendChild(opt);
     }
     if (!state.bots.length) {
@@ -155,7 +155,7 @@
     if (state.busy) return;
     const payload = {
       bot_id: $('bot-id')?.value?.trim(),
-      display_name: $('bot-name')?.value?.trim(),
+      name: $('bot-name')?.value?.trim(),
       provider: $('bot-provider')?.value,
       model: $('bot-model')?.value?.trim(),
       api_key_env: $('bot-key')?.value?.trim(),

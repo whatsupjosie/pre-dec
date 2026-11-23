@@ -146,20 +146,20 @@ class BotManager:
         self._ensure_bot_profile(config)
         logger.info("Registered bot %s (%s)", config.bot_id, config.provider)
 
-    def delete_config(self, bot_id: str) -> None:
+    def delete_config(self, bot_id: str, *, owner_id: str | None = None) -> bool:
         with self._config_lock:
-            self._delete_inner(bot_id)
-
-    def _delete_inner(self, bot_id: str) -> None:
-        path = self.config_dir / f"{bot_id}.json"
-        if path.exists():
-            try:
-                path.unlink()
-            except OSError as exc:
-                logger.error("Unable to remove bot config %s: %s", path, exc)
-        self._configs.pop(bot_id, None)
-        self._sessions.pop(bot_id, None)
-        logger.info("Removed bot %s", bot_id)
+            config = self._configs.get(bot_id)
+            if config is None:
+                return False
+            if owner_id is not None and config.owner_id != owner_id:
+                raise PermissionError("Bot is owned by another user")
+            (self.config_dir / f"{bot_id}.json").unlink(missing_ok=True)
+            self._configs.pop(bot_id)
+            session = self._sessions.pop(bot_id, None)
+            if session is not None and isinstance(session._pending_task, asyncio.Task):
+                session._pending_task.cancel()
+            logger.info("Removed bot %s", bot_id)
+            return True
 
     def cricket_scope(self, cfg, room):
         identity = json.dumps(['room', cfg.owner_id, cfg.bot_id, room], separators=(',', ':'))

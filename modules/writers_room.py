@@ -13,7 +13,7 @@ import re
 import sqlite3
 import time
 import uuid
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any, Literal
 
@@ -52,6 +52,32 @@ class VersionAction(BaseModel):
 class VersionFork(BaseModel):
     source_revision: int = Field(ge=1)
     title: str = Field(min_length=1, max_length=200)
+
+
+def export_writer_chats(data_dir: Path, owner: str) -> list[dict]:
+    database = Path(data_dir) / "writers_room" / "documents.sqlite3"
+    if not database.is_file():
+        return []
+    with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+        rows = db.execute("SELECT id, title, revision, payload FROM documents WHERE owner=? ORDER BY id", (owner,))
+        result = []
+        for doc_id, title, revision, payload in rows:
+            conversations = json.loads(payload).get("state", {}).get("conversations")
+            if not isinstance(conversations, dict):
+                continue
+            for partner, history in conversations.items():
+                if not isinstance(history, list):
+                    continue
+                messages = [
+                    {key: message[key] for key in ("role", "content", "delivery") if key in message}
+                    for message in history
+                    if isinstance(message, dict) and message.get("role") in ("user", "assistant")
+                    and isinstance(message.get("content"), str)
+                ]
+                if messages:
+                    result.append({"document_id": doc_id, "title": title, "revision": revision,
+                                   "partner": partner, "messages": messages})
+    return result
 
 
 def create_writers_room_router(data_dir: Path) -> APIRouter:

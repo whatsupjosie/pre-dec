@@ -61,6 +61,7 @@ from modules.recording import RecordingService, create_recording_service
 from modules.blackbox_runtime import BlackBoxRuntimeWitness, create_blackbox_witness
 from modules.blackbox_routes import create_blackbox_router
 from modules.production_routes import create_production_router
+from modules.studio_slate import SlateOverlayMiddleware, create_slate_router
 from modules.program_audio import ProgramAudioState, apply_audio_event
 from modules.studio25d_media_routes import create_studio25d_media_router
 from modules.governance import GovernanceEngine
@@ -323,6 +324,8 @@ except ImportError:
     voxel_generate = None
     VoxelStudioIntegration = None
     save_voxel_set = None
+
+from modules.visual_patch_proposals import VisualProposalRequest, propose_visual_patch
 
 try:
     from modules.visual_patch_approval_bridge import VisualPatchApprovalError, submit_approved_visual_patch
@@ -1174,9 +1177,14 @@ async def lifespan(application: FastAPI):
     application.include_router(create_blackbox_router(blackbox_witness))
     recording = create_recording_service(DATA_DIR, cameras, blackbox_witness=blackbox_witness)
     program_audio_state = ProgramAudioState()
-    application.include_router(create_production_router(cameras, recording, hub, blackbox=blackbox_witness, program_audio_state=program_audio_state, include_overlapping_compat_routes=False))
+    application.include_router(create_production_router(
+        cameras, recording, hub, blackbox=blackbox_witness,
+        program_audio_state=program_audio_state, include_overlapping_compat_routes=False,
+        emergency_snapshot=_studio_emergency_snapshot,
+    ))
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
+    application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
     from modules.pubcast_vision_integration import PubcastVisionManager
     from modules.pubcast_vision_routes import create_vision_router
     vision_manager = PubcastVisionManager(camera_manager=cameras, data_dir=DATA_DIR)
@@ -1203,6 +1211,8 @@ async def lifespan(application: FastAPI):
     # Real cameras and microphones: listener addresses for phones/pro cameras, and the host's audio inputs.
     from modules.live_source_routes import create_live_source_router
     application.include_router(create_live_source_router(cameras))
+    from modules.studio25d_voxel_props import create_voxel_placement_router
+    application.include_router(create_voxel_placement_router(DATA_DIR))
     # Every program/preview change, from any route, reaches the stage pages.
     from modules.camera_broadcast import CameraBroadcastBridge
     camera_broadcast = CameraBroadcastBridge(cameras, hub)
@@ -2004,6 +2014,7 @@ _cors_origins, _cors_credentials = _resolve_cors_origins()
 app.add_middleware(CORSMiddleware,
     allow_origins=_cors_origins, allow_credentials=_cors_credentials,
     allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(SlateOverlayMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(BodySizeLimitMiddleware)
 from modules.unicode_guard import UnicodeGuardMiddleware  # noqa: E402
@@ -2023,7 +2034,8 @@ app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 # Conversation Ownership is a separate transcript/archive authority. It is
 # intentionally mounted outside the 2i manuscript and PubPartner memory seams.
 from modules.conversation_routes import create_conversation_router
-app.include_router(create_conversation_router(DATA_DIR))
+app.include_router(create_conversation_router(DATA_DIR, lambda: hub,
+                                                     lambda: getattr(app.state, "pubpartner_spine", None)))
 
 # Foresight is the unified same-origin entry point for characters and distinct
 # optional 2i utilities. It calls the authoritative managers; no copies.
@@ -2354,8 +2366,45 @@ async def register_bot(request: Request, identity: Dict[str, Any] = Depends(requ
         raise HTTPException(503, "BotManager not initialized")
     body   = await _json_dict(request)
     config = BotConfig(**body)
-    bot_manager.upsert_config(config)
+    if identity.get("authenticated"):
+        from modules.auth import role_gte
+
+        existing = bot_manager.get_config(config.bot_id)
+        admin = role_gte(identity["role"], "admin")
+        if existing is not None:
+            if existing.owner_id != identity["user_id"] and not admin:
+                raise HTTPException(403, "Only the bot owner or an administrator can edit this bot")
+            config.owner_id = existing.owner_id
+        elif not admin or not config.owner_id:
+            config.owner_id = identity["user_id"]
+    try:
+        bot_manager.upsert_config(config)
+    except PermissionError as exc:
+        raise HTTPException(403, "Bot ID is already owned by another user") from exc
     return {"ok": True, "bot_id": config.bot_id}
+
+
+@app.delete("/api/bots/{bot_id}")
+async def delete_bot(bot_id: str, identity: Dict[str, Any] = Depends(require_role("mod"))):
+    from modules.auth import role_gte
+
+    if not identity.get("authenticated") or not role_gte(identity["role"], "mod"):
+        raise HTTPException(403, "Authenticated moderator required")
+    if bot_manager is None:
+        raise HTTPException(503, "BotManager not initialized")
+    if "/" in bot_id or "\\" in bot_id or "\x00" in bot_id:
+        raise HTTPException(400, "Invalid bot ID")
+    try:
+        removed = bot_manager.delete_config(
+            bot_id, owner_id=None if role_gte(identity["role"], "admin") else identity["user_id"],
+        )
+    except PermissionError as exc:
+        raise HTTPException(403, "Only the bot owner or an administrator can remove this bot") from exc
+    except OSError as exc:
+        raise HTTPException(500, "Unable to remove the bot configuration") from exc
+    if not removed:
+        raise HTTPException(404, "Bot not found")
+    return {"ok": True}
 
 
 @app.post("/api/bots/{bot_id}/chat")
@@ -2478,9 +2527,6 @@ async def bot_status(bot_id: str, identity: Dict[str, Any] = Depends(current_ide
     if identity.get("authenticated") and identity.get("role") in {"mod", "admin", "owner"}:
         metadata.update({"has_key": has_key, "key_env": cfg.api_key_env})
     return metadata
-    if bot_manager:
-        bot_manager.delete_config(bot_id)
-    return {"ok": True}
 
 
 @app.get("/api/rooms")
@@ -3062,6 +3108,15 @@ async def pw_recognize_prop(request: Request):
     return {"ok": True, "match": match}
 
 
+@app.post("/api/visual-patch/propose")
+async def visual_patch_propose(
+    body: VisualProposalRequest,
+    identity: Dict[str, Any] = Depends(require_role("mod")),
+):
+    """Evaluate a selected stage region or prop fit for director review."""
+    return propose_visual_patch(body, actor=str(identity.get("user_id") or "director"))
+
+
 @app.post("/api/visual-patch/approve")
 async def visual_patch_approve(request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
     """Persist an approved Visual Patch Kit proposal through PubWorld/voxel storage."""
@@ -3237,6 +3292,7 @@ async def voxel_status():
     return {
         "asset_manager": voxel_asset_manager is not None,
         "studio_integration": voxel_studio is not None,
+        "studio_integration_status": voxel_studio.get_integration_status() if voxel_studio else None,
         "bridge": voxel_bridge is not None,
         "bridge_status": (voxel_bridge.status() if hasattr(voxel_bridge, "status") and callable(voxel_bridge.status) else getattr(voxel_bridge, "status", None)) if voxel_bridge else None,
     }
@@ -3400,16 +3456,11 @@ async def studio_preflight(request: Request, identity: Dict[str, Any] = Depends(
     except Exception as exc:
         raise HTTPException(500, str(exc))
 
-@app.post("/api/studio/emergency-save")
-async def studio_emergency_save(request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
-    """Trigger the dead man's switch emergency save."""
+async def _studio_emergency_snapshot() -> Dict[str, Any]:
+    """Persist the console state after the production router stops capture."""
     if studio_control is None:
-        raise HTTPException(503, "Studio Control not available")
-    try:
-        result = await studio_control.emergency_save()
-        return {"ok": bool(result.get("ok")), "result": result}
-    except Exception as exc:
-        raise HTTPException(500, str(exc))
+        return {"ok": False, "error": "Studio Control not available"}
+    return await studio_control.emergency_save()
 
 
 # —
@@ -3683,6 +3734,16 @@ async def writers_room_v22_page():
 @app.get("/writers-room", include_in_schema=False)
 async def writers_room_page():
     return FileResponse(Path(__file__).resolve().parent / "2i" / "writers-room-v22.html")
+
+
+@app.get("/2i/chat", include_in_schema=False)
+async def two_i_chat_page():
+    return FileResponse(STATIC_DIR / "world_chat.html")
+
+
+@app.get("/2i/chat/archive", include_in_schema=False)
+async def two_i_chat_archive_page():
+    return FileResponse(STATIC_DIR / "twoi_chat_archive.html")
 
 
 @app.get("/pubpartner", include_in_schema=False)

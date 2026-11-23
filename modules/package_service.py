@@ -9,6 +9,7 @@ import json
 import hashlib
 import errno
 import os
+import re
 import shutil
 import tempfile
 import zipfile
@@ -272,7 +273,11 @@ class PackageService:
 
             for relative, contents in (extra_files or {}).items():
                 # No caller-controlled paths may escape the staged package.
-                if relative != 'PrivateCharacters/transcripts.json' or not isinstance(contents, bytes):
+                approved = relative in {
+                    'PrivateCharacters/transcripts.json', 'WritersRoom/transcripts.json',
+                    'PubPartner/transcripts.json', 'DirectMessages/index.json',
+                } or re.fullmatch(r"(?:Rooms|DirectMessages)/[a-z0-9_]{1,160}\.jsonl", relative)
+                if not approved or not isinstance(contents, bytes):
                     raise ValueError('Unapproved export attachment')
                 attachment = staged / relative
                 attachment.parent.mkdir(parents=True, exist_ok=True)

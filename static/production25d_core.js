@@ -80,5 +80,38 @@
     session.events.push(item);return item;
   }
   function finish(session,now) {ensure(session&&!session.endedAt,"Session already closed"); session.endedAt=new Date(now).toISOString(); return session;}
-  return {W,H,PACKAGES,validate,shot,viewport,makeSession,event,finish};
+  function slateTake(slate) {
+    if (!slate?.id || !slate.fields || slate.phase === "ended") return null;
+    const field = (key, limit) => String(slate.fields[key] || "").trim().slice(0, limit);
+    const packageId = field("studio_package", 64);
+    return {id: slate.id, generation: slate.take_generation ?? 0,
+      production: field("production", 100), scene: field("scene", 32), sceneTitle: field("scene_title", 75),
+      packageId: Object.hasOwn(PACKAGES, packageId) ? packageId : "", take: field("take", 32),
+      actors: field("actors", 8000), notes: field("notes", 8000)};
+  }
+  function slateTitle(slate) {
+    if (!slate) return "";
+    return [slate.production, slate.scene && "Scene " + slate.scene, slate.sceneTitle, slate.take && "Take " + slate.take]
+      .filter(Boolean).join(" · ");
+  }
+  function stageTimecode(offsetMs, fps = 30) {
+    const frames = Math.floor(Math.max(0, offsetMs) * fps / 1000);
+    const seconds = Math.floor(frames / fps);
+    return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60, frames % fps]
+      .map(n => String(n).padStart(2, "0")).join(":");
+  }
+  function takeFilename(take, id) {
+    if (!take?.title || !take.startedAt) return id;
+    const segment = (value, limit) => String(value || "").normalize("NFKC")
+      .replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^[._-]+|[._-]+$/g, "").slice(0, limit);
+    const slate = take.slate;
+    const title = slate
+      ? [segment(slate.production, 24), slate.scene && "Scene-" + segment(slate.scene, 12),
+        segment(slate.sceneTitle, 24), slate.take && "Take-" + segment(slate.take, 12),
+        segment(take.label, 18)].filter(Boolean).join("-")
+      : segment(take.title, 85);
+    const date = take.startedAt.replace(/[:.]/g, "-");
+    return [title || "Take", date, stageTimecode(take.offsetMs || 0).replace(/:/g, "-"), id.slice(-8)].join("_");
+  }
+  return {W,H,PACKAGES,validate,shot,viewport,makeSession,event,finish,slateTake,slateTitle,stageTimecode,takeFilename};
 });

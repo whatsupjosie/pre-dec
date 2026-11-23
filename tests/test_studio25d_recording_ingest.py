@@ -112,6 +112,23 @@ def test_original_video_survives_restart_and_exports_exact_bytes(tmp_path, encod
     assert imported_client.get(f"/api/studio25d/recordings/{take}/media", headers=auth("new-owner")).content == encoded_video
 
 
+def test_slate_names_follow_a_take_through_save_and_download(tmp_path, encoded_video):
+    client, _ = app_at(tmp_path)
+    manifest = make_spec(encoded_video)["manifest"]
+    manifest["archive_take"] = {
+        "title": "Pilot · Scene 12A · Night Shift · Take 07",
+        "timecode": "00:00:02:13",
+        "filename": "Pilot-Scene-12A-Night-Shift-Take-07_2026-11-21T22-15-03-123Z_00-00-02-13",
+    }
+    take = begin(client, encoded_video, manifest=manifest)
+    complete(client, take, encoded_video)
+    listed = client.get("/api/studio25d/recordings", headers=auth()).json()["takes"][0]
+    assert {key: listed[key] for key in manifest["archive_take"]} == manifest["archive_take"]
+    download = client.get(f"/api/studio25d/recordings/{take}/media", headers=auth())
+    assert download.content == encoded_video
+    assert manifest["archive_take"]["filename"] + ".webm" in download.headers["content-disposition"]
+
+
 def test_private_take_cannot_leak_through_legacy_routes(tmp_path, encoded_video, monkeypatch):
     monkeypatch.setenv("PUBCAST_ENFORCE_AUTH", "0")
     client, _ = app_at(tmp_path)

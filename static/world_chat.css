@@ -9,3 +9,33 @@
 .world-chat-widget button{font:inherit;cursor:pointer;border:1px solid #bfa36e;border-radius:6px;padding:5px 10px;background:#382b1c;color:#f8e8bf}
 .world-chat-widget button:disabled{opacity:.5;cursor:wait}
 .world-chat-widget .world-entry[data-self="true"]{border-color:#6c9c7f}
+
+.twoi-chat-page {
+  box-sizing:border-box; height:100dvh; margin:0; padding:12px;
+  display:flex; flex-direction:column; gap:10px;
+  background:#16120d; color:#f0e5d4; font:14px/1.4 system-ui,sans-serif;
+}
+.twoi-chat-page header { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; }
+.twoi-chat-page h1 { margin:0 auto 0 0; color:#e5c88c; font:600 20px Georgia,serif; }
+.twoi-chat-page h2 { margin:0; font-size:14px; }
+.twoi-chat-page a { color:#e5c88c; }
+.twoi-chat-page header button {
+  font:inherit; cursor:pointer; border:1px solid #8f7858; border-radius:5px;
+  padding:4px 8px; background:transparent; color:#f0e5d4;
+}
+.twoi-chat-page main { flex:1; }
+.twoi-chat-page [data-world-form] { align-items:stretch; }
+.twoi-chat-page [data-world-form] button { max-width:8em; }
+.twoi-chat-page [data-dictation-review] textarea { box-sizing:border-box; display:block; margin-bottom:5px; }
+.twoi-chat-page [data-dictation-review] button + button { margin-left:5px; }
+.twoi-chat-page [data-world-mic].listening { border-color:#e8a07d; }
+.twoi-chat-page #pubcast-slate-open { position:static; align-self:flex-end; }
+
+.twoi-chat-archive main { width:min(100%, 620px); margin:0 auto; }
+.twoi-chat-archive label { display:block; margin:8px 0 4px; }
+.twoi-chat-archive select, .twoi-chat-archive button {
+  max-width:100%; border:1px solid #8f7858; border-radius:5px;
+  padding:8px; background:#251d13; color:#f0e5d4; font:inherit;
+}
+.chat-archive-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.chat-archive-actions[hidden] { display:none; }

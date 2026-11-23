@@ -52,3 +52,22 @@ def test_studio_readiness_uses_program_camera_and_profiles(tmp_path: Path):
     assert report["program"] == "wide_shot"
     assert report["recording_profiles"] >= 1
     assert report["audio_ready"] is True
+
+
+def test_native_pose_slot_cannot_create_a_recording(tmp_path):
+    import pytest
+
+    cameras = create_default_cameras()
+    cameras.register(CameraSource(
+        source_id="native", name="Native", location="pubworld", description="Control only",
+        transport=CameraTransport.VOXEL_3D, endpoint="rust://native",
+    ))
+    recording = create_recording_service(tmp_path, cameras)
+    result = recording_preflight(cameras, recording, sources=["native"])
+    report = result["camera_reports"][0]
+    assert not result["ready"] and not report["visible"]
+    assert report["confidence"] == "control_only"
+    assert report["issues"][0]["code"] == "native_media_unavailable"
+    with pytest.raises(ValueError, match="pose control only"):
+        recording.start_session("native-take", ["native"], profile_id="broadcast_mp4", operator="director")
+    assert recording.list_sessions() == []

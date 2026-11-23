@@ -218,15 +218,22 @@ class UDPMocapReceiver:
         self.socket: Optional[socket.socket] = None
         self._running = False
     
+    async def open(self) -> None:
+        listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            listener.bind((self.host, self.port))
+            listener.setblocking(False)
+        except OSError:
+            listener.close()
+            raise
+        self.socket = listener
+        logger.info("UDP mocap receiver listening on %s", listener.getsockname())
+
     async def start(self, frame_callback):
-        """Start receiving frames"""
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.host, self.port))
-        self.socket.setblocking(False)
-        
+        if self.socket is None:
+            await self.open()
         self._running = True
-        logger.info(f"📡 UDP mocap receiver listening on {self.host}:{self.port}")
-        
+
         while self._running:
             try:
                 # Non-blocking receive
@@ -252,6 +259,7 @@ class UDPMocapReceiver:
         self._running = False
         if self.socket:
             self.socket.close()
+            self.socket = None
         logger.info("📡 UDP mocap receiver stopped")
 
 
@@ -267,52 +275,36 @@ class WebSocketMocapReceiver:
         self.websocket = None
         self._running = False
     
-    async def start(self, frame_callback):
-        """Start receiving frames"""
+    async def open(self) -> None:
         import websockets
-        
+
+        self.websocket = await websockets.connect(self.url, open_timeout=5)
+        logger.info("WebSocket mocap connected")
+
+    async def start(self, frame_callback):
+        from websockets.exceptions import ConnectionClosedOK
+
+        if self.websocket is None:
+            await self.open()
         self._running = True
-        logger.info(f"📡 WebSocket mocap receiver connecting to {self.url}")
-        
-        try:
-            async with websockets.connect(self.url) as websocket:
-                self.websocket = websocket
-                logger.info("📡 WebSocket mocap connected")
-                
-                while self._running:
-                    try:
-                        # Receive frame
-                        data = await websocket.recv()
-                        
-                        # Parse JSON
-                        frame_data = json.loads(data)
-                        frame = MocapFrame.from_dict(frame_data)
-                        
-                        # Call frame handler
-                        await frame_callback(frame)
-                        
-                    except asyncio.CancelledError:
-                        break
-                    except json.JSONDecodeError as e:
-                        logger.error(f"Invalid mocap frame JSON: {e}")
-                    except Exception as e:
-                        logger.error(f"WebSocket receive error: {e}")
-                        await asyncio.sleep(0.01)
-        
-        except Exception as e:
-            logger.error(f"WebSocket connection error: {e}")
-    
+        while self._running:
+            try:
+                data = await self.websocket.recv()
+            except ConnectionClosedOK:
+                break
+            try:
+                frame = MocapFrame.from_dict(json.loads(data))
+                await frame_callback(frame)
+            except (ValueError, TypeError, AttributeError) as exc:
+                logger.warning("Invalid WebSocket mocap frame: %s", exc)
+
     async def stop(self):
-        """Stop receiving"""
         self._running = False
-        if self.websocket:
-            await self.websocket.close()
-        logger.info("📡 WebSocket mocap receiver stopped")
+        websocket, self.websocket = self.websocket, None
+        if websocket:
+            await websocket.close()
+        logger.info("WebSocket mocap receiver stopped")
 
-
-# ─────────────────────────────────────────────
-# MAIN MOCAP MANAGER
-# ─────────────────────────────────────────────
 
 class MocapStreamManager:
     """
@@ -386,73 +378,87 @@ class MocapStreamManager:
         - ws://localhost:8080/mocap
         - wss://remote-server.com/mocap
         """
-        if self.status == MocapStreamStatus.STREAMING:
-            logger.warning("Mocap stream already active")
+        if self.receiver is not None:
+            logger.warning("Mocap receiver already active")
             return False
-        
-        logger.info(f"🎭 Starting mocap stream: {source_url}")
+
         self.status = MocapStreamStatus.CONNECTING
-        
+        receiver = None
         try:
-            # Parse URL
             if source_url.startswith("udp://"):
-                # UDP stream
-                parts = source_url.replace("udp://", "").split(":")
-                host = parts[0]
-                port = int(parts[1]) if len(parts) > 1 else 9001
-                
-                self.receiver = UDPMocapReceiver(host, port)
-                
-            elif source_url.startswith("ws://") or source_url.startswith("wss://"):
-                # WebSocket stream
-                self.receiver = WebSocketMocapReceiver(source_url)
-                
+                host, separator, port = source_url.removeprefix("udp://").partition(":")
+                receiver = UDPMocapReceiver(host, int(port) if separator else 9001)
+            elif source_url.startswith(("ws://", "wss://")):
+                receiver = WebSocketMocapReceiver(source_url)
             else:
-                logger.error(f"Unsupported mocap source URL: {source_url}")
-                self.status = MocapStreamStatus.ERROR
+                raise ValueError("Unsupported MoCap source URL")
+            self.receiver = receiver
+            await receiver.open()
+            if self.receiver is not receiver:
+                await receiver.stop()
                 return False
-            
-            # Start receiver
-            self._receive_task = asyncio.create_task(self.receiver.start(self._on_frame_received))
-            
-            self.status = MocapStreamStatus.STREAMING
-            logger.info("🎭 Mocap stream started successfully")
-            
+            self.status = MocapStreamStatus.CONNECTED
+            self._receive_task = asyncio.create_task(self._receive_frames(receiver))
             return True
-            
-        except Exception as e:
-            logger.error(f"Failed to start mocap stream: {e}", exc_info=True)
-            self.status = MocapStreamStatus.ERROR
+        except asyncio.CancelledError:
+            if self.receiver is receiver:
+                self.receiver = None
+                self.status = MocapStreamStatus.DISCONNECTED
+            if receiver is not None:
+                await receiver.stop()
+            raise
+        except Exception as exc:
+            if self.receiver is receiver:
+                self.receiver = None
+                self.status = MocapStreamStatus.ERROR
+            if receiver is not None:
+                await receiver.stop()
+            logger.warning("Failed to start mocap receiver: %s", exc)
             return False
-    
+
+    async def _receive_frames(self, receiver) -> None:
+        closing_status = MocapStreamStatus.DISCONNECTED
+        try:
+            await receiver.start(self._on_frame_received)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            closing_status = MocapStreamStatus.ERROR
+            logger.warning("Mocap receiver ended with an error: %s", exc)
+        finally:
+            await receiver.stop()
+            if self.receiver is receiver:
+                self.receiver = None
+                self._receive_task = None
+                self.status = closing_status
+
     async def stop_stream(self) -> None:
-        """Stop mocap stream and fully reap the receiver task."""
-        if self.receiver:
-            await self.receiver.stop()
-            self.receiver = None
-        task = self._receive_task
-        self._receive_task = None
+        """Stop MoCap and reap the receiver before returning."""
+        receiver, self.receiver = self.receiver, None
+        task, self._receive_task = self._receive_task, None
+        self.status = MocapStreamStatus.DISCONNECTED
+        self.current_rig_id = None
+        self.metrics.last_frame_time = 0
+        self._frame_buffer.clear()
+        self._recording_started = False
         if task is not None and not task.done():
             task.cancel()
             try:
                 await task
             except asyncio.CancelledError:
                 pass
-        self.status = MocapStreamStatus.DISCONNECTED
-        self._frame_buffer.clear()
-        self._recording_started = False
-        logger.info("🎭 Mocap stream stopped")
-    
-    # ─────────────────────────────────────────────
-    # FRAME PROCESSING
-    # ─────────────────────────────────────────────
-    
+        if receiver is not None:
+            await receiver.stop()
+
     async def _on_frame_received(self, frame: MocapFrame) -> None:
         """
         Handle received mocap frame
         
         This is called for every frame received from the stream.
         """
+        if self.status is MocapStreamStatus.CONNECTED and frame.joints:
+            self.status = MocapStreamStatus.STREAMING
+
         # Update metrics
         self.metrics.frames_received += 1
         current_time = time.time()

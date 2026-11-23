@@ -69,6 +69,7 @@ def submit_approved_visual_patch(
             description=prop_payload["description"],
             blocks=prop_payload["blocks"],
             variants=prop_payload.get("variants"),
+            visual_patch_approved=True,
         )
 
     voxel_path = None

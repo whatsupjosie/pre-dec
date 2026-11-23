@@ -24,8 +24,6 @@ Usage:
         pete=pete_enhanced
     )
     
-    # Register preflight hooks
-    await voxel_integration.register_preflight_hooks()
 """
 
 from __future__ import annotations
@@ -69,34 +67,11 @@ class VoxelStudioIntegration:
         
         logger.info("🔗 Voxel Studio Integration initialized")
     
-    async def register_preflight_hooks(self) -> None:
-        """
-        Register voxel-specific checks into Studio Control preflight sequence
-        
-        This adds two custom checks to the 5-second countdown:
-        - T-4: Scene validation (with Gate Check)
-        - T-2: Asset preloading verification (with Ghost Mic Check)
-        """
-        logger.info("🔗 Registering voxel preflight hooks...")
-        
-        # Hook into Studio Control's preflight sequence
-        # These will run alongside the existing checks
-        
-        # Note: This is a design pattern - actual implementation
-        # depends on Studio Control's extensibility API
-        
-        # Conceptually:
-        # studio_control.register_custom_check(
-        #     timing=4,  # T-4
-        #     check_func=self._preflight_validate_scene
-        # )
-        # studio_control.register_custom_check(
-        #     timing=2,  # T-2
-        #     check_func=self._preflight_verify_assets
-        # )
-        
-        logger.info("✅ Voxel preflight hooks registered")
-    
+    async def register_preflight_hooks(self) -> bool:
+        """Report whether native voxel checks are connected to Studio Control."""
+        logger.info("Native voxel preflight and scene sync hooks are not connected")
+        return False
+
     async def _preflight_validate_scene(self) -> 'PreflightCheck':
         """
         T-4 Preflight Check: Scene Validation
@@ -237,6 +212,8 @@ class VoxelStudioIntegration:
     def get_integration_status(self) -> Dict[str, Any]:
         """Get current integration status"""
         return {
+            "native_preflight_hooks_active": False,
+            "native_scene_sync_on_roll": False,
             "voxel_manager_connected": self.asset_manager is not None,
             "studio_control_connected": self.studio_control is not None,
             "pete_connected": self.pete is not None,

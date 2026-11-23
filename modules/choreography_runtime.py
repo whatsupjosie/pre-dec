@@ -4,13 +4,12 @@
 # Feic Mo Chroí — See My Heart
 from __future__ import annotations
 
-import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from .persistence import write_json
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional
 
 
 class Easing:
@@ -41,15 +40,19 @@ class ChoreographyStep:
         self.initial_position = list(getattr(avatar, "position", [0.0, 0.0, 0.0]))
         self.initial_rotation = list(getattr(avatar, "rotation", [0.0, 0.0, 0.0]))
         getter = getattr(avatar, "get_full_skeleton_data", None)
-        self.initial_skeleton = getter() if callable(getter) else {}
+        self.initial_skeleton = {joint: list(values) for joint, values in getter().items()} if callable(getter) else {}
         self.completed = False
 
     def update(self, avatar, current_time: float) -> None:
-        if self.completed or not self.is_active(current_time):
+        if self.completed or current_time < self.start_time:
             return
+        if not self.initial_position:
+            self.activate(avatar)
 
-        progress = (current_time - self.start_time) / max(self.duration, 0.001)
-        eased = Easing.ease_in_out_cubic(max(0.0, min(1.0, progress)))
+        elapsed = current_time - self.start_time
+        finished = elapsed >= self.duration
+        progress = 1.0 if finished else elapsed / self.duration
+        eased = Easing.ease_in_out_cubic(progress)
 
         if self.animation_type in {"walk", "move", "run", "crawl", "climb"}:
             for idx in range(3):
@@ -69,8 +72,7 @@ class ChoreographyStep:
                     ]
                 apply_pose(new_pose)
 
-        if progress >= 1.0:
-            self.completed = True
+        self.completed = finished
 
     def is_active(self, current_time: float) -> bool:
         return self.start_time <= current_time < self.start_time + self.duration
@@ -85,6 +87,7 @@ class Choreography:
     current_time: float = 0.0
     recording: bool = False
     recorded_frames: List[Dict[str, object]] = field(default_factory=list)
+    _avatars: Dict[str, object] = field(default_factory=dict, init=False, repr=False, compare=False)
 
     def add_step(self, step: ChoreographyStep) -> None:
         self.steps.append(step)
@@ -95,32 +98,37 @@ class Choreography:
         self.start_time = time.time()
         self.current_time = 0.0
 
-        # O(1) lookup for larger avatar sets.
-        avatar_map = {getattr(a, "id", None): a for a in avatars}
-
+        self._avatars = {getattr(avatar, "id", None): avatar for avatar in avatars}
+        self.steps.sort(key=lambda step: step.start_time)
         for step in self.steps:
-            avatar = avatar_map.get(step.avatar_id)
-            if avatar:
-                step.activate(avatar)
+            step.completed = False
+            step.initial_position = []
+            step.initial_rotation = []
+            step.initial_skeleton = {}
 
     def stop(self) -> None:
         self.playing = False
         self.current_time = 0.0
+        self._avatars.clear()
 
-    def update(self, avatars: Iterable) -> None:
+    def update(self, avatars: Optional[Iterable] = None) -> None:
         if not self.playing:
             return
         self.current_time = time.time() - self.start_time
-
-        avatar_map = {getattr(a, "id", None): a for a in avatars}
+        if avatars is not None:
+            self._avatars = {getattr(avatar, "id", None): avatar for avatar in avatars}
 
         for step in self.steps:
-            avatar = avatar_map.get(step.avatar_id)
-            if avatar:
+            if step.completed:
+                continue
+            if step.start_time > self.current_time:
+                break
+            avatar = self._avatars.get(step.avatar_id)
+            if avatar is not None:
                 step.update(avatar, self.current_time)
 
         if self.recording:
-            self.record_frame(avatars)
+            self.record_frame(self._avatars.values())
 
     def record_frame(self, avatars: Iterable) -> None:
         frame = {

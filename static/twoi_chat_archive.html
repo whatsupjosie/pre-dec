@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>2i · Chat Archive</title>
+  <link rel="stylesheet" href="/static/world_chat.css">
+  <script src="/static/reach_auth.js" defer></script>
+  <script src="/static/twoi_chat_archive.js" defer></script>
+</head>
+<body class="twoi-chat-page twoi-chat-archive">
+  <header>
+    <h1>Chat Archive</h1>
+    <a href="/2i/chat">2i Chat</a>
+  </header>
+  <main>
+    <label for="chat-selection">Conversation</label>
+    <select id="chat-selection">
+      <option value="all">All my available chats</option>
+      <optgroup label="Private collections" id="private-chats"></optgroup>
+    </select>
+    <div class="chat-archive-actions">
+      <button type="button" id="archive-save" disabled>Save all on host</button>
+      <button type="button" id="archive-export" disabled>Download export</button>
+      <button type="button" id="archive-prepare" disabled>Prepare to share</button>
+    </div>
+    <div class="chat-archive-actions" id="archive-sharing" hidden>
+      <button type="button" id="archive-share">Share file</button>
+      <button type="button" id="archive-share-download">Download file</button>
+      <button type="button" id="archive-cancel">Cancel</button>
+    </div>
+    <p role="status" id="archive-status">Connecting to your chat archive…</p>
+  </main>
+</body>
+</html>

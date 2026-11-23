@@ -1,1 +1,30 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PubCast · World Chat</title><link rel="stylesheet" href="/static/world_chat.css"><script src="/static/reach_auth.js"></script><style>html,body{height:100%;margin:0;background:#101319;color:#eee8dd}body{display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box}header{font:600 16px system-ui,sans-serif;color:#e5c88c}.world-chat-widget{flex:1;min-height:0}</style></head><body><header>✧ PubCast · World Chat <button type="button" data-world-export style="float:right;font:12px system-ui;background:transparent;border:1px solid #8f7858;color:#e5c88c;border-radius:5px;padding:4px 8px;cursor:pointer">Save full room log</button></header><div class="world-chat-widget" data-world-chat><div role="status" aria-live="polite" data-world-status>Connecting to the shared world room…</div><div role="log" aria-label="World Chat messages" data-world-messages></div><form data-world-form><textarea data-world-input aria-label="Message the world" placeholder="Say hello to the room…" maxlength="10000"></textarea><button type="submit" data-world-send>Send</button></form></div><script src="/static/world_chat_widget.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>2i · Chat</title>
+  <link rel="stylesheet" href="/static/world_chat.css">
+  <script src="/static/reach_auth.js" defer></script>
+  <script src="/static/speech_client.js" defer></script>
+  <script src="/static/world_chat_widget.js" defer></script>
+</head>
+<body class="twoi-chat-page">
+  <header>
+    <h1>2i · Chat</h1>
+    <a href="/2i">Writer’s Room</a>
+    <a href="/2i/chat/archive">Chat Archive</a>
+    <button type="button" data-world-export>Save full room log</button>
+  </header>
+  <main class="world-chat-widget" data-world-chat data-world-restore-draft>
+    <h2>World Chat</h2>
+    <div role="status" aria-live="polite" data-world-status>Connecting to the world room…</div>
+    <div role="log" aria-label="World Chat messages" data-world-messages></div>
+    <form data-world-form>
+      <textarea data-world-input aria-label="Message the world" placeholder="Message the world…" maxlength="10000"></textarea>
+      <button type="button" data-world-mic aria-pressed="false" disabled>Dictate</button>
+      <button type="submit" data-world-send>Send</button>
+    </form>
+  </main>
+</body>
+</html>

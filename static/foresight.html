@@ -377,8 +377,10 @@ const PROGRAMS = [
   // Primary/global conversation surface. It is always represented by a blade;
   // closing the window hides it instead of destroying the conversation surface.
   {id:'world_chat', label:'World Chat', group:'Chat & Collaboration', kind:'iframe',
-    url:'/static/world_chat.html', w:560, h:560, placement:'right', singleton:true,
+    url:'/2i/chat', w:560, h:560, placement:'right', singleton:true,
     persistent:true, autostart:true, portalKind:'chat'},
+  {id:'twoi_chat_archive', label:'Chat Archive', group:'Chat & Collaboration', kind:'iframe',
+    url:'/2i/chat/archive', w:620, h:420, placement:'right', singleton:true, portalKind:'chat'},
   {id:'pubpartner_workspace', label:'PubPartner · Alex & Cartridges', group:'Chat & Collaboration', kind:'iframe',
     url:'/pubpartner', w:1180, h:730, placement:'wide', singleton:true, portalKind:'room'},
   {id:'pubpartner_chat', label:'Character Chat', group:'Chat & Collaboration', kind:'iframe',
@@ -849,7 +851,7 @@ function renderBlades(){
    PICKER — what the blank blade and File > Open both use
    ============================================================ */
 const PICKER_SECTIONS=[
-  {title:'Programs', ids:['pubpartner_workspace','twoi','iteration_wallet','pubpartner_chat','care_eq']},
+  {title:'Programs', ids:['pubpartner_workspace','twoi','iteration_wallet','pubpartner_chat','twoi_chat_archive','care_eq']},
   {title:'Trays', ids:['browser_new','blank_new','import_file','video_url','recordings','new_chat']},
   {title:'Studio Rooms', group:'Studio Rooms'},
   {title:'Production Tools', group:'Production Tools'},
@@ -1160,7 +1162,7 @@ function showRoomList(tray, body, groups){
   const host=body.querySelector('.panel-msg'); host.querySelector('.reclist')?.remove();
   const list=document.createElement('div'); list.className='reclist';
   const programs = groups.includes('Programs')
-    ? ['pubpartner_workspace','twoi','iteration_wallet','pubpartner_chat','care_eq'].map(id=>PROGRAMS.find(p=>p.id===id))
+    ? ['pubpartner_workspace','twoi','iteration_wallet','pubpartner_chat','twoi_chat_archive','care_eq'].map(id=>PROGRAMS.find(p=>p.id===id))
     : PROGRAMS.filter(p=>groups.includes(p.group));
   programs.forEach(p=>{
     const b=document.createElement('button'); b.className='recitem';

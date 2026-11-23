@@ -44,6 +44,7 @@ class Prop(BaseModel):
     blocks: List[Block] = Field(default_factory=list)
     links: List[Link] = Field(default_factory=list)
     variants: List[Dict[str, Any]] = Field(default_factory=list)
+    visual_patch_approved: bool = False
     active_variant: Optional[str] = None
     tracker_ids: List[str] = Field(default_factory=list)
     signature: Dict[str, Any] = Field(default_factory=dict)
@@ -354,7 +355,7 @@ def save_prop(base_dir: Path, prop: Prop) -> Prop:
     return prop
 
 
-def create_prop(base_dir: Path, scene_id: str, label: str, description: str, blocks: List[Dict[str, Any]], variants: Optional[List[Dict[str, Any]]] = None) -> Prop:
+def create_prop(base_dir: Path, scene_id: str, label: str, description: str, blocks: List[Dict[str, Any]], variants: Optional[List[Dict[str, Any]]] = None, *, visual_patch_approved: bool = False) -> Prop:
     prop_id = f"prp_{uuid.uuid4().hex[:10]}"
     ts = time.time()
     blks = [Block(**b) for b in (blocks or [])]
@@ -365,6 +366,7 @@ def create_prop(base_dir: Path, scene_id: str, label: str, description: str, blo
         description=description or "",
         blocks=blks,
         variants=variants or [],
+        visual_patch_approved=visual_patch_approved,
         signature=compute_signature(blks),
         created_at=ts,
         updated_at=ts,
