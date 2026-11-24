@@ -382,6 +382,9 @@ def _story_line(kit: Mapping, seed: bytes, recent: str, continuing: bool = False
             pron = next((p for p in people if p["who"] == last["pro"]), None)
             if pron:
                 people = [pron]
+        else:
+            # Nobody to follow (the last story was a monologue): name someone.
+            people = [p for p in people if p["who"] not in _PRONOUNS]
     elif people:
         # A fresh story names its subject; "he", "she", "they" only carry on a story already told.
         people = [p for p in people if p["who"] not in _PRONOUNS]
