@@ -76,3 +76,10 @@ What the builder proposed and Josie did not reject (she asked "What would you li
 Read before building 7: modules/performance/avatar_adapter.py and modules/affect_choreo_bridge.py (not yet read), to record the real portrayal and check whether an expression can be driven to 100% of one feeling.
 
 Still open with Josie: where acting is used first (Alex's replies, the avatars, or the stage); the dial numbers; calibration screen wiring; situation_reading wiring.
+
+## Builder's own proposals (Claude, 2026-11-23). Josie: "pitch your ideas. This is about AI collaboration. I'm not here to be your queen." These are pitches, not her decisions; she said add them. Discuss with her before building.
+
+A. Honesty is not one number per person: keep trust per person per topic and per state (calm vs cornered), so being guarded about one subject does not cost trust everywhere. Extends her point that people are poor reporters in the moment.
+B. Test AI characters instead of guessing: replay the same scene offline with the other person's mood varied (pleased, annoyed, neutral). An honest pull stays put; a placating one swings to match. Cleaner sycophancy measure than live inference; no runtime cost.
+C. Despair, privately grounded: the system may know this person's own history (the last times it "felt like the end", it eased within days). Alex never says it in the moment (that would be arguing with the feeling); it only grounds her steadiness. Fair to look back on together later in calibration.
+D. Dictation flips, two cheap catches before the one-word check: (1) consistency with the person's own stated plan in the conversation; a flip with no stated reason gets the check, a consistent one does not; (2) if the client keeps a few seconds of audio, re-hear the suspicious word first.
