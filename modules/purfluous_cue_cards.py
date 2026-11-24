@@ -58,6 +58,8 @@ def _load(path: str = str(DECK_PATH)) -> Mapping:
     return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {})),
             "priority": list(deck.get("priority_topics", [])),
             "kit": dict(deck.get("phrase_kit", {})),
+            "madlib": dict(deck.get("madlib", {})),
+            "segments": dict(deck.get("segments", {})),
             "angles": {topic: {name: re.compile(rx, re.IGNORECASE) for name, rx in group.items()}
                        for topic, group in deck.get("angles", {}).items()}}
 
@@ -265,7 +267,8 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         # Half the time he leaves it to his longer monologues instead.
         continuing = bool(_CONTINUE.search(message))
         if continuing or seed[6] % 2 == 0:
-            told = _story_line(deck["kit"], seed, recent, continuing=continuing)
+            told = None if continuing or seed[8] % 2 else _madlib_line(deck, "story", seed, recent)
+            told = told or _story_line(deck["kit"], seed, recent, continuing=continuing)
             if told:
                 return {"topics": topics, "mood": mood, "cards": [told]}
     if not beats:
@@ -283,6 +286,13 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         told = _story_line(deck["kit"], seed, recent, continuing=bool(_CONTINUE.search(message)))
         if told:
             beat = told
+    # One time in four, on chatty topics, a Mad Lib stands in for the card.
+    if not beat.get("solo") and mood == "neutral" and seed[7] % 4 == 0:
+        for t in spoken:
+            built = _madlib_line(deck, t, seed, recent)
+            if built:
+                beat = built
+                break
     # One time in three, a line built from a frame stands in for the card, so a
     # topic he has covered before still gets something new.
     kit_topic = _kit_topic(deck["kit"], spoken) if deck["kit"] else None
@@ -393,6 +403,161 @@ def _story_line(kit: Mapping, seed: bytes, recent: str, continuing: bool = False
         text = text[:1].upper() + text[1:]
         if text.casefold() not in recent:
             return {"id": "story_frame", "kind": "frame", "topics": ["story"], "moods": ["neutral"], "text": text}
+    return None
+
+
+# ── Mad Libs ──────────────────────────────────────────────────────────────────
+# A slot is {[a:|A:]type[n][.form]}: "a:" adds a/an, a capital first letter
+# capitalises the word, a digit makes a second independent pick of the same type,
+# and ".form" chooses a form the word card carries (noun.many, verb.went, person.their).
+
+_SLOT = re.compile(r"\{(?:(a|A):)?([A-Za-z_]+?)(\d?)(?:\.([a-z_]+))?\}")
+_SINGULAR_NAMED = None
+
+
+def _article(word: str) -> str:
+    w = word.lower()
+    if w.startswith(("one", "uni", "use", "eu")):
+        return "a"
+    if w.startswith(("hour", "honest", "heir")):
+        return "an"
+    return "an" if w[:1] in "aeiou" else "a"
+
+
+def _madlib_people(kit: Mapping) -> List[dict]:
+    # Named, singular people only: the frames are written for one person.
+    return [p for p in kit.get("people", []) if p["who"] not in _PRONOUNS and p.get("has") == "has"]
+
+
+def render_madlib(frame: str, words: Mapping, people: Sequence[Mapping], seed: bytes) -> str:
+    picks: Dict[str, object] = {}
+
+    def choose(kind: str, key: str):
+        if key not in picks:
+            pool = people if kind == "person" else words.get(kind, [])
+            if not pool:
+                raise KeyError(kind)
+            h = hashlib.sha256(seed + key.encode()).digest()
+            picks[key] = pool[int.from_bytes(h[:4], "big") % len(pool)]
+        return picks[key]
+
+    def fill(m: "re.Match") -> str:
+        art, kind_raw, n, form = m.group(1), m.group(2), m.group(3), m.group(4)
+        kind = kind_raw.lower()
+        word = choose(kind, kind + n)
+        if isinstance(word, Mapping):
+            if kind == "person":
+                form = form or "who"
+                text = {"is": "is" if word.get("was") == "was" else "are"}.get(form) or word.get(form) or word["who"]
+            else:
+                text = word.get(form or "one") or next(iter(word.values()))
+        else:
+            text = str(word)
+        if art:
+            text = f"{_article(text)} {text}"
+        if kind_raw[:1].isupper() or (art == "A"):
+            text = text[:1].upper() + text[1:]
+        return text
+
+    return _SLOT.sub(fill, frame)
+
+
+def _madlib_line(deck: Mapping, topic: str, seed: bytes, recent: str) -> Optional[dict]:
+    ml = deck.get("madlib") or {}
+    if not ml or topic not in ml.get("use_on_topics", []):
+        return None
+    words = {k: list(v) for k, v in ml.get("words", {}).items()}
+    for k, v in ml.get("topic_words", {}).get(topic, {}).items():
+        words[k] = list(v) + words.get(k, [])[: len(v)]   # the topic's own words come first
+    people = _madlib_people(deck.get("kit") or {})
+    frames = ml.get("frames", [])
+    for attempt in range(8):
+        h = hashlib.sha256(seed + f"madlib{attempt}".encode()).digest()
+        frame = frames[h[0] % len(frames)]
+        try:
+            text = render_madlib(frame, words, people, h)
+        except KeyError:
+            continue
+        if text.casefold() not in recent:
+            return {"id": "madlib", "kind": "frame", "topics": [topic], "moods": ["neutral"], "text": text}
+    return None
+
+
+# ── Everyday segments: talking about nearly anything ─────────────────────────
+
+_STOP = set("""a an the i me my mine you your yours we our us he she they them his her their it its is am are was were be
+been being do does did have has had of to in on at for with about from by and or but so if then than that this these
+those just really very quite some any all no not can could would should will shall may might must what when where who
+why how which there here like love hate enjoy get got getting into been lately recently today tonight thing things
+stuff lot lots bit also too again ever never always still yeah yes ok okay oh um hey hi hello""".split())
+_VERBISH = set("""is was are were has have had keeps kept broke broken died went got gets get came comes left
+leaves visiting visited coming going says said wants needs called calls just again finally""".split())
+_TOPIC_PATTERNS = [
+    ("mine", re.compile(r"\b(?:my|our)\s+([a-z][a-z'-]*(?:\s+[a-z][a-z'-]*)?)", re.IGNORECASE)),
+    ("interest", re.compile(r"\b((?:learning|practi[sc]ing|trying)\s+(?:to\s+)?[a-z]+)\b", re.IGNORECASE)),
+    ("interest", re.compile(r"\b(?:went|go|going|been)\s+([a-z]+ing)\b", re.IGNORECASE)),
+    ("interest", re.compile(r"\b(?:about|into)\s+((?:the\s+|a\s+)?[a-z][a-z' -]{2,40}?)(?:[.?!,]|$)", re.IGNORECASE)),
+    ("interest", re.compile(r"\bi (?:love|like|adore|hate|enjoy|miss)\s+([a-z][a-z' -]{2,40}?)(?:[.?!,]|$)", re.IGNORECASE)),
+]
+
+
+def extract_topic(message: str):
+    """(subject, kind) the person raised, in their own words, short enough to echo back.
+    kind is 'person' (my sister), 'thing' (my car) or 'interest' (jazz, the election)."""
+    text = message.strip()
+    relations = set(_load().get("segments", {}).get("relations", []))
+    for kind, rx in _TOPIC_PATTERNS:
+        m = rx.search(text)
+        if not m:
+            continue
+        words = m.group(1).strip().split()
+        if kind == "mine":
+            kept = []
+            for w in words:
+                if w.lower() in _VERBISH or w.lower().endswith("ed") or w.lower() in _STOP:
+                    break
+                kept.append(w.lower())
+            if not kept:
+                continue
+            phrase = " ".join(kept)
+            return phrase, ("person" if phrase in relations or kept[-1] in relations else "thing")
+        while words and words[-1].lower() in _STOP:
+            words.pop()
+        if words and len(words) <= 4 and words[0].lower() not in _STOP - {"the", "a"}:
+            return " ".join(words).lower(), "interest"
+    content = [w for w in re.findall(r"[A-Za-z][A-Za-z'-]{3,}", text) if w.lower() not in _STOP]
+    return (content[-1].lower(), "interest") if len(content) == 1 else (None, None)
+
+
+def converse(message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional[str]:
+    """A reply built from everyday sentence pieces about whatever the person raised.
+    Never for a factual question he cannot know, never when someone is hurting."""
+    deck = _load()
+    seg = deck.get("segments") or {}
+    if not seg or not isinstance(message, str) or not message.strip():
+        return None
+    if re.search(seg.get("fact_question", "^$"), message, re.IGNORECASE):
+        return None
+    if read(message)[1] == "hurt":
+        return None
+    topic, kind = extract_topic(message)
+    if not topic:
+        return None
+    pools = dict(seg)
+    pools.update(seg.get("by_kind", {}).get(kind, {}))
+    recent = _recent_text(history)
+    for attempt in range(8):
+        h = hashlib.sha256((message.casefold() + recent[-1000:] + str(attempt)).encode()).digest()
+        pick = lambda key, i: pools[key][h[i] % len(pools[key])]
+        parts = [pick("reactions", 0), f"{pick('stems', 1)} {pick('opinions', 2)}"]
+        if h[3] % 3 == 0:
+            parts.append(pick("asides", 4))
+        if h[5] % 2 == 0:
+            parts.append(pick("questions", 6))
+        text = " ".join(parts)
+        text = text.replace("{Topic}", topic[:1].upper() + topic[1:]).replace("{topic}", topic)
+        if text.casefold() not in recent:
+            return limit_sancho(text, sancho_allowed(history))
     return None
 
 

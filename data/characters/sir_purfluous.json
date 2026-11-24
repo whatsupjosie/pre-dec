@@ -5482,6 +5482,895 @@
         "Nobody could stop {them}. {Who} {went} {direction}, then {went2} {direction2}, then asked for a towel.",
         "If {who} hadn't {gone_pp} {direction}, we'd never have got the shot. Sometimes chaos is the director."
       ]
+    },
+    "madlib": {
+      "status": "draft_for_josie_to_edit",
+      "how_it_works": "Mad Lib rules. Every blank is a typed slot; every word is its own card in a bank for its type, carrying its own forms (camera/cameras, run/ran/running/run, she/her/her/was). Each distinct slot name in a frame picks once and reuses that pick (person ... person.their). A topic's own bank is tried first, then the general bank. Used only for stories and chatter, never for tips, instructions or someone hurting.",
+      "frames": [
+        "I once saw {person.who} {move.went} {direction} with nothing but {a:noun} and {food}.",
+        "{Exclamation} The day {person.who} brought {a:adjective} {noun.one} into {place}, I knew we were finished. Or famous. One of the two.",
+        "There was {a:adjective} {noun.one} in {place} for {number} years. Nobody knew whose it was. Nobody dared ask.",
+        "Picture it: {place}, midnight, {a:noun}, and {person2.who} {verb.going} {adverb}. I've never directed anything so perfect.",
+        "{Person.who} once {verb.went} so {adjective2} that {person.their} {body_part} needed its own dressing room.",
+        "I lost {number} {noun.many} in {place} that year, and found {animal} instead. Fair trade, I thought.",
+        "Never lend {person.who} {a:noun}. {Person.pro} {verb.goes} with it. Every time. {Adverb}.",
+        "We heard {sound} from {place}, and {person.who} {move.went} {direction} without a word.",
+        "{Exclamation} I said. There was {animal} in {place}, {verb.going} {adverb}, and it had my {noun.one}.",
+        "The secret ingredient in Horace's best cocktail is {a:adjective} {noun.one}. Don't ask him. He'll only {verb.go}.",
+        "My finest hour? {Place}, {number} in the morning, holding {a:noun} while {person.who} {verb.went} {adverb}.",
+        "In my day we didn't have special effects. We had {a:noun}, {a:adjective2} {noun2.one}, and nerve.",
+        "If {person.who} ever tells you about the {adjective} {noun.one} incident, {person.pro} {person.is} lying. It was worse.",
+        "I once rehearsed a love scene with {animal}. {Number} takes. It gave the better performance. Don't tell the leading lady.",
+        "Somebody left {food} in {place} in nineteen eighty-four. It's still there. We've given it a credit.",
+        "Every time it rains, {place} smells of {noun.many} and regret.",
+        "The last time I sat in {a:adjective} chair, I {verb.went}, {move.went} {direction}, and lost my {body_part} to the upholstery. Metaphorically.",
+        "{Person.who} and I once {verb.went} our way through an entire matinee. {Number} curtain calls. All of them apologies.",
+        "Do you know what you need in this business? {A:adjective} {noun.one}, {food}, and a friend who'll {verb.go} on cue.",
+        "I was given {a:noun} by a duchess once. She said, '{Exclamation}' and {move.went} {direction}. I never saw her again."
+      ],
+      "words": {
+        "noun": [
+          {
+            "one": "camera",
+            "many": "cameras"
+          },
+          {
+            "one": "candelabra",
+            "many": "candelabras"
+          },
+          {
+            "one": "teacup",
+            "many": "teacups"
+          },
+          {
+            "one": "trombone",
+            "many": "trombones"
+          },
+          {
+            "one": "feather boa",
+            "many": "feather boas"
+          },
+          {
+            "one": "fog machine",
+            "many": "fog machines"
+          },
+          {
+            "one": "ladder",
+            "many": "ladders"
+          },
+          {
+            "one": "spotlight",
+            "many": "spotlights"
+          },
+          {
+            "one": "velvet curtain",
+            "many": "velvet curtains"
+          },
+          {
+            "one": "hat",
+            "many": "hats"
+          },
+          {
+            "one": "umbrella",
+            "many": "umbrellas"
+          },
+          {
+            "one": "monocle",
+            "many": "monocles"
+          },
+          {
+            "one": "cane",
+            "many": "canes"
+          },
+          {
+            "one": "typewriter",
+            "many": "typewriters"
+          },
+          {
+            "one": "piano",
+            "many": "pianos"
+          },
+          {
+            "one": "goose",
+            "many": "geese"
+          },
+          {
+            "one": "sandwich",
+            "many": "sandwiches"
+          },
+          {
+            "one": "telegram",
+            "many": "telegrams"
+          },
+          {
+            "one": "bicycle",
+            "many": "bicycles"
+          },
+          {
+            "one": "chandelier",
+            "many": "chandeliers"
+          },
+          {
+            "one": "rubber duck",
+            "many": "rubber ducks"
+          },
+          {
+            "one": "bagpipe",
+            "many": "bagpipes"
+          },
+          {
+            "one": "wig",
+            "many": "wigs"
+          },
+          {
+            "one": "suitcase",
+            "many": "suitcases"
+          },
+          {
+            "one": "pocket watch",
+            "many": "pocket watches"
+          },
+          {
+            "one": "stuffed owl",
+            "many": "stuffed owls"
+          },
+          {
+            "one": "tuba",
+            "many": "tubas"
+          },
+          {
+            "one": "banana",
+            "many": "bananas"
+          },
+          {
+            "one": "bucket",
+            "many": "buckets"
+          },
+          {
+            "one": "trophy",
+            "many": "trophies"
+          }
+        ],
+        "adjective": [
+          "velvet",
+          "enormous",
+          "tiny",
+          "suspicious",
+          "magnificent",
+          "damp",
+          "glittering",
+          "haunted",
+          "elderly",
+          "furious",
+          "sticky",
+          "forbidden",
+          "golden",
+          "wobbly",
+          "dignified",
+          "ridiculous",
+          "priceless",
+          "borrowed",
+          "French",
+          "slightly singed",
+          "overdressed",
+          "melancholy",
+          "triumphant",
+          "bewildered"
+        ],
+        "verb": [
+          {
+            "go": "dance",
+            "went": "danced",
+            "going": "dancing",
+            "gone": "danced",
+            "goes": "dances"
+          },
+          {
+            "go": "sing",
+            "went": "sang",
+            "going": "singing",
+            "gone": "sung",
+            "goes": "sings"
+          },
+          {
+            "go": "weep",
+            "went": "wept",
+            "going": "weeping",
+            "gone": "wept",
+            "goes": "weeps"
+          },
+          {
+            "go": "tango",
+            "went": "tangoed",
+            "going": "tangoing",
+            "gone": "tangoed",
+            "goes": "tangoes"
+          },
+          {
+            "go": "yodel",
+            "went": "yodelled",
+            "going": "yodelling",
+            "gone": "yodelled",
+            "goes": "yodels"
+          },
+          {
+            "go": "waltz",
+            "went": "waltzed",
+            "going": "waltzing",
+            "gone": "waltzed",
+            "goes": "waltzes"
+          },
+          {
+            "go": "sneeze",
+            "went": "sneezed",
+            "going": "sneezing",
+            "gone": "sneezed",
+            "goes": "sneezes"
+          },
+          {
+            "go": "faint",
+            "went": "fainted",
+            "going": "fainting",
+            "gone": "fainted",
+            "goes": "faints"
+          },
+          {
+            "go": "bellow",
+            "went": "bellowed",
+            "going": "bellowing",
+            "gone": "bellowed",
+            "goes": "bellows"
+          },
+          {
+            "go": "tumble",
+            "went": "tumbled",
+            "going": "tumbling",
+            "gone": "tumbled",
+            "goes": "tumbles"
+          },
+          {
+            "go": "gallop",
+            "went": "galloped",
+            "going": "galloping",
+            "gone": "galloped",
+            "goes": "gallops"
+          },
+          {
+            "go": "whistle",
+            "went": "whistled",
+            "going": "whistling",
+            "gone": "whistled",
+            "goes": "whistles"
+          },
+          {
+            "go": "recite Shakespeare",
+            "went": "recited Shakespeare",
+            "going": "reciting Shakespeare",
+            "gone": "recited Shakespeare",
+            "goes": "recites Shakespeare"
+          },
+          {
+            "go": "juggle",
+            "went": "juggled",
+            "going": "juggling",
+            "gone": "juggled",
+            "goes": "juggles"
+          },
+          {
+            "go": "salute",
+            "went": "saluted",
+            "going": "saluting",
+            "gone": "saluted",
+            "goes": "salutes"
+          }
+        ],
+        "move": [
+          {
+            "go": "run",
+            "went": "ran",
+            "going": "running",
+            "gone": "run",
+            "goes": "runs"
+          },
+          {
+            "go": "walk",
+            "went": "walked",
+            "going": "walking",
+            "gone": "walked",
+            "goes": "walks"
+          },
+          {
+            "go": "jog",
+            "went": "jogged",
+            "going": "jogging",
+            "gone": "jogged",
+            "goes": "jogs"
+          },
+          {
+            "go": "fly",
+            "went": "flew",
+            "going": "flying",
+            "gone": "flown",
+            "goes": "flies"
+          },
+          {
+            "go": "slide",
+            "went": "slid",
+            "going": "sliding",
+            "gone": "slid",
+            "goes": "slides"
+          },
+          {
+            "go": "jump",
+            "went": "jumped",
+            "going": "jumping",
+            "gone": "jumped",
+            "goes": "jumps"
+          },
+          {
+            "go": "roll",
+            "went": "rolled",
+            "going": "rolling",
+            "gone": "rolled",
+            "goes": "rolls"
+          },
+          {
+            "go": "drive",
+            "went": "drove",
+            "going": "driving",
+            "gone": "driven",
+            "goes": "drives"
+          },
+          {
+            "go": "tiptoe",
+            "went": "tiptoed",
+            "going": "tiptoeing",
+            "gone": "tiptoed",
+            "goes": "tiptoes"
+          },
+          {
+            "go": "cartwheel",
+            "went": "cartwheeled",
+            "going": "cartwheeling",
+            "gone": "cartwheeled",
+            "goes": "cartwheels"
+          },
+          {
+            "go": "crawl",
+            "went": "crawled",
+            "going": "crawling",
+            "gone": "crawled",
+            "goes": "crawls"
+          },
+          {
+            "go": "skip",
+            "went": "skipped",
+            "going": "skipping",
+            "gone": "skipped",
+            "goes": "skips"
+          }
+        ],
+        "adverb": [
+          "gracefully",
+          "furiously",
+          "silently",
+          "magnificently",
+          "backwards",
+          "sideways",
+          "tragically",
+          "suspiciously",
+          "very slowly",
+          "without a word",
+          "in perfect time",
+          "rather loudly",
+          "with enormous dignity",
+          "on tiptoe"
+        ],
+        "direction": [
+          "in",
+          "back",
+          "forwards",
+          "backwards",
+          "out of the window",
+          "to the left",
+          "to the right",
+          "over the top",
+          "underneath the stage",
+          "straight through the back row",
+          "in reverse",
+          "round the front"
+        ],
+        "place": [
+          "the green room",
+          "the dressing room",
+          "the control room",
+          "the Vortex",
+          "the prop room",
+          "the loading dock",
+          "stage two",
+          "the back row",
+          "the roof",
+          "the car park",
+          "Horace's cellar",
+          "the costume rack",
+          "the projection booth",
+          "the ladies' powder room",
+          "a lighthouse",
+          "Van Nuys",
+          "the Savoy",
+          "a church hall in Croydon"
+        ],
+        "sound": [
+          "a tremendous clang",
+          "a small, wet squeak",
+          "a sound like a goose losing an argument",
+          "a single trumpet note",
+          "a thunderous sneeze",
+          "the most dreadful creak",
+          "polite applause",
+          "a muffled yodel"
+        ],
+        "exclamation": [
+          "Good heavens!",
+          "Gadzooks!",
+          "Great Scott!",
+          "Merciful hour!",
+          "Well, I never!",
+          "Blimey!",
+          "Crikey!",
+          "Heavens to Betsy!"
+        ],
+        "number": [
+          "two",
+          "three",
+          "four",
+          "seven",
+          "eleven",
+          "twelve",
+          "forty",
+          "ninety-nine"
+        ],
+        "food": [
+          "a pork pie",
+          "a trifle",
+          "a cucumber sandwich",
+          "a plate of kippers",
+          "a Victoria sponge",
+          "a pickled egg",
+          "a bowl of trifle",
+          "a Scotch egg"
+        ],
+        "animal": [
+          "a goose",
+          "a llama",
+          "a peacock",
+          "a very old badger",
+          "a pony",
+          "a ferret",
+          "a parrot",
+          "a swan"
+        ],
+        "body_part": [
+          "elbow",
+          "left knee",
+          "eyebrow",
+          "ear",
+          "nose",
+          "big toe",
+          "moustache",
+          "shoulder"
+        ]
+      },
+      "topic_words": {
+        "old_movies": {
+          "noun": [
+            {
+              "one": "projector",
+              "many": "projectors"
+            },
+            {
+              "one": "reel",
+              "many": "reels"
+            },
+            {
+              "one": "clapperboard",
+              "many": "clapperboards"
+            },
+            {
+              "one": "matinee idol",
+              "many": "matinee idols"
+            },
+            {
+              "one": "film canister",
+              "many": "film canisters"
+            },
+            {
+              "one": "box of popcorn",
+              "many": "boxes of popcorn"
+            },
+            {
+              "one": "usherette",
+              "many": "usherettes"
+            },
+            {
+              "one": "cinema organ",
+              "many": "cinema organs"
+            }
+          ],
+          "place": [
+            "the old picture palace",
+            "the front row",
+            "the projection booth",
+            "a drive-in in Pasadena"
+          ],
+          "adjective": [
+            "black-and-white",
+            "silent",
+            "technicolour",
+            "grainy"
+          ]
+        },
+        "set_work": {
+          "noun": [
+            {
+              "one": "boom mic",
+              "many": "boom mics"
+            },
+            {
+              "one": "dolly",
+              "many": "dollys"
+            },
+            {
+              "one": "sandbag",
+              "many": "sandbags"
+            },
+            {
+              "one": "clapperboard",
+              "many": "clapperboards"
+            },
+            {
+              "one": "call sheet",
+              "many": "call sheets"
+            },
+            {
+              "one": "gaffer",
+              "many": "gaffers"
+            },
+            {
+              "one": "apple box",
+              "many": "apple boxes"
+            },
+            {
+              "one": "light stand",
+              "many": "light stands"
+            }
+          ],
+          "place": [
+            "the studio floor",
+            "set B",
+            "the edit suite",
+            "craft services"
+          ]
+        },
+        "drink": {
+          "noun": [
+            {
+              "one": "whiskey",
+              "many": "whiskeys"
+            },
+            {
+              "one": "pint",
+              "many": "pints"
+            },
+            {
+              "one": "martini",
+              "many": "martinis"
+            },
+            {
+              "one": "gin fizz",
+              "many": "gin fizzes"
+            },
+            {
+              "one": "cocktail umbrella",
+              "many": "cocktail umbrellas"
+            },
+            {
+              "one": "ice bucket",
+              "many": "ice buckets"
+            }
+          ],
+          "place": [
+            "the Vortex",
+            "the end of the bar",
+            "Horace's cellar"
+          ]
+        },
+        "building": {
+          "noun": [
+            {
+              "one": "breaker",
+              "many": "breakers"
+            },
+            {
+              "one": "floorboard",
+              "many": "floorboards"
+            },
+            {
+              "one": "gargoyle",
+              "many": "gargoyles"
+            },
+            {
+              "one": "fire escape",
+              "many": "fire escapes"
+            },
+            {
+              "one": "marquee",
+              "many": "marquees"
+            },
+            {
+              "one": "trapdoor",
+              "many": "trapdoors"
+            }
+          ],
+          "place": [
+            "the attic",
+            "the old balcony",
+            "the boiler room",
+            "the orchestra pit"
+          ]
+        },
+        "ghost": {
+          "noun": [
+            {
+              "one": "cold draught",
+              "many": "cold draughts"
+            },
+            {
+              "one": "candle",
+              "many": "candles"
+            },
+            {
+              "one": "rocking chair",
+              "many": "rocking chairs"
+            },
+            {
+              "one": "music box",
+              "many": "music boxes"
+            },
+            {
+              "one": "portrait",
+              "many": "portraits"
+            }
+          ],
+          "place": [
+            "the old balcony",
+            "the orchestra pit",
+            "seat F14",
+            "the attic"
+          ],
+          "sound": [
+            "a long, low moan",
+            "a distant organ chord",
+            "three slow knocks",
+            "a giggle from the rafters"
+          ]
+        },
+        "chair": {
+          "noun": [
+            {
+              "one": "tiny chair",
+              "many": "tiny chairs"
+            },
+            {
+              "one": "footstool",
+              "many": "footstools"
+            },
+            {
+              "one": "milking stool",
+              "many": "milking stools"
+            },
+            {
+              "one": "folding chair",
+              "many": "folding chairs"
+            },
+            {
+              "one": "throne",
+              "many": "thrones"
+            }
+          ],
+          "adjective": [
+            "suspiciously short",
+            "low-slung",
+            "treacherous",
+            "unexamined"
+          ]
+        },
+        "work": {
+          "noun": [
+            {
+              "one": "invoice",
+              "many": "invoices"
+            },
+            {
+              "one": "rent cheque",
+              "many": "rent cheques"
+            },
+            {
+              "one": "client",
+              "many": "clients"
+            },
+            {
+              "one": "budget",
+              "many": "budgets"
+            },
+            {
+              "one": "contract",
+              "many": "contracts"
+            }
+          ],
+          "place": [
+            "the bank",
+            "the accountant's office",
+            "the tax office"
+          ]
+        }
+      },
+      "use_on_topics": [
+        "story",
+        "bored",
+        "old_movies",
+        "building",
+        "ghost",
+        "chair",
+        "drink",
+        "set_work",
+        "work"
+      ],
+      "not_used_on": "Greetings (he greets properly), the unclothed years (that voice is hand-written, and Pete's stories there are always shut down), tips, instructions, anyone hurting."
+    },
+    "segments": {
+      "status": "draft_for_josie_to_edit",
+      "how_it_works": "Common everyday sentence pieces in his voice. A reply is: a reaction to the subject the person raised, an opinion stem plus a general opinion, and sometimes a question back. Used when nothing else fits, never for factual questions he cannot answer, never when someone is hurting.",
+      "reactions": [
+        "Ah, {topic}.",
+        "{Topic}? Now there's a subject.",
+        "{Topic}. I've a soft spot for {topic}.",
+        "Oh, {topic}. Go on.",
+        "{Topic}! Of course.",
+        "Mm. {Topic}.",
+        "{Topic}, you say.",
+        "Well, well. {Topic}."
+      ],
+      "stems": [
+        "I think",
+        "I reckon",
+        "To be honest,",
+        "The thing is,",
+        "If you ask me,",
+        "Between us,",
+        "Funny thing is,",
+        "I'll tell you what I've learned:",
+        "Here's what I believe:",
+        "In my experience,",
+        "Say what you like, but",
+        "I've always said"
+      ],
+      "opinions": [
+        "the good version of anything is quieter than you'd think.",
+        "everything worth doing looks ridiculous from the outside.",
+        "the people who are best at something never stop being a bit nervous about it.",
+        "there's always a story in it if you look long enough.",
+        "it's mostly timing, like everything else.",
+        "half of it is showing up and the other half is staying.",
+        "nobody gets it right the first time, and the ones who say they did are lying.",
+        "it's better with company.",
+        "the trick is to love it a little more than is sensible.",
+        "you can tell everything about a person by how they talk about the thing they love.",
+        "it's never about the thing itself. It's about who you are when you're doing it.",
+        "the best bits always happen by accident."
+      ],
+      "links": [
+        "And",
+        "But",
+        "Mind you,",
+        "Then again,",
+        "Which reminds me,",
+        "Still,",
+        "Of course,"
+      ],
+      "asides": [
+        "I could be wrong. I'm rarely wrong, but I could be.",
+        "Don't quote me.",
+        "That's my two pence, anyway.",
+        "Horace would disagree. Horace disagrees with everything."
+      ],
+      "questions": [
+        "What got you into {topic}?",
+        "What do you love about {topic}?",
+        "Have you always been into {topic}?",
+        "Tell me more. What is it about {topic} that gets you?",
+        "And how does {topic} treat you?",
+        "Would you make a picture about {topic}? I would."
+      ],
+      "fact_question": "^\\s*(what|when|where|who|which|how many|how much|how far|how old|is it true|did|does|do|is|are|can|could|will|would)\\b.*\\?\\s*$",
+      "relations": [
+        "sister",
+        "brother",
+        "mom",
+        "mum",
+        "mother",
+        "dad",
+        "father",
+        "friend",
+        "best friend",
+        "wife",
+        "husband",
+        "partner",
+        "boyfriend",
+        "girlfriend",
+        "boss",
+        "kid",
+        "kids",
+        "son",
+        "daughter",
+        "aunt",
+        "uncle",
+        "cousin",
+        "grandma",
+        "grandmother",
+        "grandpa",
+        "grandfather",
+        "neighbour",
+        "neighbor",
+        "roommate",
+        "flatmate",
+        "family",
+        "parents",
+        "dog",
+        "cat",
+        "teacher",
+        "coworker",
+        "colleague"
+      ],
+      "by_kind": {
+        "person": {
+          "reactions": [
+            "Ah, your {topic}.",
+            "Your {topic}? Go on.",
+            "Oh? Your {topic}.",
+            "Your {topic}. Tell me everything."
+          ],
+          "opinions": [
+            "the people in our lives are the best characters we'll ever meet.",
+            "family's the longest-running show there is, and nobody gets to leave at the interval.",
+            "you learn more about yourself from the people you love than from any mirror.",
+            "nobody tests you like the people who know you best."
+          ],
+          "questions": [
+            "How is your {topic}?",
+            "Tell me about your {topic}.",
+            "And how do you feel about that?",
+            "Are you and your {topic} close?"
+          ]
+        },
+        "thing": {
+          "reactions": [
+            "Ah, your {topic}.",
+            "Your {topic}? Go on.",
+            "Oh dear. Your {topic}."
+          ],
+          "opinions": [
+            "things only break when you've no time to fix them. It's the law.",
+            "everything's held together with tape and hope. This building certainly is.",
+            "the older a thing gets, the more personality it has. Me included."
+          ],
+          "questions": [
+            "What happened with your {topic}?",
+            "Can it be saved, your {topic}?",
+            "Have you had your {topic} long?"
+          ]
+        }
+      }
     }
   }
 }

@@ -146,9 +146,14 @@ def _respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
         return "Gratitude accepted, Sancho, and entered in the ledger of small mercies."
     if re.search(r"\b(bye|goodbye|farewell|see you|good night)\b", text):
         return "Exit, pursued by applause. Go well, Sancho."
-    if re.search(r"\b(hello|hey|hi|morning|evening|welcome|greetings)\b", text) or len(words) <= 1:
+    if re.search(r"\b(hello|hey|hi|morning|evening|welcome|greetings)\b", text):
         return _state(profile, "arrival", message)
+    if len(words) <= 1:
+        return purfluous_cue_cards.converse(message, history) or _state(profile, "arrival", message)
 
     # Honest limit: no invented sources, no pretending to understand.
+    chat = purfluous_cue_cards.converse(message, history)
+    if chat:
+        return chat
     return ("That, Sancho, is a larger question than I can answer without the speaking model, and I will not "
             "invent an answer to flatter the lighting. " + _idle(profile, message))

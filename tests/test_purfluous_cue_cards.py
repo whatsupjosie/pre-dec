@@ -195,3 +195,50 @@ def test_a_fresh_story_never_starts_with_a_bare_pronoun():
         names = [p["who"].lower() for p in kit["people"] if p["who"] not in ("he", "she", "they")]
         assert any(n in line.lower() for n in names), line          # the subject is named
         assert line.split()[0].lower() not in ("he", "she", "they"), line
+
+
+def test_madlibs_fill_every_blank_with_correct_grammar():
+    import hashlib, re as _re
+    from modules.purfluous_cue_cards import reload, _load, _madlib_line
+    reload()
+    deck = _load()
+    for topic in deck["madlib"]["use_on_topics"]:
+        for i in range(150):
+            line = _madlib_line(deck, topic, hashlib.sha256(f"{topic}{i}".encode()).digest(), "")
+            assert line, topic
+            t = line["text"]
+            assert "{" not in t and t[:1].isupper(), t
+            assert not _re.search(r"\ba [aeiou]", t.replace("a one", "")), t     # a/an agree
+            assert not _re.search(r"\ban [b-df-hj-np-tv-z]", t.replace("an hour", "").replace("an honest", "")), t
+            assert "they was" not in t.lower() and "crew was" not in t.lower(), t
+
+
+def test_madlibs_never_used_for_tips_or_hurt():
+    deck = json.loads(Path("data/characters/sir_purfluous.json").read_text(encoding="utf-8"))["cue_cards"]["madlib"]
+    for banned in ("acting_basics", "podcast", "pubcast_how", "camera_acting", "voice_nerves"):
+        assert banned not in deck["use_on_topics"]
+
+
+def test_everyday_talk_echoes_the_subject():
+    from modules.purfluous_cue_cards import reload, extract_topic, converse
+    reload()
+    assert extract_topic("my sister is visiting next week") == ("sister", "person")
+    assert extract_topic("my car broke down again") == ("car", "thing")
+    assert extract_topic("I went fishing yesterday") == ("fishing", "interest")
+    assert extract_topic("I've been learning to knit")[0] == "learning to knit"
+    out = converse("my sister is visiting next week")
+    assert "your sister" in out.lower() and "what got you into" not in out.lower()
+    assert "fishing" in converse("I went fishing yesterday").lower()
+
+
+def test_everyday_talk_never_answers_facts_or_hurt():
+    from modules.purfluous_cue_cards import converse
+    assert converse("what's the capital of Mongolia?") is None
+    assert converse("is it going to rain tomorrow?") is None
+    assert converse("my dog died last week") is None
+    assert "will not invent" in respond("what's the capital of Mongolia?").lower()
+
+
+def test_madlibs_stay_off_greetings_and_the_unclothed_years():
+    deck = json.loads(Path("data/characters/sir_purfluous.json").read_text(encoding="utf-8"))["cue_cards"]["madlib"]
+    assert "greeting" not in deck["use_on_topics"] and "the_unclothed_years" not in deck["use_on_topics"]
