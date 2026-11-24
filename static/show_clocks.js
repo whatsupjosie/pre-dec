@@ -99,6 +99,7 @@
     });
     svg.setAttribute("viewBox", "0 0 " + x + " " + height);
     var totalWidth = x;
+    var shown; /* last text drawn; repainting the same text is skipped (this runs every animation frame) */
 
     function lit(cell, chars) {
       for (var s in cell.segs) cell.segs[s].setAttribute("opacity", chars.indexOf(s) >= 0 ? "1" : String(UNLIT_OPACITY));
@@ -109,10 +110,15 @@
       height: height,
       /* text like "-00:23:49:12", or null for dark (unknown) */
       set: function (text) {
+        if (text === undefined) text = null;
+        if (text === shown) return;
+        shown = text;
+        /* The drawn time as text, for screen readers and for tests that check what is on screen. */
+        svg.setAttribute("data-time", text === null ? "" : text);
         var digitCells = cells.filter(function (c) { return c.kind === "digit"; });
         var signCell = cells.filter(function (c) { return c.kind === "sign"; })[0];
         var colons = cells.filter(function (c) { return c.kind === "colon"; });
-        if (text === null || text === undefined) {
+        if (text === null) {
           digitCells.forEach(function (c) { lit(c, ""); });
           lit(signCell, "");
           colons.forEach(function (c) { c.els.forEach(function (e) { e.setAttribute("opacity", String(UNLIT_OPACITY)); }); });
@@ -151,7 +157,8 @@
     box.style.cssText = "position:fixed;right:10px;bottom:10px;z-index:2147483000;background:" + PANEL +
       ";border:1px solid #26302d;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:5px;" +
       "font:600 10px/1 Consolas,'Courier New',monospace;letter-spacing:1px;color:#9aa5a1;user-select:none;" +
-      "box-shadow:0 2px 10px rgba(0,0,0,.5)";
+      "box-shadow:0 2px 10px rgba(0,0,0,.5);pointer-events:none";
+    /* The panel never takes clicks meant for the page under it; only the colour dots do. */
 
     var rows = {};
     ["top", "bottom"].forEach(function (row) {
@@ -170,8 +177,9 @@
         b.type = "button";
         b.title = LABELS[row] + " clock: " + name;
         b.setAttribute("aria-label", LABELS[row] + " clock " + name);
-        b.style.cssText = "all:unset;box-sizing:border-box;width:7px;height:7px;border-radius:50%;cursor:pointer;background:" +
-          COLORS[name] + ";opacity:.35";
+        b.style.cssText = "all:unset;box-sizing:border-box;width:7px;height:7px;border-radius:50%;cursor:pointer;" +
+          "pointer-events:auto;background:" + COLORS[name] + ";opacity:.35";
+        b.setAttribute("data-color", name);
         b.addEventListener("click", function () {
           state.name = name; saveColor(row, name); apply();
         });
@@ -183,6 +191,8 @@
         COLOR_ORDER.forEach(function (n) { state.buttons[n].style.opacity = n === state.name ? "1" : ".35"; });
       }
       apply();
+      line.setAttribute("data-clock", row);
+      face.svg.setAttribute("data-clock-face", row);
       line.appendChild(label); line.appendChild(face.svg); line.appendChild(swatches);
       box.appendChild(line);
       rows[row] = { line: line, face: face };
