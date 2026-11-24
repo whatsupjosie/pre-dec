@@ -95,6 +95,10 @@ def _respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
         composed = purfluous_cue_cards.compose(message, history)
         if composed:
             return composed
+    if purfluous_cue_cards.priority_topic(message):
+        composed = purfluous_cue_cards.compose(message, history)
+        if composed:
+            return composed
     social = offline_brain.match_intent("sir_purfluous", message)
     if social:
         if social not in _KEEP_INTENT:

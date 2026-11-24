@@ -55,7 +55,15 @@ def _load(path: str = str(DECK_PATH)) -> Mapping:
     for intent in data.get("intents", []):
         raw.setdefault(intent.get("id", ""), intent.get("patterns", []))
     topics = {name: [re.compile(p, re.IGNORECASE) for p in pats] for name, pats in raw.items() if name}
-    return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {}))}
+    return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {})),
+            "priority": list(deck.get("priority_topics", []))}
+
+
+def priority_topic(message: str) -> Optional[str]:
+    """A topic that outranks everything else when it is raised (the Scottish play,
+    his unclothed years). The runtime answers these from the cards first."""
+    topics, _mood = read(message) if isinstance(message, str) and message.strip() else ([], "")
+    return next((t for t in _load()["priority"] if t in topics), None)
 
 
 def reload() -> None:
@@ -228,6 +236,9 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         return {"topics": topics, "mood": mood, "cards": [card]}
 
     spoken = [t for t in topics if t not in ("celebrate", "setback")] or [t for t in topics]
+    first = next((t for t in _load()["priority"] if t in spoken), None)
+    if first:
+        spoken = [first]
     beats = []
     if mood in ("celebrate", "setback"):  # a win or a stumble outranks the subject it happened in
         beats = [c for c in cards if c["kind"] == "beat" and mood in c["topics"]]

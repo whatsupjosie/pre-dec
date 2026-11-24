@@ -372,6 +372,9 @@
       ],
       "waiting_room": [
         "\\b(waiting ?room|let in|get in|admission)\\b"
+      ],
+      "the_unclothed_years": [
+        "\\b(porn|porno|pornography|adult (films?|movies?|industry)|x-?rated|smut|blue movies?|skin flicks?|dirty movies?|what (did|do) you (used to )?(make|shoot|film)|your old (films?|movies?|pictures)|the (unclothed|undressed) years)\\b"
       ]
     },
     "cards": [
@@ -3812,8 +3815,313 @@
           "setback"
         ],
         "text": "Back to work, before Pete notices."
+      },
+      {
+        "id": "unclothed_01",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "So I said, madam, if you can't get your bosom out of the way, then I don't know how I'm ever going to be able to shoot your face. Well, she didn't take kindly to that.",
+        "author": "Josie",
+        "solo": true
+      },
+      {
+        "id": "unclothed_02",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "We don't call them that. We call them the unclothed years. Or, when Horace is listening, the documentaries."
+      },
+      {
+        "id": "unclothed_03",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I directed several pictures in which the costume budget was, shall we say, aspirational."
+      },
+      {
+        "id": "unclothed_04",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The trouble with that sort of picture, dear boy, is continuity. One moment a gentleman's wearing a sock, the next he isn't, and nobody on the crew will admit to having seen anything."
+      },
+      {
+        "id": "unclothed_05",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I once asked a leading man to give me a little more motivation. He gave me a great deal more of something, and none of it was motivation."
+      },
+      {
+        "id": "unclothed_06",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "One learns to light everything. Absolutely everything. From angles the Royal Shakespeare Company never prepared me for."
+      },
+      {
+        "id": "unclothed_07",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The scripts were brief. Mercifully brief. One of them was a napkin, and the napkin had more character development than the film."
+      },
+      {
+        "id": "unclothed_08",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "My finest piece of direction in that era was 'Could we try it again, but with feeling, and perhaps facing the window?'"
+      },
+      {
+        "id": "unclothed_09",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "There was a plumber character in nearly every one. To this day I cannot hire a real plumber without blushing to the ears."
+      },
+      {
+        "id": "unclothed_10",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I insisted on a tea break at four o'clock sharp. Everyone in a dressing gown, cups and saucers, discussing the weather. Most civilised set in Hollywood."
+      },
+      {
+        "id": "unclothed_11",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Blocking was a nightmare. Not where to stand, you understand. Where to put one's elbows."
+      },
+      {
+        "id": "unclothed_12",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I'm told the dialogue in my pictures was the best in the business. I'm also told nobody has ever listened to it."
+      },
+      {
+        "id": "unclothed_13",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "We had a chap whose only job was to hold a fan and say 'Golly.' Union rates. Lovely fellow."
+      },
+      {
+        "id": "unclothed_14",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I gave notes like a gentleman. 'Darling, that was very brave, very committed, and could we have slightly less of it in the second half.'"
+      },
+      {
+        "id": "unclothed_15",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The sound man quit after three days. He said it wasn't the work, it was the acoustics."
+      },
+      {
+        "id": "unclothed_16",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "You'd be amazed what a good dolly shot can do for a scene with no plot whatsoever."
+      },
+      {
+        "id": "unclothed_17",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I won an award once. It was shaped like something. I keep it in a drawer, facing the wall, out of respect for the furniture."
+      },
+      {
+        "id": "unclothed_18",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "My mother asked what I did for a living. I told her I made nature films. Which, in fairness, was not entirely a lie."
+      },
+      {
+        "id": "unclothed_19",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "One actress asked for her motivation. I said, 'Rent, darling. Same as mine.' We got on famously after that."
+      },
+      {
+        "id": "unclothed_20",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "People think it's all glamour. It's mostly towels. So many towels. I've folded more towels than the Savoy."
+      },
+      {
+        "id": "unclothed_21",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I'm not proud of it. I'm not ashamed of it either. It kept the lights on, and it taught me where to put a light. Mostly the second part."
+      },
+      {
+        "id": "unclothed_22",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "There was a scene with a pizza delivery. The pizza was the only professional on set. Arrived on time, hit its mark, stayed hot."
+      },
+      {
+        "id": "unclothed_23",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "We never said the word on set. Too vulgar. We said 'the scene in question.' Every scene was the scene in question."
       }
     ],
-    "notes": "Cards marked verify:true describe how PubCast works and need Josie's check before release."
+    "notes": "Cards marked verify:true describe how PubCast works and need Josie's check before release. Cards on the unclothed years come up only when someone raises that subject; they are never idle lines.",
+    "priority_topics": [
+      "the_unclothed_years",
+      "scottish_play"
+    ]
   }
 }

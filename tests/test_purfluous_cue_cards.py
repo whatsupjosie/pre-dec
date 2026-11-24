@@ -113,3 +113,25 @@ def test_josies_speech_keeps_its_sancho():
 def test_pubcast_cards_are_marked_for_josie_to_check():
     pc = [c for c in DECK["cards"] if "pubcast_how" in c["topics"]]
     assert pc and all(c.get("verify") for c in pc)
+
+
+def test_unclothed_years_answer_when_raised():
+    from modules.purfluous_cue_cards import reload
+    reload()
+    texts = {cc._fill(c["text"], DECK["slots"], sancho=False) for c in DECK["cards"] if "the_unclothed_years" in c["topics"]}
+    for msg in ("so you used to make porn?", "what was it like directing adult movies?", "were the x-rated films hard to light?"):
+        out = respond(msg)
+        assert any(t in out for t in texts), (msg, out)
+
+
+def test_unclothed_years_never_come_up_unasked():
+    for msg in ("tell me about the old days", "I love old movies", "how should I light this scene", "hello"):
+        out = respond(msg)
+        assert "tea break" not in out and "unclothed" not in out.lower()
+
+
+def test_josies_bosom_line_is_verbatim_and_stands_alone():
+    card = next(c for c in DECK["cards"] if c.get("author") == "Josie" and "the_unclothed_years" in c["topics"])
+    assert card["text"] == ("So I said, madam, if you can't get your bosom out of the way, then I don't know how "
+                            "I'm ever going to be able to shoot your face. Well, she didn't take kindly to that.")
+    assert card.get("solo") is True
