@@ -21,7 +21,8 @@ def test_josie_lines_are_verbatim():
 
 def test_composes_from_topic_cards():
     out = respond("is that chair safe to sit in?")
-    assert any(w in out.lower() for w in ("chair", "inch"))
+    chair_lines = [cc._fill(c["text"], DECK["slots"], sancho=False) for c in DECK["cards"] if "chair" in c["topics"]]
+    assert any(line in out for line in chair_lines), out
 
 
 def test_scottish_play_ritual():
@@ -80,3 +81,35 @@ def test_crisis_resource_cards_are_never_his():
         out = respond(msg)
         for banned in ("988", "RAINN", "safe right now", "Lifeline"):
             assert banned not in out, (msg, out)
+
+
+def test_sancho_is_rationed():
+    hist, said = [], []
+    for msg in ["hello", "nice suit", "what are you drinking", "is Horace around?", "tell me about the ghost",
+                "where's Pints?", "we nailed the take!", "I love old movies", "how do I act for camera?", "goodnight"]:
+        out = respond(msg, hist)
+        said.append("Sancho" in out)
+        hist += [{"speaker": "You", "text": msg}, {"speaker": "Sir Purfluous", "text": out}]
+    assert sum(said) <= 2, said
+    assert all(out.count("Sancho") <= 1 for out in (h["text"] for h in hist if h["speaker"] == "Sir Purfluous"))
+
+
+def test_grief_comes_before_studio_pets():
+    out = respond("my dog died last week")
+    assert "Pints" not in out and "Stage Door Joe" not in out
+
+
+def test_macbeth_with_an_exclamation_is_still_the_scottish_play():
+    out = respond("Break a leg in Macbeth tonight!").lower()
+    assert "scottish play" in out or "spit" in out
+
+
+def test_josies_speech_keeps_its_sancho():
+    from modules.sir_purfluous_character_profile import MONOLOGUE_POOL
+    speech = next(m.text for m in MONOLOGUE_POOL if m.monologue_id == "m60_imagination")
+    assert speech.startswith("But you see, Sancho")
+
+
+def test_pubcast_cards_are_marked_for_josie_to_check():
+    pc = [c for c in DECK["cards"] if "pubcast_how" in c["topics"]]
+    assert pc and all(c.get("verify") for c in pc)

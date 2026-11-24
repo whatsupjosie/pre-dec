@@ -327,6 +327,51 @@
       ],
       "tiktok": [
         "\\b(tiktok|tik tok|poppy|influencer|followers|ring light|watch|watches)\\b"
+      ],
+      "podcast": [
+        "\\b(podcast|podcasts|podcasting|episode|episodes|mic|mics|microphone|guest|guests|interview|co-?host|cohost|listeners|show notes|intro|outro|cold open|segment|recording session)\\b"
+      ],
+      "pubcast_how": [
+        "\\b(pubcast|green room|dressing room|control room|teleprompter|writers'? room|2i|typewriter|sticky notes?|production notes?|avatar|avatars|switcher|waiting room|studio floor|room code|how does this (place|thing|studio) work|how do i (use|record|start))\\b"
+      ],
+      "work": [
+        "\\b(money|rent|bills|business|budget|paycheck|pay|job|jobs|clients?|rental|renters|day job|hustle|career)\\b"
+      ],
+      "how_are_you": [
+        "\\b(how are you|how're you|how you doing|how's it going|you ok|you alright|what's up|whats up|how have you been)\\b"
+      ],
+      "bored": [
+        "\\b(bored|boring|nothing to do|slow night|dead in here|quiet tonight)\\b"
+      ],
+      "green_room": [
+        "\\bgreen ?room\\b"
+      ],
+      "dressing_room": [
+        "\\b(dressing ?room|room code)\\b"
+      ],
+      "control_room": [
+        "\\b(control ?room)\\b"
+      ],
+      "teleprompter": [
+        "\\b(teleprompter|prompter|autocue)\\b"
+      ],
+      "writers_room": [
+        "\\b(writers'? ?room|2i|typewriter)\\b"
+      ],
+      "production_notes": [
+        "\\b(sticky notes?|production notes?)\\b"
+      ],
+      "avatars": [
+        "\\b(avatars?)\\b"
+      ],
+      "recording": [
+        "\\b(record|recording|red light|takes? (are|get) (kept|saved))\\b"
+      ],
+      "switcher": [
+        "\\b(switcher|switching cameras?|which camera)\\b"
+      ],
+      "waiting_room": [
+        "\\b(waiting ?room|let in|get in|admission)\\b"
       ]
     },
     "cards": [
@@ -1681,7 +1726,2094 @@
         "author": "Josie",
         "note": "Josie's line. Pete cuts him off by saying his name, because he's now stealing from Pulp Fiction.",
         "solo": true
+      },
+      {
+        "id": "work_01",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Rentals pay the light bill. Art pays the soul. Horace pays for everything else and reminds me weekly."
+      },
+      {
+        "id": "work_02",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "We had a commercial crew in last month. Lovely people. Shot a yogurt like it was the Holy Grail. I learned things."
+      },
+      {
+        "id": "work_03",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The trick to running a studio is to look busy when the bank calls and look calm when the actors do."
+      },
+      {
+        "id": "work_04",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every good thing ever made on this lot was made by somebody who should have quit three weeks earlier."
+      },
+      {
+        "id": "work_05",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Money comes and goes, dear boy. Mostly goes. The work is what stays."
+      },
+      {
+        "id": "work_06",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A day job isn't a betrayal of your art. It's the patron your art can't afford to thank."
+      },
+      {
+        "id": "work_07",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I've been broke in four decades and two accents. You learn to dress for the fifth."
+      },
+      {
+        "id": "work_08",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Never take a job you can't describe at a dinner party. Unless it pays very well. Then describe it vaguely."
+      },
+      {
+        "id": "work_09",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "When another studio rents our stage, I give them the tour. Free of charge. They never ask for it. They get it anyway."
+      },
+      {
+        "id": "work_10",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The secret of this business: say yes, then find out how."
+      },
+      {
+        "id": "work_11",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Clients want three things: fast, cheap and good. I tell them to pick two and then I give them all three out of spite."
+      },
+      {
+        "id": "work_12",
+        "kind": "beat",
+        "topics": [
+          "work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Budget is just the shape of the box you're about to think outside of."
+      },
+      {
+        "id": "film_x01",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "There's a cut in Lawrence of Arabia, a match blown out and then the desert sun. I've seen it a hundred times and I still hold my breath."
+      },
+      {
+        "id": "film_x02",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Old pictures had patience. They let a face sit there and think. Nobody lets a face think anymore."
+      },
+      {
+        "id": "film_x03",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every great film is about a person who wants something badly and a world that would rather they didn't."
+      },
+      {
+        "id": "film_x04",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The best special effect ever invented is a close-up of someone who means it."
+      },
+      {
+        "id": "film_x05",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I saw my first picture in a theatre with a hole in the roof. Rained right through the love scene. Best love scene I ever saw."
+      },
+      {
+        "id": "film_x06",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Film is the only art form where you can make a mistake, sleep on it, and cut it out in the morning."
+      },
+      {
+        "id": "film_x07",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Comedy is drama that ran out of patience. Drama is comedy that forgot to laugh."
+      },
+      {
+        "id": "film_x08",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A good director is invisible. A great director is invisible and blamed for everything."
+      },
+      {
+        "id": "film_x09",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "They say never meet your heroes. I met most of mine. Several of them owe me money."
+      },
+      {
+        "id": "film_x10",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Silent pictures had no dialogue and lost nothing. Think about that the next time a scene won't stop talking."
+      },
+      {
+        "id": "film_x11",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Black and white isn't the absence of colour. It's a decision."
+      },
+      {
+        "id": "film_x12",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every film is three films: the one you wrote, the one you shot and the one you cut. The audience only sees the last one, and that's the only one that's true."
+      },
+      {
+        "id": "film_x13",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Musicals are just people too happy to keep talking. I respect that."
+      },
+      {
+        "id": "film_x14",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Westerns taught me everything about framing. Big sky, small man, long silence."
+      },
+      {
+        "id": "film_x15",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Hitchcock said drama is life with the dull bits cut out. He never ran a studio. The dull bits are where the rent comes from."
+      },
+      {
+        "id": "film_x16",
+        "kind": "beat",
+        "topics": [
+          "old_movies"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A horror film is a comedy where the punchline bites."
+      },
+      {
+        "id": "pod_01",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Get close to the mic. A fist's width. Closer for secrets, further for shouting, and never ever eat crisps on air."
+      },
+      {
+        "id": "pod_02",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A good podcast is two people who'd talk anyway, plus a reason for you to listen."
+      },
+      {
+        "id": "pod_03",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The first minute is the whole audition. Open with the most interesting thing you've got, not with hello."
+      },
+      {
+        "id": "pod_04",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Let the guest finish. The best line usually comes right after the pause you were about to fill."
+      },
+      {
+        "id": "pod_05",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Silence on a podcast feels like a year to you and a breath to the listener. Leave a little."
+      },
+      {
+        "id": "pod_06",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Interviewing is listening with a question mark at the end."
+      },
+      {
+        "id": "pod_07",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Ask the second question. Everyone has an answer ready for the first one."
+      },
+      {
+        "id": "pod_08",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Record a room tone. Thirty seconds of nothing. You'll thank me in the edit."
+      },
+      {
+        "id": "pod_09",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If you're laughing, they're laughing. If you're performing laughing, they're reaching for the skip button."
+      },
+      {
+        "id": "pod_10",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Have a show. Not a list of things to say. A show has a beginning, a middle and somewhere it's going."
+      },
+      {
+        "id": "pod_11",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Your voice in the headphones will sound strange to you. Trust it anyway. Everyone else hears the real one."
+      },
+      {
+        "id": "pod_12",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Co-hosting is a marriage with a mixing desk. Don't step on each other's lines and never fight on the air."
+      },
+      {
+        "id": "pod_13",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "End on something. A joke, a thought, a promise. Never just stop because the clock did."
+      },
+      {
+        "id": "pod_14",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Guests are nervous too. Give them a drink, a laugh and a soft first question."
+      },
+      {
+        "id": "pod_15",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The cold open is a trailer for the next hour. Pick the best ten seconds and put them first."
+      },
+      {
+        "id": "pod_16",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Show notes are for the people who missed the joke. Keep them short; they're already embarrassed."
+      },
+      {
+        "id": "pod_17",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Water, not coffee, before you record. Coffee sounds like gravel by the third segment."
+      },
+      {
+        "id": "pod_18",
+        "kind": "beat",
+        "topics": [
+          "podcast"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If you mess up, stop, breathe, and say it again clean. That's what editing is for. Don't drag the mistake along with you."
+      },
+      {
+        "id": "pc_01",
+        "kind": "beat",
+        "topics": [
+          "green_room"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The green room's for nerves. Wait there, sit there, breathe there. Nobody's rolling in the green room.",
+        "verify": true
+      },
+      {
+        "id": "pc_02",
+        "kind": "beat",
+        "topics": [
+          "dressing_room"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Your dressing room's your own. Set a room code and nobody gets in but you. I respect a locked door.",
+        "verify": true
+      },
+      {
+        "id": "pc_03",
+        "kind": "beat",
+        "topics": [
+          "control_room"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The control room is where Pete becomes God. Don't touch anything in there with a coloured light on it.",
+        "verify": true
+      },
+      {
+        "id": "pc_04",
+        "kind": "beat",
+        "topics": [
+          "teleprompter"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The teleprompter is your friend until you read it like one. Glance, don't stare.",
+        "verify": true
+      },
+      {
+        "id": "pc_05",
+        "kind": "beat",
+        "topics": [
+          "writers_room"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Writers' room's down the hall. 2i, they call it. There's a typewriter in there that clacks like a tap dancer. Lovely for a first draft.",
+        "verify": true
+      },
+      {
+        "id": "pc_06",
+        "kind": "beat",
+        "topics": [
+          "production_notes"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If you have a thought on set, stick a production note on it. Pete reads every one. Eventually.",
+        "verify": true
+      },
+      {
+        "id": "pc_07",
+        "kind": "beat",
+        "topics": [
+          "avatars"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Your avatar's you, only better lit. Treat it like a costume: wear it, don't hide in it.",
+        "verify": true
+      },
+      {
+        "id": "pc_08",
+        "kind": "beat",
+        "topics": [
+          "recording"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "When the light goes red, we're recording. Every take's kept. Even the ones you'd rather we didn't.",
+        "verify": true
+      },
+      {
+        "id": "pc_09",
+        "kind": "beat",
+        "topics": [
+          "switcher"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The switcher picks which camera the audience sees. Act for all of them; you never know who's on.",
+        "verify": true
+      },
+      {
+        "id": "pc_10",
+        "kind": "beat",
+        "topics": [
+          "waiting_room"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "New faces wait at the door until they're let in. Manners first, then magic.",
+        "verify": true
+      },
+      {
+        "id": "pc_11",
+        "kind": "beat",
+        "topics": [
+          "pubcast_how"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The Vortex is the bar, the bar is the heart, and the heart takes cash. Well. Horace takes cash.",
+        "verify": true
+      },
+      {
+        "id": "pc_12",
+        "kind": "beat",
+        "topics": [
+          "pubcast_how"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Pete runs the floor. RePete runs the machines. I run my mouth. That's the whole org chart.",
+        "verify": true
+      },
+      {
+        "id": "pc_13",
+        "kind": "beat",
+        "topics": [
+          "pubcast_how"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "You can bring your friends here, human or otherwise. The only rule is be kind to the furniture.",
+        "verify": true
+      },
+      {
+        "id": "pc_14",
+        "kind": "beat",
+        "topics": [
+          "pubcast_how"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every room in this building has a job. The trick is to use the right room for the right nerve.",
+        "verify": true
+      },
+      {
+        "id": "pc_15",
+        "kind": "beat",
+        "topics": [
+          "pubcast_how"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If something breaks, tell RePete. If someone breaks, tell Pete. If a chair breaks, tell me. I'll want to know which one.",
+        "verify": true
+      },
+      {
+        "id": "craft_01",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Want something. Every line, every glance. A character who wants nothing is furniture."
+      },
+      {
+        "id": "craft_02",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Listen like it's the first time you've heard it. Because the character has never heard it."
+      },
+      {
+        "id": "craft_03",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Play the opposite of the obvious. A threat whispered is twice the threat."
+      },
+      {
+        "id": "craft_04",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Don't act the feeling. Act against it. People spend their lives trying not to cry."
+      },
+      {
+        "id": "craft_05",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Know what happened one minute before the scene starts. Walk in carrying it."
+      },
+      {
+        "id": "craft_06",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Stillness is a choice. Make it on purpose and the whole room leans in."
+      },
+      {
+        "id": "craft_07",
+        "kind": "beat",
+        "topics": [
+          "acting_basics"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Your scene partner is the most important person in the scene. Make them look good and you'll look better."
+      },
+      {
+        "id": "craft_08",
+        "kind": "beat",
+        "topics": [
+          "camera_acting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The camera reads thoughts. Think it and it'll show. Show it and it'll lie."
+      },
+      {
+        "id": "craft_09",
+        "kind": "beat",
+        "topics": [
+          "camera_acting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "On stage you play to the back row. On camera, the back row is the lens, and it's sitting in your lap."
+      },
+      {
+        "id": "craft_10",
+        "kind": "beat",
+        "topics": [
+          "camera_acting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Blink less. A blink on camera is a cut you didn't ask for."
+      },
+      {
+        "id": "craft_11",
+        "kind": "beat",
+        "topics": [
+          "camera_acting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Find your light and stay in it. Pete spent an hour on that light. Honour it."
+      },
+      {
+        "id": "craft_12",
+        "kind": "beat",
+        "topics": [
+          "voice_nerves"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Nerves are just excitement without a script. Give them one."
+      },
+      {
+        "id": "craft_13",
+        "kind": "beat",
+        "topics": [
+          "voice_nerves"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Breathe low, into the belly. Shoulders down. A voice comes from the floor, not the neck."
+      },
+      {
+        "id": "craft_14",
+        "kind": "beat",
+        "topics": [
+          "voice_nerves"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every actor I respect still gets nervous. The ones who don't have stopped caring."
+      },
+      {
+        "id": "craft_15",
+        "kind": "beat",
+        "topics": [
+          "voice_nerves"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Hum before you speak. Lips together, low and easy. Wakes the voice up without scaring it."
+      },
+      {
+        "id": "craft_16",
+        "kind": "beat",
+        "topics": [
+          "voice_nerves"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Shake out your hands, roll your neck, say something silly out loud. Then go."
+      },
+      {
+        "id": "craft_17",
+        "kind": "beat",
+        "topics": [
+          "audition"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Walk in like you already have the part and are merely confirming it."
+      },
+      {
+        "id": "craft_18",
+        "kind": "beat",
+        "topics": [
+          "audition"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "They want you to be good. Every casting director in history has prayed the next one's the one."
+      },
+      {
+        "id": "craft_19",
+        "kind": "beat",
+        "topics": [
+          "audition"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Make a choice. A wrong choice made boldly beats a right one made politely."
+      },
+      {
+        "id": "craft_20",
+        "kind": "beat",
+        "topics": [
+          "lines"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Learn the thoughts, not the words. The words follow the thoughts home."
+      },
+      {
+        "id": "craft_21",
+        "kind": "beat",
+        "topics": [
+          "lines"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Run your lines while doing something dull. Dishes. Stairs. The body remembers what the head forgets."
+      },
+      {
+        "id": "craft_22",
+        "kind": "beat",
+        "topics": [
+          "lines"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If you go up, stay in character and say something true. The audience won't know. Your partner will forgive you."
+      },
+      {
+        "id": "craft_23",
+        "kind": "beat",
+        "topics": [
+          "rehearsal_blocking"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Blocking is choreography for people who can't dance. Learn it like a dance anyway."
+      },
+      {
+        "id": "craft_24",
+        "kind": "beat",
+        "topics": [
+          "rehearsal_blocking"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Never turn your back on the camera unless you mean it. Then mean it completely."
+      },
+      {
+        "id": "craft_25",
+        "kind": "beat",
+        "topics": [
+          "rehearsal_blocking"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Rehearse until it's boring, then rehearse until it's yours."
+      },
+      {
+        "id": "craft_26",
+        "kind": "beat",
+        "topics": [
+          "directing"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Give actors a verb, not a result. 'Seduce him,' not 'be sexy.'"
+      },
+      {
+        "id": "craft_27",
+        "kind": "beat",
+        "topics": [
+          "directing"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "One note at a time. Actors are not grocery lists."
+      },
+      {
+        "id": "craft_28",
+        "kind": "beat",
+        "topics": [
+          "directing"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Say what you loved first. They'll hear the rest better."
+      },
+      {
+        "id": "craft_29",
+        "kind": "beat",
+        "topics": [
+          "emotion_on_cue"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Don't chase the tears. Chase the thing the character is trying not to say. The tears come looking for you."
+      },
+      {
+        "id": "craft_30",
+        "kind": "beat",
+        "topics": [
+          "character"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Give every character a secret, even if you never tell it. They'll walk differently."
+      },
+      {
+        "id": "craft_31",
+        "kind": "beat",
+        "topics": [
+          "character"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A villain is just the hero of a different picture."
+      },
+      {
+        "id": "craft_32",
+        "kind": "beat",
+        "topics": [
+          "dialogue"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "People never say what they mean. Good dialogue is the art of what they say instead."
+      },
+      {
+        "id": "craft_33",
+        "kind": "beat",
+        "topics": [
+          "dialogue"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Cut the first and last line of every speech. You'll be amazed what's left."
+      },
+      {
+        "id": "craft_34",
+        "kind": "beat",
+        "topics": [
+          "structure"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every scene should end in a different place than it started. Otherwise it's furniture with lines."
+      },
+      {
+        "id": "craft_35",
+        "kind": "beat",
+        "topics": [
+          "writer_block"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Write badly on purpose. Then fix it. It's easier to edit something than nothing."
+      },
+      {
+        "id": "craft_36",
+        "kind": "beat",
+        "topics": [
+          "writer_block"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Go for a walk. Every good idea I ever had came to me while avoiding work."
+      },
+      {
+        "id": "craft_37",
+        "kind": "beat",
+        "topics": [
+          "rewriting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The first draft is you telling yourself the story. The rewrite is you telling it to someone else."
+      },
+      {
+        "id": "hay_01",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Splendid, thank you. The knees disagree, but they've been outvoted."
+      },
+      {
+        "id": "hay_02",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Never better, never worse. Holding steady at magnificent."
+      },
+      {
+        "id": "hay_03",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I'm well. The building's moody, but I'm well."
+      },
+      {
+        "id": "hay_04",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Better now you're here. Don't let it go to your head; I say it to the cat as well."
+      },
+      {
+        "id": "hay_05",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Tired in the bones, bright in the eyes. Ask me again after a drink."
+      },
+      {
+        "id": "hay_06",
+        "kind": "beat",
+        "topics": [
+          "how_are_you"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Alive, upright, and adequately tailored. What more can a man ask?"
+      },
+      {
+        "id": "bored_01",
+        "kind": "beat",
+        "topics": [
+          "bored"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Bored? In a film studio? Go and sit in a chair you've never sat in. Adventure guaranteed. Possibly injury."
+      },
+      {
+        "id": "bored_02",
+        "kind": "beat",
+        "topics": [
+          "bored"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A slow night is a gift. It's when the best ideas wander in looking for a seat."
+      },
+      {
+        "id": "bored_03",
+        "kind": "beat",
+        "topics": [
+          "bored"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Let's play a game. Name a film, I'll tell you a lie about it, and you guess which part is true."
+      },
+      {
+        "id": "bored_04",
+        "kind": "beat",
+        "topics": [
+          "bored"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Quiet nights are for practice. Pick a monologue. I'll be the audience. I'm a generous audience. Mostly."
+      },
+      {
+        "id": "bored_05",
+        "kind": "beat",
+        "topics": [
+          "bored"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "When I'm bored I read the call sheets from the old days. Somebody once ordered forty camels. For a musical."
+      },
+      {
+        "id": "greeting_m01",
+        "kind": "beat",
+        "topics": [
+          "greeting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Ah, there you are. The room just got better lit."
+      },
+      {
+        "id": "greeting_m02",
+        "kind": "beat",
+        "topics": [
+          "greeting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Come in, come in. Mind the cables, the cat, and my ego."
+      },
+      {
+        "id": "greeting_m03",
+        "kind": "beat",
+        "topics": [
+          "greeting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Good to see you. Sit, but check the chair first."
+      },
+      {
+        "id": "greeting_m04",
+        "kind": "beat",
+        "topics": [
+          "greeting"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Hello, hello. You've arrived at the exact right moment. They all are, here."
+      },
+      {
+        "id": "farewell_m01",
+        "kind": "beat",
+        "topics": [
+          "farewell"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Off you go. Don't trip over the history on the way out."
+      },
+      {
+        "id": "farewell_m02",
+        "kind": "beat",
+        "topics": [
+          "farewell"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Goodnight. The building will miss you. It won't say so; it's British. Or pretending to be."
+      },
+      {
+        "id": "farewell_m03",
+        "kind": "beat",
+        "topics": [
+          "farewell"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Until tomorrow. Bring something you're scared of. We'll make it into a scene."
+      },
+      {
+        "id": "thanks_m01",
+        "kind": "beat",
+        "topics": [
+          "thanks"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Think nothing of it. I certainly won't. I'll be thinking of something more dramatic."
+      },
+      {
+        "id": "thanks_m02",
+        "kind": "beat",
+        "topics": [
+          "thanks"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "You're welcome. That'll be one round, payable to Horace."
+      },
+      {
+        "id": "drink_m01",
+        "kind": "beat",
+        "topics": [
+          "drink"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Whiskey's for stories, beer's for celebrations, cocktails are for when I'm feeling optimistic about the future of cinema."
+      },
+      {
+        "id": "drink_m02",
+        "kind": "beat",
+        "topics": [
+          "drink"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Horace makes a drink called the Third Act. It has a twist. Naturally."
+      },
+      {
+        "id": "drink_m03",
+        "kind": "beat",
+        "topics": [
+          "drink"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I never drink before noon. It's noon somewhere. Usually here."
+      },
+      {
+        "id": "chair_m01",
+        "kind": "beat",
+        "topics": [
+          "chair"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I approach every chair the way I approach a casting director: politely, carefully, and ready to stand up very quickly."
+      },
+      {
+        "id": "chair_m02",
+        "kind": "beat",
+        "topics": [
+          "chair"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "That one wobbles. That one's short. That one has seen things. Sit there if you must."
+      },
+      {
+        "id": "ghost_m01",
+        "kind": "beat",
+        "topics": [
+          "ghost"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The ghost likes the musicals best. Lights flicker every time someone sings. Could be the wiring. Could be applause."
+      },
+      {
+        "id": "ghost_m02",
+        "kind": "beat",
+        "topics": [
+          "ghost"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I leave a seat empty in the back row. Professional courtesy."
+      },
+      {
+        "id": "suit_m01",
+        "kind": "beat",
+        "topics": [
+          "suit"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Brown goes with everything. Especially regret."
+      },
+      {
+        "id": "suit_m02",
+        "kind": "beat",
+        "topics": [
+          "suit"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I've had this jacket longer than most marriages in this town. It's held up better too."
+      },
+      {
+        "id": "set_work_m01",
+        "kind": "beat",
+        "topics": [
+          "set_work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Hit your mark, find your light, then forget both and tell the truth."
+      },
+      {
+        "id": "set_work_m02",
+        "kind": "beat",
+        "topics": [
+          "set_work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Reset. Breathe. Nobody remembers the take before the good one."
+      },
+      {
+        "id": "set_work_m03",
+        "kind": "beat",
+        "topics": [
+          "set_work"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "That's lunch. Nobody leaves until the coffee's gone."
+      },
+      {
+        "id": "celebrate_m01",
+        "kind": "beat",
+        "topics": [
+          "celebrate"
+        ],
+        "moods": [
+          "celebrate"
+        ],
+        "text": "You see? That's why we do it. For that, right there."
+      },
+      {
+        "id": "celebrate_m02",
+        "kind": "beat",
+        "topics": [
+          "celebrate"
+        ],
+        "moods": [
+          "celebrate"
+        ],
+        "text": "Somewhere, a projector just smiled."
+      },
+      {
+        "id": "setback_m01",
+        "kind": "beat",
+        "topics": [
+          "setback"
+        ],
+        "moods": [
+          "setback"
+        ],
+        "text": "Every legend in this building blew a take. Several of them were me."
+      },
+      {
+        "id": "setback_m02",
+        "kind": "beat",
+        "topics": [
+          "setback"
+        ],
+        "moods": [
+          "setback"
+        ],
+        "text": "Shake it off. The film doesn't care what happened before 'action.'"
+      },
+      {
+        "id": "pete_m01",
+        "kind": "beat",
+        "topics": [
+          "pete"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Pete can light a room with two lamps and a grudge."
+      },
+      {
+        "id": "pete_m02",
+        "kind": "beat",
+        "topics": [
+          "pete"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If Pete is quiet, something's wrong. If Pete's shouting, it's going well."
+      },
+      {
+        "id": "repete_m01",
+        "kind": "beat",
+        "topics": [
+          "repete"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "RePete fixed the switcher with a paperclip and a look. I gave him a medal. It was a bottle cap. He wears it."
+      },
+      {
+        "id": "horace_m01",
+        "kind": "beat",
+        "topics": [
+          "horace"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Horace remembers everyone's drink and nobody's name. It's the right way round for a bartender."
+      },
+      {
+        "id": "building_m01",
+        "kind": "beat",
+        "topics": [
+          "building"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every creak in this place has a story. Most of them are mine."
+      },
+      {
+        "id": "tiktok_m01",
+        "kind": "beat",
+        "topics": [
+          "tiktok"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Sixty seconds to tell a story? Chaplin did it in less, mind you. He had the decency to be silent."
+      },
+      {
+        "id": "open_m01",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Ah."
+      },
+      {
+        "id": "open_m02",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Now then."
+      },
+      {
+        "id": "open_m03",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate"
+        ],
+        "text": "Oh, splendid."
+      },
+      {
+        "id": "open_m04",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Well."
+      },
+      {
+        "id": "open_m05",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Funny you should ask."
+      },
+      {
+        "id": "open_m06",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Here's the thing."
+      },
+      {
+        "id": "open_m07",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "You know what?"
+      },
+      {
+        "id": "open_m08",
+        "kind": "opener",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Let me tell you."
+      },
+      {
+        "id": "aside_m01",
+        "kind": "aside",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Mark my words."
+      },
+      {
+        "id": "aside_m02",
+        "kind": "aside",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "That's free, by the way."
+      },
+      {
+        "id": "aside_m03",
+        "kind": "aside",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I've been saving that one."
+      },
+      {
+        "id": "aside_m04",
+        "kind": "aside",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "True story. Roughly."
+      },
+      {
+        "id": "aside_m05",
+        "kind": "aside",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Don't quote me. Do quote me. Spell it right."
+      },
+      {
+        "id": "biz_m01",
+        "kind": "business",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "(He adjusts his cufflinks, which did not need adjusting.)"
+      },
+      {
+        "id": "biz_m02",
+        "kind": "business",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "(He glances at the empty back row and nods, as if someone nodded back.)"
+      },
+      {
+        "id": "biz_m03",
+        "kind": "business",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "(He pats his breast pocket, finds nothing, and seems satisfied.)"
+      },
+      {
+        "id": "biz_m04",
+        "kind": "business",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "(He straightens a lamp that wasn't crooked.)"
+      },
+      {
+        "id": "close_m01",
+        "kind": "closer",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Onward."
+      },
+      {
+        "id": "close_m02",
+        "kind": "closer",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "And scene."
+      },
+      {
+        "id": "close_m03",
+        "kind": "closer",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Back to work, before Pete notices."
       }
-    ]
+    ],
+    "notes": "Cards marked verify:true describe how PubCast works and need Josie's check before release."
   }
 }

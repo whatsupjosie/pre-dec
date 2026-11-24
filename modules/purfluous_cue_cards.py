@@ -48,7 +48,13 @@ _HURT_CONTEXTS = {"loss", "violence", "betrayal", "abandonment", "pain"}
 def _load(path: str = str(DECK_PATH)) -> Mapping:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     deck = data.get("cue_cards") or {}
-    topics = {name: [re.compile(p, re.IGNORECASE) for p in pats] for name, pats in deck.get("topics", {}).items()}
+    raw = dict(deck.get("topics", {}))
+    # A card may be tagged with one of his craft intents (acting_basics,
+    # audition, ...); those topics are recognised by the intent's own patterns,
+    # so the two never drift apart.
+    for intent in data.get("intents", []):
+        raw.setdefault(intent.get("id", ""), intent.get("patterns", []))
+    topics = {name: [re.compile(p, re.IGNORECASE) for p in pats] for name, pats in raw.items() if name}
     return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {}))}
 
 
@@ -114,11 +120,59 @@ def read(message: str) -> Tuple[List[str], str]:
         mood = "hurt"
     elif "setback" in topics:
         mood = "setback"
-    elif "celebrate" in topics:
+    elif "celebrate" in topics and _celebrate_words(text, deck, topics):
         mood = "celebrate"
     else:
         mood = "neutral"
     return topics, mood
+
+
+def _celebrate_words(text: str, deck: Mapping, topics: List[str]) -> bool:
+    """A win needs winning words. A bare '!' only counts when nothing else is going on,
+    so 'Break a leg in Macbeth tonight!' stays about the Scottish play."""
+    pats = deck["topics"].get("celebrate", [])
+    if pats and pats[0].search(text):
+        return True
+    return not (set(topics) - {"celebrate"})
+
+
+SANCHO_GAP = 6  # his own lines that must pass between two Sanchos
+
+
+def sancho_allowed(history: Sequence[Mapping[str, str]] = ()) -> bool:
+    """He calls the user Sancho at the start and now and then, not every line."""
+    mine = [str(e.get("text", "")) for e in history
+            if isinstance(e, Mapping) and "purfluous" in str(e.get("speaker", "")).casefold()]
+    return not any("sancho" in t.casefold() for t in mine[-SANCHO_GAP:])
+
+
+_SANCHO_DROPS = [
+    (re.compile(r"\{Sancho\}!\s*"), ""),
+    (re.compile(r",\s*\{sancho\}"), ""),
+    (re.compile(r"\{sancho\},?\s*"), ""),
+]
+_PLAIN_SANCHO_DROPS = [
+    (re.compile(r"^That, Sancho, "), "That "),
+    (re.compile(r", Sancho, "), ", "),
+    (re.compile(r",\s*Sancho(?=[.;:!?—,)])"), ""),
+    (re.compile(r"^Sancho[,.!]\s*"), ""),
+]
+
+
+def limit_sancho(text: str, allowed: bool) -> str:
+    """Remove 'Sancho' from a finished line when he has used it lately (or already
+    in this line). Lines Josie wrote are never passed through here."""
+    if allowed:
+        first = text.find("Sancho")
+        if first == -1:
+            return text
+        head, tail = text[: first + 6], text[first + 6:]
+        for rx, rep in _PLAIN_SANCHO_DROPS[1:3]:
+            tail = rx.sub(rep, tail)
+        return head + tail
+    for rx, rep in _PLAIN_SANCHO_DROPS:
+        text = rx.sub(rep, text)
+    return text[:1].upper() + text[1:] if text else text
 
 
 def _recent_text(history: Sequence[Mapping[str, str]]) -> str:
@@ -131,7 +185,12 @@ def _recent_text(history: Sequence[Mapping[str, str]]) -> str:
     return "\n".join(said).casefold()
 
 
-def _fill(text: str, slots: Mapping[str, str]) -> str:
+def _fill(text: str, slots: Mapping[str, str], sancho: bool = True) -> str:
+    if not sancho:
+        for rx, rep in _SANCHO_DROPS:
+            text = rx.sub(rep, text)
+        text = text.strip()
+        text = text[:1].upper() + text[1:] if text else text
     for key, value in slots.items():
         text = text.replace(key, value)
     return text
@@ -174,7 +233,16 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         beats = [c for c in cards if c["kind"] == "beat" and mood in c["topics"]]
         if mood == "celebrate":
             beats += [c for c in catalog if context in ("achievement", "milestone")]
-    beats = beats or [c for c in cards if c["kind"] == "beat" and mood in c["moods"] and set(c["topics"]) & set(spoken)]
+    if not beats:
+        # The most specific topic wins: "how does the green room work?" matches
+        # both green_room and pubcast_how, and should get the green room card.
+        by_topic = {}
+        for t in spoken:
+            pool = [c for c in cards if c["kind"] == "beat" and mood in c["moods"] and t in c["topics"]]
+            if pool:
+                by_topic[t] = pool
+        if by_topic:
+            beats = min(by_topic.values(), key=len)
     if not beats:
         return {"topics": topics, "mood": mood, "cards": []}
     beat = _pick(beats, seed, "beat", recent, slots)
@@ -222,7 +290,13 @@ def compose(message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional
     if not picked["cards"]:
         return None
     slots = _load()["slots"]
-    return _join([_fill(card["text"], slots) for card in picked["cards"]])
+    allowed = sancho_allowed(history)
+    parts = []
+    for card in picked["cards"]:
+        parts.append(_fill(card["text"], slots, sancho=allowed))
+        if "{sancho}" in card["text"].casefold():
+            allowed = False   # once per line at most
+    return _join([p for p in parts if p])
 
 
 def cues_for(message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional[str]:
