@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Code Collector — Nautilus Icon</title>
+<meta name="author" content="Josie Curtsey Cobbley — Rear View Foresight LLC">
+<meta name="copyright" content="© 2026 Josie Curtsey Cobbley. All rights reserved.">
+<style>
+  body { margin: 0; background: #090806; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  canvas { border-radius: 44px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="680" height="680"></canvas>
+<script>
+/*
+ * Nautilus Icon — Code Collector
+ * ================================
+ * Logarithmic spiral icon for Code Collector v1.0.0-A
+ * Golden ratio chamber geometry. Copper/brass finish.
+ *
+ * Art direction & concept: Josie Curtsey Cobbley
+ * Executed in collaboration with Claude (Anthropic)
+ * © 2026 Josie Curtsey Cobbley — Rear View Foresight LLC
+ * Feic Mo Chroí™ — We make movies.
+ *
+ * All rights reserved. No reproduction without permission.
+ */
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = 680, H = 680;
+const cx = 320, cy = 355;
+
+ctx.fillStyle = '#090806';
+ctx.beginPath();
+ctx.roundRect(0, 0, W, H, 44);
+ctx.fill();
+
+function frame(x, y, w, h, r, sw, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = sw;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.stroke();
+  ctx.restore();
+}
+frame(20, 20, 640, 640, 44, 1.4, 1.0);
+frame(32, 32, 616, 616, 36, 0.5, 0.45);
+
+function bracket(x1, y1, x2, y2, x3, y3, sw, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = sw;
+  ctx.lineCap = 'square';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.stroke();
+  ctx.restore();
+}
+bracket(20,110, 20,20, 110,20,   1.4, 1.0);
+bracket(570,20, 660,20, 660,110, 1.4, 1.0);
+bracket(20,570, 20,660, 110,660, 1.4, 1.0);
+bracket(660,570, 660,660, 570,660, 1.4, 1.0);
+bracket(32,98, 32,32, 98,32,    0.5, 0.42);
+bracket(582,32, 648,32, 648,98, 0.5, 0.42);
+bracket(32,582, 32,648, 98,648, 0.5, 0.42);
+bracket(648,582, 648,648, 582,648, 0.5, 0.42);
+
+function diamond(x, y, s, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#e8c060';
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.lineTo(x + s, y);
+  ctx.lineTo(x, y + s);
+  ctx.lineTo(x - s, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+diamond(20, 72, 7, 0.8);
+diamond(660, 72, 7, 0.8);
+diamond(20, 608, 7, 0.8);
+diamond(660, 608, 7, 0.8);
+
+const phi = 1.6180339887;
+const b = Math.log(phi) / (Math.PI / 2);
+const r0 = 7;
+
+function spiral(theta) {
+  const r = r0 * Math.exp(b * theta);
+  return [cx + r * Math.cos(theta), cy + r * Math.sin(theta)];
+}
+
+function drawChamber(t1, t2, fillColor, strokeColor, strokeW) {
+  const steps = 60;
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = t1 + (t2 - t1) * i / steps;
+    const [x, y] = spiral(t + Math.PI * 2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  for (let i = steps; i >= 0; i--) {
+    const t = t1 + (t2 - t1) * i / steps;
+    const [x, y] = spiral(t);
+    ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = fillColor;
+  ctx.fill();
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeW;
+  ctx.stroke();
+}
+
+function drawSeptum(t, sw, alpha) {
+  const [xi, yi] = spiral(t);
+  const [xo, yo] = spiral(t + Math.PI * 2);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = sw;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xi, yi);
+  ctx.lineTo(xo, yo);
+  ctx.stroke();
+  ctx.restore();
+}
+
+const chamberColors = [
+  '#1e0e04','#2a1508','#221008','#2e1808',
+  '#1a0c04','#261408','#1e1006','#28140a',
+  '#1c0e04','#241208',
+];
+
+const sepAngles = [];
+const nChambers = 10;
+const tStart = -Math.PI * 0.5;
+const tSpan  = Math.PI * 2 * 2.5;
+
+for (let i = 0; i < nChambers; i++) {
+  const t1 = tStart + (tSpan / nChambers) * i;
+  const t2 = tStart + (tSpan / nChambers) * (i + 1);
+  const col = chamberColors[i % chamberColors.length];
+  drawChamber(t1, t2, col, '#c9a84c', 0.35);
+  sepAngles.push(t1);
+}
+
+ctx.save();
+ctx.strokeStyle = '#c9a84c';
+ctx.lineWidth = 2.4;
+ctx.lineCap = 'round';
+ctx.beginPath();
+const outerSteps = 600;
+const tOuter0 = tStart;
+const tOuter1 = tStart + Math.PI * 2 * 3.3;
+for (let i = 0; i <= outerSteps; i++) {
+  const t = tOuter0 + (tOuter1 - tOuter0) * i / outerSteps;
+  const r = r0 * Math.exp(b * (t + Math.PI * 2));
+  const x = cx + r * Math.cos(t);
+  const y = cy + r * Math.sin(t);
+  if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+}
+ctx.stroke();
+ctx.restore();
+
+ctx.save();
+ctx.strokeStyle = '#c9a84c';
+ctx.lineWidth = 1.4;
+ctx.globalAlpha = 0.6;
+ctx.beginPath();
+const innerSteps = 400;
+for (let i = 0; i <= innerSteps; i++) {
+  const t = tOuter0 + (tOuter1 - tOuter0) * i / innerSteps;
+  const [x, y] = spiral(t);
+  if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+}
+ctx.stroke();
+ctx.restore();
+
+for (let i = 0; i < sepAngles.length; i++) {
+  const alpha = 0.5 + (i / sepAngles.length) * 0.4;
+  const sw = 1.0 + (i / sepAngles.length) * 0.8;
+  drawSeptum(sepAngles[i], sw, alpha);
+}
+
+const eyeR = r0 * 2.8;
+ctx.save();
+for (let ring = 0; ring < 4; ring++) {
+  const rr = eyeR * (1 - ring * 0.22);
+  ctx.beginPath();
+  ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+  ctx.fillStyle = ring === 3 ? '#f0c840' : `rgba(${15+ring*8},${8+ring*4},${2+ring*2},1)`;
+  ctx.fill();
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = ring === 0 ? 1.8 : 0.8;
+  ctx.globalAlpha = 0.9 - ring * 0.1;
+  ctx.stroke();
+}
+ctx.restore();
+
+ctx.save();
+ctx.strokeStyle = '#c9a84c';
+ctx.globalAlpha = 0.3;
+const outerRim = r0 * Math.exp(b * (tStart + Math.PI * 2 * 2.85 + Math.PI * 2));
+for (let i = 0; i < 24; i++) {
+  const a = (i / 24) * Math.PI * 2;
+  const isMajor = i % 6 === 0;
+  const r1 = outerRim + 8;
+  const r2 = outerRim + (isMajor ? 20 : 13);
+  ctx.lineWidth = isMajor ? 1.2 : 0.6;
+  ctx.beginPath();
+  ctx.moveTo(cx + r1 * Math.cos(a), cy + r1 * Math.sin(a));
+  ctx.lineTo(cx + r2 * Math.cos(a), cy + r2 * Math.sin(a));
+  ctx.stroke();
+}
+ctx.restore();
+
+// Signature — embedded in the canvas, bottom corner, very subtle
+ctx.save();
+ctx.globalAlpha = 0.18;
+ctx.fillStyle = '#c9a84c';
+ctx.font = '10px monospace';
+ctx.textAlign = 'right';
+ctx.fillText('© 2026 JCC — Rear View Foresight LLC', 656, 664);
+ctx.restore();
+</script>
+</body>
+</html>

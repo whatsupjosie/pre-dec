@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Collector — Settings</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d0d;
+      --surface:  #161616;
+      --surface2: #1e1e1e;
+      --border:   #2a2a2a;
+      --border2:  #333;
+      --accent:   #c9a84c;
+      --accent-dim: #a8873a;
+      --accent-bg:  rgba(201, 168, 76, 0.08);
+      --text:     #e8e8e8;
+      --muted:    #666;
+      --success:  #27ae60;
+      --danger:   #c0392b;
+      --radius:   6px;
+    }
+
+    html, body {
+      background:  var(--bg);
+      color:       var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size:   14px;
+      height:      100%;
+      overflow:    hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .window {
+      display:        flex;
+      flex-direction: column;
+      height:         100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      padding:         18px 28px 16px;
+      border-bottom:   1px solid var(--border);
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+      flex-shrink:     0;
+      background:      var(--surface);
+    }
+
+    .brand {
+      display:     flex;
+      align-items: center;
+      gap:         10px;
+    }
+
+    .brand-dot {
+      width:         8px;
+      height:        8px;
+      border-radius: 50%;
+      background:    var(--danger);
+      transition:    background 0.3s;
+    }
+
+    .brand-dot.running {
+      background: var(--success);
+    }
+
+    .brand-name {
+      font-family:     'DM Mono', monospace;
+      font-size:       12px;
+      font-weight:     500;
+      letter-spacing:  0.1em;
+      color:           var(--accent);
+      text-transform:  uppercase;
+    }
+
+    .server-status {
+      font-family:   'DM Mono', monospace;
+      font-size:     11px;
+      color:         var(--muted);
+      padding:       4px 10px;
+      border-radius: var(--radius);
+      border:        1px solid var(--border);
+      background:    var(--bg);
+    }
+
+    .server-status.status-indicator.running {
+      color:      var(--success);
+      border-color: rgba(39, 174, 96, 0.3);
+      background: rgba(39, 174, 96, 0.06);
+    }
+
+    .server-status.status-indicator.stopped {
+      color:      var(--muted);
+    }
+
+    /* ── Scrollable content ──────────────────────────────────────────────────── */
+    .content {
+      flex:           1;
+      overflow-y:     auto;
+      padding:        24px 28px;
+      display:        flex;
+      flex-direction: column;
+      gap:            20px;
+    }
+
+    .content::-webkit-scrollbar       { width: 4px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .content::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+    /* ── Section ─────────────────────────────────────────────────────────────── */
+    .section {
+      background:    var(--surface);
+      border:        1px solid var(--border);
+      border-radius: var(--radius);
+      padding:       20px 24px;
+    }
+
+    .section-label {
+      font-family:    'DM Mono', monospace;
+      font-size:      10px;
+      font-weight:    500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color:          var(--accent);
+      margin-bottom:  16px;
+      display:        flex;
+      align-items:    center;
+      gap:            8px;
+    }
+
+    .section-label::before {
+      content:       '';
+      width:         2px;
+      height:        10px;
+      background:    var(--accent);
+      border-radius: 1px;
+    }
+
+    /* ── Row ─────────────────────────────────────────────────────────────────── */
+    .row {
+      display:         flex;
+      align-items:     flex-start;
+      justify-content: space-between;
+      gap:             16px;
+      padding:         11px 0;
+      border-bottom:   1px solid var(--border);
+    }
+
+    .row:last-child { border-bottom: none; }
+
+    .row-label-stack {
+      display:        flex;
+      flex-direction: column;
+      flex:           1;
+      min-width:      0;
+    }
+
+    .row-label {
+      font-size:   14px;
+      font-weight: 500;
+      color:       var(--text);
+      line-height: 1.3;
+    }
+
+    .row-sub {
+      font-size:   11px;
+      color:       var(--muted);
+      margin-top:  3px;
+      line-height: 1.4;
+    }
+
+    /* ── Directory picker ────────────────────────────────────────────────────── */
+    .dir-picker {
+      display:     flex;
+      align-items: center;
+      gap:         10px;
+      flex:        1;
+      min-width:   0;
+    }
+
+    .dir-path {
+      flex:           1;
+      background:     var(--bg);
+      border:         1px solid var(--border);
+      border-radius:  var(--radius);
+      padding:        8px 12px;
+      font-family:    'DM Mono', monospace;
+      font-size:      11px;
+      color:          var(--muted);
+      white-space:    nowrap;
+      overflow:       hidden;
+      text-overflow:  ellipsis;
+      cursor:         default;
+      min-width:      0;
+    }
+
+    .btn-pick {
+      flex-shrink:   0;
+      background:    var(--surface2);
+      border:        1px solid var(--border);
+      border-radius: var(--radius);
+      color:         var(--text);
+      font-family:   'DM Sans', sans-serif;
+      font-size:     12px;
+      font-weight:   500;
+      padding:       8px 14px;
+      cursor:        pointer;
+      white-space:   nowrap;
+      transition:    border-color 0.15s, color 0.15s;
+    }
+
+    .btn-pick:hover {
+      border-color: var(--accent);
+      color:        var(--accent);
+    }
+
+    /* ── Toggle ──────────────────────────────────────────────────────────────── */
+    .toggle {
+      position:   relative;
+      width:      40px;
+      height:     22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position:      absolute;
+      inset:         0;
+      background:    var(--border2);
+      border-radius: 11px;
+      cursor:        pointer;
+      transition:    background 0.2s, border-color 0.2s;
+      border:        1px solid var(--border2);
+    }
+
+    .toggle-slider::before {
+      content:       "";
+      position:      absolute;
+      width:         14px;
+      height:        14px;
+      left:          3px;
+      top:           3px;
+      background:    var(--muted);
+      border-radius: 50%;
+      transition:    transform 0.2s, background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background:   var(--accent-bg);
+      border-color: var(--accent);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform:  translateX(18px);
+      background: var(--accent);
+    }
+
+    /* ── Text / number inputs ────────────────────────────────────────────────── */
+    .text-input,
+    .num-input {
+      background:    var(--bg);
+      border:        1px solid var(--border);
+      border-radius: var(--radius);
+      padding:       8px 12px;
+      font-family:   'DM Mono', monospace;
+      font-size:     12px;
+      color:         var(--text);
+      outline:       none;
+      transition:    border-color 0.15s;
+    }
+
+    .text-input { flex: 1; }
+    .num-input  { width: 90px; text-align: center; }
+
+    .text-input:focus,
+    .num-input:focus {
+      border-color: var(--accent);
+    }
+
+    .text-input::placeholder { color: var(--muted); }
+
+    /* ── Scan output ─────────────────────────────────────────────────────────── */
+    .scan-output-container {
+      margin-top: 4px;
+    }
+
+    .scan-output {
+      width:         100%;
+      height:        120px;
+      background:    var(--bg);
+      border:        1px solid var(--border);
+      border-radius: var(--radius);
+      padding:       10px 12px;
+      font-family:   'DM Mono', monospace;
+      font-size:     11px;
+      color:         var(--muted);
+      outline:       none;
+      resize:        none;
+      line-height:   1.5;
+    }
+
+    .scan-output:focus { border-color: var(--accent); }
+
+    /* ── Action button (scan) ────────────────────────────────────────────────── */
+    .btn-primary-action {
+      background:    var(--accent-bg);
+      border:        1px solid var(--accent);
+      border-radius: var(--radius);
+      color:         var(--accent);
+      font-family:   'DM Sans', sans-serif;
+      font-size:     12px;
+      font-weight:   500;
+      padding:       8px 16px;
+      cursor:        pointer;
+      white-space:   nowrap;
+      transition:    background 0.15s, color 0.15s;
+      flex-shrink:   0;
+    }
+
+    .btn-primary-action:hover {
+      background: var(--accent);
+      color:      #000;
+    }
+
+    /* ── Cloud conditional row ───────────────────────────────────────────────── */
+    .cloud-row         { display: none; }
+    .cloud-row.visible { display: flex; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────────── */
+    footer {
+      padding:         16px 28px;
+      border-top:      1px solid var(--border);
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+      flex-shrink:     0;
+      background:      var(--surface);
+    }
+
+    .btn {
+      border-radius: var(--radius);
+      font-family:   'DM Sans', sans-serif;
+      font-size:     13px;
+      font-weight:   500;
+      padding:       9px 18px;
+      cursor:        pointer;
+      border:        1px solid transparent;
+      transition:    border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .btn-primary {
+      background:   var(--accent);
+      color:        #000;
+      border-color: var(--accent);
+      font-weight:  600;
+    }
+
+    .btn-primary:hover {
+      background:   var(--accent-dim);
+      border-color: var(--accent-dim);
+    }
+
+    .btn-ghost {
+      background:   transparent;
+      color:        var(--muted);
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover {
+      color:        var(--text);
+      border-color: var(--border2);
+    }
+
+    .btn-danger {
+      background:   transparent;
+      color:        var(--danger);
+      border-color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background:   var(--danger);
+      color:        #fff;
+    }
+
+    .save-msg {
+      font-family:   'DM Mono', monospace;
+      font-size:     11px;
+      color:         var(--success);
+      opacity:       0;
+      transition:    opacity 0.3s;
+      padding:       4px 8px;
+      border-radius: var(--radius);
+      border:        1px solid rgba(39, 174, 96, 0.2);
+      background:    rgba(39, 174, 96, 0.06);
+    }
+
+    .save-msg.visible { opacity: 1; }
+
+    /* ── Feic Mo Chroí footer mark ───────────────────────────────────────────── */
+    .motto {
+      font-family:   'DM Mono', monospace;
+      font-size:     10px;
+      color:         var(--border2);
+      letter-spacing: 0.06em;
+      align-self:    center;
+    }
+
+    /* ── Activity panel (scan feedback) ──────────────────────────────────────── */
+    .activity-panel {
+      position:      fixed;
+      top:           16px;
+      right:         16px;
+      width:         260px;
+      background:    var(--surface);
+      border:        1px solid var(--border2);
+      border-radius: var(--radius);
+      padding:       14px 16px;
+      z-index:       1000;
+      opacity:       0;
+      transform:     translateX(280px);
+      transition:    opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+    }
+
+    .activity-panel.visible {
+      opacity:       1;
+      transform:     translateX(0);
+      pointer-events: auto;
+    }
+
+    .activity-header {
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+      margin-bottom:   10px;
+      padding-bottom:  8px;
+      border-bottom:   1px solid var(--border);
+    }
+
+    .activity-title {
+      font-family:    'DM Mono', monospace;
+      font-size:      10px;
+      font-weight:    500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color:          var(--accent);
+    }
+
+    .activity-status { display: flex; align-items: center; gap: 6px; }
+
+    .status-icon {
+      width:         20px;
+      height:        20px;
+      border-radius: 50%;
+      display:       flex;
+      align-items:   center;
+      justify-content: center;
+      font-size:     11px;
+    }
+
+    .status-icon.reading    { background: rgba(201,168,76,0.15); }
+    .status-icon.processing { background: rgba(201,168,76,0.10); animation: spin 1.2s linear infinite; }
+    .status-icon.success    { background: rgba(39,174,96,0.15); }
+    .status-icon.error      { background: rgba(192,57,43,0.15); }
+    .status-icon.throttling { background: rgba(192,57,43,0.12); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes flowPulse {
+      0%, 100% { opacity: 0.4; transform: scaleX(1); }
+      50%      { opacity: 1;   transform: scaleX(1.15); }
+    }
+
+    .activity-close {
+      background:    none;
+      border:        none;
+      color:         var(--muted);
+      cursor:        pointer;
+      font-size:     14px;
+      padding:       0 2px;
+      line-height:   1;
+    }
+
+    .activity-close:hover { color: var(--text); }
+
+    .activity-details {
+      font-family:  'DM Mono', monospace;
+      font-size:    11px;
+      color:        var(--muted);
+      margin-bottom: 8px;
+      line-height:  1.4;
+      white-space:  nowrap;
+      overflow:     hidden;
+      text-overflow: ellipsis;
+    }
+
+    .activity-progress {
+      width:         100%;
+      height:        2px;
+      background:    var(--border);
+      border-radius: 1px;
+      overflow:      hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      height:        100%;
+      background:    var(--accent);
+      border-radius: 1px;
+      width:         0%;
+      transition:    width 0.3s ease;
+    }
+
+    .activity-controls {
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+    }
+
+    .sound-toggle {
+      font-family: 'DM Mono', monospace;
+      font-size:   10px;
+      color:       var(--muted);
+      cursor:      pointer;
+      background:  none;
+      border:      none;
+      padding:     2px 0;
+      transition:  color 0.15s;
+    }
+
+    .sound-toggle:hover      { color: var(--text); }
+    .sound-toggle.muted      { color: var(--danger); }
+
+    .activity-timer {
+      font-family: 'DM Mono', monospace;
+      font-size:   10px;
+      color:       var(--muted);
+    }
+
+    /* ── Directional flow indicator ──────────────────────────────────────────── */
+    .directional-flow {
+      position:       fixed;
+      bottom:         70px;
+      left:           50%;
+      transform:      translateX(-50%) translateY(10px);
+      opacity:        0;
+      transition:     opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index:        999;
+      display:        flex;
+      flex-direction: column;
+      align-items:    center;
+      gap:            4px;
+    }
+
+    .directional-flow.visible {
+      opacity:   1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .flow-label {
+      font-family:    'DM Mono', monospace;
+      font-size:      10px;
+      color:          var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .flow-arrow {
+      width:         40px;
+      height:        2px;
+      background:    var(--accent);
+      border-radius: 1px;
+      opacity:       0.6;
+    }
+    .site-toggles { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .site-toggle { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  #conversationSitesRow.is-off { opacity: 0.45; }
+</style>
+</head>
+<body>
+  <div class="window">
+
+    <header>
+      <div class="brand">
+        <div class="brand-dot" id="statusDot"></div>
+        <span class="brand-name">Code Collector</span>
+      </div>
+      <span class="server-status" id="serverStatusText">checking…</span>
+    </header>
+
+    <div class="content">
+
+      <!-- ── Save Locations ── -->
+      <div class="section">
+        <div class="section-label">Save Locations</div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Primary</span>
+            <span class="row-sub">Every capture goes here</span>
+          </div>
+          <div class="dir-picker">
+            <div class="dir-path" id="primaryPath">—</div>
+            <button class="btn-pick" id="pickPrimary">Browse…</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Archive</span>
+            <span class="row-sub">Duplicate for backup</span>
+          </div>
+          <div class="dir-picker">
+            <div class="dir-path" id="archivePath">—</div>
+            <button class="btn-pick" id="pickArchive">Browse…</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Secondary location</span>
+            <span class="row-sub">Mirror to a second local or cloud folder</span>
+          </div>
+          <div class="dir-picker">
+            <div class="dir-path" id="secondaryPath">—</div>
+            <button class="btn-pick" id="pickSecondary">Browse…</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Save to archive</span>
+            <span class="row-sub">Also write every capture to the archive folder</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="saveToArchive" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Whole conversations (optional) ── -->
+      <div class="section">
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Capture whole conversations</span>
+            <span class="row-sub">Off by default. When on, both sides of each chat are saved as a readable transcript in your primary folder, under conversations. Code is still captured as usual.</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="captureConversations" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="row" id="conversationSitesRow">
+          <div class="row-label-stack">
+            <span class="row-label">On these sites</span>
+            <span class="row-sub">Switch off any site you don't want kept.</span>
+          </div>
+          <div class="site-toggles">
+          <label class="site-toggle"><input type="checkbox" id="convSite_claude" checked /> Claude</label>
+          <label class="site-toggle"><input type="checkbox" id="convSite_chatgpt" checked /> ChatGPT</label>
+          <label class="site-toggle"><input type="checkbox" id="convSite_gemini" checked /> Gemini</label>
+          <label class="site-toggle"><input type="checkbox" id="convSite_copilot" checked /> Copilot</label>
+          <label class="site-toggle"><input type="checkbox" id="convSite_perplexity" checked /> Perplexity</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Cloud Sync ── -->
+      <div class="section">
+        <div class="section-label">Cloud Sync</div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Enable cloud sync</span>
+            <span class="row-sub">Write to a Drive, Dropbox, or iCloud synced folder</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="cloudEnabled" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="row cloud-row" id="cloudDirRow">
+          <div class="row-label-stack">
+            <span class="row-label">Cloud folder</span>
+            <span class="row-sub">Point to your synced folder</span>
+          </div>
+          <div class="dir-picker">
+            <div class="dir-path" id="cloudPath">—</div>
+            <button class="btn-pick" id="pickCloud">Browse…</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Local Server ── -->
+      <div class="section">
+        <div class="section-label">Local Server</div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Port</span>
+            <span class="row-sub">Extension connects here (default 8765). If you change this, also update the extension options page to match.</span>
+          </div>
+          <input class="num-input" type="number" id="serverPort" min="1024" max="65535" />
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Auth token</span>
+            <span class="row-sub">Leave blank to disable. If set, also update the extension options page to match.</span>
+          </div>
+          <input class="text-input" type="password" id="authToken" placeholder="no token set" />
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Start on login</span>
+            <span class="row-sub">Launch with your system</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="startOnLogin" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── File Scanner ── -->
+      <div class="section">
+        <div class="section-label">File Scanner</div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Scan a local file</span>
+            <span class="row-sub">Select a conversation log or text file to extract code blocks</span>
+          </div>
+          <button class="btn-primary-action" id="scanFileBtn">Choose file…</button>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Scan a folder</span>
+            <span class="row-sub">Batch scan up to 500 files (txt, md, json, js, py…)</span>
+          </div>
+          <button class="btn-primary-action" id="scanFolderBtn">Choose folder…</button>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">CPU limiter</span>
+            <span class="row-sub">Pause scans if app CPU usage exceeds 70%</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="cpuLimiterEnabled" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="row-label-stack">
+            <span class="row-label">Scan output</span>
+            <span class="row-sub">Code blocks detected in the selected file or folder</span>
+          </div>
+        </div>
+
+        <div class="scan-output-container">
+          <textarea id="scanOutput" class="scan-output" readonly placeholder="Scan results appear here…"></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-danger" id="toggleServerBtn">Stop</button>
+        <span class="save-msg" id="saveMsg">Saved.</span>
+      </div>
+      <span class="motto">Feic Mo Chroí™</span>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      </div>
+    </footer>
+
+  </div>
+
+    <!-- ── Activity panel (scan progress feedback) ── -->
+    <div class="activity-panel" id="activityPanel">
+      <div class="activity-header">
+        <span class="activity-title">Activity</span>
+        <div class="activity-status">
+          <div class="status-icon" id="statusIcon">·</div>
+          <button class="activity-close" id="activityClose" >×</button>
+        </div>
+      </div>
+      <div class="activity-details" id="activityDetails">Ready</div>
+      <div class="activity-progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="activity-controls">
+        <button class="sound-toggle" id="soundToggle">♪ sound</button>
+        <span class="activity-timer" id="activityTimer">--:--</span>
+      </div>
+    </div>
+
+    <!-- ── Directional flow indicator ── -->
+    <div class="directional-flow" id="directionalFlow">
+      <span class="flow-label" id="flowLabel">processing</span>
+      <div class="flow-arrow" id="flowArrow"></div>
+    </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
