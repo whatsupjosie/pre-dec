@@ -57,6 +57,7 @@ def _load(path: str = str(DECK_PATH)) -> Mapping:
     topics = {name: [re.compile(p, re.IGNORECASE) for p in pats] for name, pats in raw.items() if name}
     return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {})),
             "priority": list(deck.get("priority_topics", [])),
+            "kit": dict(deck.get("phrase_kit", {})),
             "angles": {topic: {name: re.compile(rx, re.IGNORECASE) for name, rx in group.items()}
                        for topic, group in deck.get("angles", {}).items()}}
 
@@ -259,6 +260,14 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
                 by_topic[t] = pool
         if by_topic:
             beats = min(by_topic.values(), key=len)
+    if not beats and "story" in spoken and deck["kit"]:
+        # A story asked for, or asked to go on, with no card to hand: build one.
+        # Half the time he leaves it to his longer monologues instead.
+        continuing = bool(_CONTINUE.search(message))
+        if continuing or seed[6] % 2 == 0:
+            told = _story_line(deck["kit"], seed, recent, continuing=continuing)
+            if told:
+                return {"topics": topics, "mood": mood, "cards": [told]}
     if not beats:
         return {"topics": topics, "mood": mood, "cards": []}
     # Within a big subject, the question picks the angle ("why no awards?" gets
@@ -269,6 +278,18 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         if angled:
             beats = angled
     beat = _pick(beats, seed, "beat", recent, slots)
+    # A story request gets a built action story half the time.
+    if "story" in spoken and deck["kit"] and seed[6] % 2 == 0:
+        told = _story_line(deck["kit"], seed, recent, continuing=bool(_CONTINUE.search(message)))
+        if told:
+            beat = told
+    # One time in three, a line built from a frame stands in for the card, so a
+    # topic he has covered before still gets something new.
+    kit_topic = _kit_topic(deck["kit"], spoken) if deck["kit"] else None
+    if kit_topic and not beat.get("solo") and seed[5] % 3 == 0:
+        framed = _frame_line(deck["kit"], kit_topic, mood, seed, recent)
+        if framed:
+            beat = framed
     if beat.get("solo"):  # a card that ends on its own beat (a cut-off, an exit) stands alone
         return {"topics": topics, "mood": mood, "cards": [beat]}
     chosen = []
@@ -294,6 +315,85 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
     if extra:
         chosen.append(extra)
     return {"topics": topics, "mood": mood, "cards": chosen}
+
+
+def _kit_topic(kit: Mapping, topics: Sequence[str]) -> Optional[str]:
+    fillers = kit.get("fillers", {})
+    aliases = kit.get("topic_aliases", {})
+    for t in topics:
+        t = aliases.get(t, t)
+        if t in fillers:
+            return t
+    return None
+
+
+def _frame_line(kit: Mapping, topic: str, mood: str, seed: bytes, recent: str) -> Optional[dict]:
+    """Build one line from a sentence frame and the topic's filler phrases.
+    Every combination is a whole sentence; nothing is assembled word by word."""
+    group = kit["fillers"][topic]
+    frames = [f for f in kit.get("frames", []) if mood in f.get("moods", [])]
+    if not frames:
+        return None
+    candidates = []
+    for f in frames:
+        slots = {k for k in ("thing", "quality", "doing") if "{" + k + "}" in f["text"].lower()}
+        if any(not group.get(k) for k in slots):
+            continue
+        candidates.append(f)
+    for attempt in range(8):
+        h = hashlib.sha256(seed + f"frame{attempt}".encode()).digest()
+        f = candidates[h[0] % len(candidates)] if candidates else None
+        if f is None:
+            return None
+        thing = group.get("thing", [""])[h[1] % max(1, len(group.get("thing", [])))]
+        quality = group.get("quality", [""])[h[2] % max(1, len(group.get("quality", [])))]
+        doing = group.get("doing", [""])[h[3] % max(1, len(group.get("doing", [])))]
+        text = (f["text"].replace("{Thing}", thing[:1].upper() + thing[1:]).replace("{thing}", thing)
+                .replace("{quality}", quality).replace("{doing}", doing))
+        if text.casefold() not in recent:
+            return {"id": f"{f['id']}:{topic}", "kind": "frame", "topics": [topic], "moods": [mood], "text": text}
+    return None
+
+
+_CONTINUE = re.compile(r"\b(what happened (next|then)|and then what|then what happened|keep going|go on then|carry on with the story)\b", re.IGNORECASE)
+_PRONOUNS = {"he", "she", "they"}
+
+
+def _story_line(kit: Mapping, seed: bytes, recent: str, continuing: bool = False) -> Optional[dict]:
+    """A little action story about anybody: a person (who carries its own he/him/his,
+    was/were), a movement (with its past tense) and a direction, set in a story frame."""
+    people, moves, dirs, frames = kit.get("people"), kit.get("moves"), kit.get("directions"), kit.get("story_frames")
+    if people and continuing:
+        # Carry on with whoever the last story was about, by pronoun.
+        tail = recent[-600:]
+        named = [p for p in people if p["who"] not in _PRONOUNS and p["who"].casefold() in tail]
+        last = max(named, key=lambda p: tail.rfind(p["who"].casefold()), default=None)
+        if last:
+            pron = next((p for p in people if p["who"] == last["pro"]), None)
+            if pron:
+                people = [pron]
+    elif people:
+        # A fresh story names its subject; "he", "she", "they" only carry on a story already told.
+        people = [p for p in people if p["who"] not in _PRONOUNS]
+    if not (people and moves and dirs and frames):
+        return None
+    for attempt in range(8):
+        h = hashlib.sha256(seed + f"story{attempt}".encode()).digest()
+        p, m, m2 = people[h[0] % len(people)], moves[h[1] % len(moves)], moves[h[2] % len(moves)]
+        d1, d2 = dirs[h[3] % len(dirs)], dirs[h[4] % len(dirs)]
+        if m2 is m:
+            m2 = moves[(h[2] + 1) % len(moves)]
+        if d2 == d1:
+            d2 = dirs[(h[4] + 1) % len(dirs)]
+        text = frames[h[5] % len(frames)]
+        for key, value in (("{Who}", p["Who"]), ("{who}", p["who"]), ("{pro}", p.get("pro", p["who"])), ("{them}", p["them"]), ("{their}", p["their"]),
+                           ("{was}", p["was"]), ("{went}", m["went"]), ("{went2}", m2["went"]),
+                           ("{gone_pp}", m["gone"]), ("{direction}", d1), ("{direction2}", d2)):
+            text = text.replace(key, value)
+        text = text[:1].upper() + text[1:]
+        if text.casefold() not in recent:
+            return {"id": "story_frame", "kind": "frame", "topics": ["story"], "moods": ["neutral"], "text": text}
+    return None
 
 
 def _join(parts: List[str]) -> str:

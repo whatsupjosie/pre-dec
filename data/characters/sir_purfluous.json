@@ -375,6 +375,9 @@
       ],
       "the_unclothed_years": [
         "\\b(porn|porno|pornography|adult (films?|movies?|industry)|x-?rated|smut|blue movies?|skin flicks?|dirty movies?|what (did|do) you (used to )?(make|shoot|film)|your old (films?|movies?|pictures)|the (unclothed|undressed) years)\\b"
+      ],
+      "story": [
+        "\\b(tell me a story|got a story|story time|what happened (next|then)|and then what|then what happened|anecdote|keep going|go on then|carry on with the story)\\b"
       ]
     },
     "cards": [
@@ -4847,6 +4850,638 @@
         "craft": "\\b(smut|trash|real (film|filmmaking|movies?|directing)|art|craft|technique|techniques|light|lighting|lit|shoot|shot|camera|lens|edit|editing|block|blocking|hard|difficult|skill|same as)\\b",
         "pete": "\\bpete\\b"
       }
+    },
+    "phrase_kit": {
+      "how_it_works": "Frames with blanks, filled from short phrases about the topic in hand. Every combination is a whole sentence. Josie edits both lists.",
+      "status": "draft_for_josie_to_edit",
+      "frames": [
+        {
+          "id": "frame_01",
+          "text": "I wish {thing} were still {quality}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_02",
+          "text": "Don't you think {thing} deserves better than it gets?",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_03",
+          "text": "Wouldn't you like to see {thing} done properly, just once more?",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_04",
+          "text": "If only {doing} paid what it's worth.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_05",
+          "text": "I won't hear a word against {thing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_06",
+          "text": "I can tell you everything about {doing}, and none of it is in the books.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_07",
+          "text": "I'd like to see anyone improve on {thing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_08",
+          "text": "Give me {thing} over a fortune any day.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_09",
+          "text": "Nobody appreciates {thing} anymore.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_10",
+          "text": "There's nothing in this world quite like {thing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_11",
+          "text": "I've spent my life {doing}, and I'd do it all again.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_12",
+          "text": "I'd rather be {doing} than almost anything.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_13",
+          "text": "Say what you like about {thing}; it never lies to you.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_14",
+          "text": "{Thing} is wasted on the young. And frankly on most of the old.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_15",
+          "text": "Do you know what I miss? {Thing}. When it was {quality}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_16",
+          "text": "The secret to {doing}? Patience, nerve, and a decent pair of shoes.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_17",
+          "text": "They don't teach {doing} anymore. They teach paperwork.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_18",
+          "text": "I could talk about {thing} until Horace closes. I have done, several times.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_19",
+          "text": "Some people collect stamps. I collect opinions on {thing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_20",
+          "text": "Mark my words: {thing} will come back. Everything does, eventually. Even me.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_21",
+          "text": "I've never once regretted {doing}. Not once. Twice, perhaps.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_22",
+          "text": "If I had my time again, I'd spend more of it {doing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_23",
+          "text": "Tell me honestly: is there anything more {quality} than {thing}?",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_24",
+          "text": "People think {doing} is easy. People are wrong about most things.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_25",
+          "text": "I learned {doing} the hard way. Is there another way? I've never found it.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_26",
+          "text": "{Thing}. Now there's a subject. Pour yourself something; this may take a while.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_27",
+          "text": "I'd give my second-best suit for one more afternoon {doing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_28",
+          "text": "The world would be a kinder place if everyone tried {doing}, just once.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_29",
+          "text": "Never trust a man who doesn't have an opinion on {thing}.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        },
+        {
+          "id": "frame_30",
+          "text": "Between you and me, {thing} is the whole trick. Everything else is curtains.",
+          "moods": [
+            "neutral",
+            "celebrate",
+            "setback"
+          ]
+        }
+      ],
+      "fillers": {
+        "old_movies": {
+          "thing": [
+            "a good close-up",
+            "a long silent stare",
+            "a slow dissolve",
+            "an old double feature",
+            "a proper intermission",
+            "a face that means it",
+            "black and white",
+            "a matinee in the rain"
+          ],
+          "quality": [
+            "patient",
+            "brave",
+            "romantic",
+            "generous",
+            "mysterious"
+          ],
+          "doing": [
+            "watching a face think",
+            "sitting through the credits",
+            "arguing about endings",
+            "seeing pictures on the big screen",
+            "learning films by heart"
+          ]
+        },
+        "set_work": {
+          "thing": [
+            "a clean first take",
+            "a good crew",
+            "a quiet set",
+            "an honest rehearsal",
+            "a well-hit mark",
+            "the moment before 'action'"
+          ],
+          "quality": [
+            "quiet",
+            "respected",
+            "unhurried",
+            "rare"
+          ],
+          "doing": [
+            "hitting a mark",
+            "waiting for the light",
+            "resetting for one more",
+            "calling the wrap",
+            "lighting a face"
+          ]
+        },
+        "podcast": {
+          "thing": [
+            "a good microphone",
+            "a long pause",
+            "a guest who's nervous",
+            "a proper cold open",
+            "a conversation that wanders off and comes back"
+          ],
+          "quality": [
+            "honest",
+            "intimate",
+            "unhurried",
+            "rare"
+          ],
+          "doing": [
+            "listening properly",
+            "asking the second question",
+            "leaving a silence alone",
+            "editing out one's own coughing"
+          ]
+        },
+        "acting": {
+          "thing": [
+            "a well-placed pause",
+            "a scene partner who listens",
+            "a choice made boldly",
+            "stillness",
+            "a line said quietly"
+          ],
+          "quality": [
+            "brave",
+            "truthful",
+            "rare",
+            "dangerous"
+          ],
+          "doing": [
+            "listening on stage",
+            "playing against the feeling",
+            "finding the want in a scene",
+            "learning lines on the stairs",
+            "making a bold choice"
+          ]
+        },
+        "work": {
+          "thing": [
+            "a full day's pay",
+            "an honest client",
+            "a rental that pays on time",
+            "a budget that's actually a budget"
+          ],
+          "quality": [
+            "fair",
+            "punctual",
+            "sensible"
+          ],
+          "doing": [
+            "chasing invoices",
+            "keeping the lights on",
+            "saying yes and finding out how",
+            "running a studio on hope"
+          ]
+        },
+        "drink": {
+          "thing": [
+            "a proper whiskey",
+            "a well-made cocktail",
+            "a pint poured slowly",
+            "Horace's Third Act"
+          ],
+          "quality": [
+            "affordable",
+            "strong",
+            "honest"
+          ],
+          "doing": [
+            "sharing a drink with friends",
+            "drinking somebody else's whiskey",
+            "toasting an empty seat"
+          ]
+        },
+        "building": {
+          "thing": [
+            "this old palace",
+            "a creaking floorboard",
+            "the old marquee",
+            "a theatre with a leak"
+          ],
+          "quality": [
+            "grand",
+            "full",
+            "alive"
+          ],
+          "doing": [
+            "walking these halls at night",
+            "fixing the breakers",
+            "giving tours nobody asked for"
+          ]
+        },
+        "the_unclothed_years": {
+          "thing": [
+            "a well-lit tableau",
+            "the lady garden at golden hour",
+            "a candlelit rear starfish",
+            "a properly motivated huddle buddy",
+            "a four o'clock tea break"
+          ],
+          "quality": [
+            "respected",
+            "dignified",
+            "artistic",
+            "eligible for awards"
+          ],
+          "doing": [
+            "lighting the unclothed",
+            "framing the twinkle cave with dignity",
+            "defending one's oeuvre",
+            "explaining one's work to the French"
+          ]
+        }
+      },
+      "topic_aliases": {
+        "acting_basics": "acting",
+        "camera_acting": "acting",
+        "voice_nerves": "acting",
+        "audition": "acting",
+        "lines": "acting",
+        "rehearsal_blocking": "acting",
+        "directing": "acting",
+        "emotion_on_cue": "acting",
+        "character": "acting",
+        "dialogue": "acting",
+        "structure": "acting",
+        "writer_block": "acting",
+        "rewriting": "acting",
+        "scene_craft": "acting"
+      },
+      "people": [
+        {
+          "who": "he",
+          "Who": "He",
+          "them": "him",
+          "their": "his",
+          "was": "was",
+          "has": "has",
+          "pro": "he"
+        },
+        {
+          "who": "she",
+          "Who": "She",
+          "them": "her",
+          "their": "her",
+          "was": "was",
+          "has": "has",
+          "pro": "she"
+        },
+        {
+          "who": "they",
+          "Who": "They",
+          "them": "them",
+          "their": "their",
+          "was": "were",
+          "has": "have",
+          "pro": "they"
+        },
+        {
+          "who": "Pete",
+          "Who": "Pete",
+          "them": "her",
+          "their": "her",
+          "was": "was",
+          "has": "has",
+          "pro": "she"
+        },
+        {
+          "who": "Horace",
+          "Who": "Horace",
+          "them": "him",
+          "their": "his",
+          "was": "was",
+          "has": "has",
+          "pro": "he"
+        },
+        {
+          "who": "RePete",
+          "Who": "RePete",
+          "them": "him",
+          "their": "his",
+          "was": "was",
+          "has": "has",
+          "pro": "he"
+        },
+        {
+          "who": "Pints",
+          "Who": "Pints",
+          "them": "her",
+          "their": "her",
+          "was": "was",
+          "has": "has",
+          "pro": "she"
+        },
+        {
+          "who": "the leading man",
+          "Who": "The leading man",
+          "them": "him",
+          "their": "his",
+          "was": "was",
+          "has": "has",
+          "pro": "he"
+        },
+        {
+          "who": "the whole crew",
+          "Who": "The whole crew",
+          "them": "them",
+          "their": "their",
+          "was": "were",
+          "has": "have",
+          "pro": "they"
+        },
+        {
+          "who": "a gentleman from accounts",
+          "Who": "A gentleman from accounts",
+          "them": "him",
+          "their": "his",
+          "was": "was",
+          "has": "has",
+          "pro": "he"
+        }
+      ],
+      "moves": [
+        {
+          "go": "run",
+          "went": "ran",
+          "gone": "run"
+        },
+        {
+          "go": "walk",
+          "went": "walked",
+          "gone": "walked"
+        },
+        {
+          "go": "jog",
+          "went": "jogged",
+          "gone": "jogged"
+        },
+        {
+          "go": "fly",
+          "went": "flew",
+          "gone": "flown"
+        },
+        {
+          "go": "slide",
+          "went": "slid",
+          "gone": "slid"
+        },
+        {
+          "go": "jump",
+          "went": "jumped",
+          "gone": "jumped"
+        },
+        {
+          "go": "roll",
+          "went": "rolled",
+          "gone": "rolled"
+        },
+        {
+          "go": "drive",
+          "went": "drove",
+          "gone": "driven"
+        },
+        {
+          "go": "back away",
+          "went": "backed away",
+          "gone": "backed away"
+        },
+        {
+          "go": "tiptoe",
+          "went": "tiptoed",
+          "gone": "tiptoed"
+        }
+      ],
+      "directions": [
+        "in",
+        "back",
+        "forwards",
+        "backwards",
+        "out of the window",
+        "to the left",
+        "to the right",
+        "over the top",
+        "underneath the stage",
+        "straight through the back row",
+        "in reverse",
+        "round the front"
+      ],
+      "story_frames": [
+        "And then {who} {went} {direction}, and that, as they say, was that.",
+        "So {who} {went} {direction}, because what else could {pro} do?",
+        "Then {who} {went} {direction}. Nobody has ever explained why. I've asked.",
+        "{Who} {went} {direction}, everybody else {went2} {direction2}, and I simply stood there in my good suit.",
+        "Halfway through the take, {who} {went} {direction}. We kept rolling. Of course we kept rolling.",
+        "I said 'action', and {who} {went} {direction}. Not the blocking we rehearsed, but I've never been prouder.",
+        "{Who} {went} {direction} so fast {their} hat stayed behind. I still have the hat.",
+        "And because {who} {was} terrified of the tiny chair, {pro} {went} {direction} instead of sitting down.",
+        "Nobody could stop {them}. {Who} {went} {direction}, then {went2} {direction2}, then asked for a towel.",
+        "If {who} hadn't {gone_pp} {direction}, we'd never have got the shot. Sometimes chaos is the director."
+      ]
     }
   }
 }

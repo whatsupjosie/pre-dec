@@ -146,3 +146,52 @@ def test_pete_always_shuts_him_down_before_a_story_is_told():
     for c in shush:
         assert c.get("solo") is True and "(Pete" in c["text"]
         assert "movie" not in c["text"].lower()   # she never jokes about the movie, and neither does he
+
+
+def test_every_frame_and_filler_makes_a_whole_sentence():
+    import itertools
+    kit = json.loads(Path("data/characters/sir_purfluous.json").read_text(encoding="utf-8"))["cue_cards"]["phrase_kit"]
+    lines = set()
+    for topic, g in kit["fillers"].items():
+        assert not any(" my " in f" {x} " for x in g["doing"]), topic   # "doing" must fit any frame
+        for f in kit["frames"]:
+            for th, q, do in itertools.product(g["thing"], g["quality"], g["doing"]):
+                t = (f["text"].replace("{Thing}", th[:1].upper() + th[1:]).replace("{thing}", th)
+                     .replace("{quality}", q).replace("{doing}", do))
+                assert "{" not in t and t[:1].isupper() and t.rstrip()[-1] in ".?!", t
+                lines.add(t)
+    assert len(lines) > 1400   # 1,491 distinct sentences at the time of writing
+
+
+def test_frames_add_new_lines_to_a_topic_he_has_covered():
+    from modules.purfluous_cue_cards import reload
+    reload()
+    hist, seen = [], set()
+    for _ in range(12):
+        out = respond("I love old movies", hist)
+        seen.add(out)
+        hist += [{"speaker": "You", "text": "I love old movies"}, {"speaker": "Sir Purfluous", "text": out}]
+    assert len(seen) >= 10
+
+
+def test_people_carry_their_own_grammar():
+    import hashlib
+    from modules.purfluous_cue_cards import reload, _story_line, _load
+    reload()
+    kit = _load()["kit"]
+    for i in range(400):
+        line = _story_line(kit, hashlib.sha256(str(i).encode()).digest(), "", continuing=True)["text"]
+        assert "{" not in line
+        assert "they was" not in line.lower() and "crew was" not in line.lower()
+        assert "he were" not in line.lower() and "she were" not in line.lower()
+
+
+def test_a_fresh_story_never_starts_with_a_bare_pronoun():
+    import hashlib
+    from modules.purfluous_cue_cards import _story_line, _load
+    kit = _load()["kit"]
+    for i in range(300):
+        line = _story_line(kit, hashlib.sha256(str(i).encode()).digest(), "")["text"]
+        names = [p["who"].lower() for p in kit["people"] if p["who"] not in ("he", "she", "they")]
+        assert any(n in line.lower() for n in names), line          # the subject is named
+        assert line.split()[0].lower() not in ("he", "she", "they"), line
