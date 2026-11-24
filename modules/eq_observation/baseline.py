@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Mapping, Optional
 
 from .dials import ObservationDials
+from .features import spread_floor
 
 
 @dataclass
@@ -23,15 +24,14 @@ class FeatureBaseline:
     def variance(self) -> float:
         return self.m2 / (self.n - 1) if self.n > 1 else 0.0
 
-    def deviation(self, value: float, dials: ObservationDials) -> Optional[float]:
+    def deviation(self, value: float, dials: ObservationDials, feature: str = "") -> Optional[float]:
         """Standard deviations from usual, clipped; None while warming up."""
         if self.n < dials.baseline_min_samples:
             return None
         sd = math.sqrt(max(self.variance(), 0.0))
-        # A floor on spread: a person who always writes exactly five words has not
-        # earned an infinite z-score for writing six.
-        floor = max(1e-6, abs(self.mean) * 0.05, 0.02)
-        z = (value - self.mean) / max(sd, floor)
+        # A floor on spread (features.spread_floor): a person who always writes exactly
+        # five words has not earned an enormous deviation for writing six.
+        z = (value - self.mean) / max(sd, spread_floor(feature, self.mean), 1e-9)
         return max(-dials.z_clip, min(dials.z_clip, z))
 
     def update(self, value: float, dials: ObservationDials) -> None:
@@ -70,7 +70,7 @@ class PersonBaseline:
     features: Dict[str, FeatureBaseline] = field(default_factory=dict)
 
     def deviations(self, values: Mapping[str, float], dials: ObservationDials) -> Dict[str, Optional[float]]:
-        return {name: self.features.get(name, FeatureBaseline()).deviation(v, dials) for name, v in values.items()}
+        return {name: self.features.get(name, FeatureBaseline()).deviation(v, dials, name) for name, v in values.items()}
 
     def update(self, values: Mapping[str, float], dials: ObservationDials) -> None:
         for name, v in values.items():

@@ -64,6 +64,27 @@ _BEHAVIOUR_FEATURES = {
     "face": ("expressivity", "blink_rate", "tic_rate", "gaze_away_ratio"),
 }
 
+# Measurement resolution: the smallest spread a baseline may claim for a feature. A person who
+# has never used an exclamation mark has not earned a maximal deviation for using one; these
+# floors say how big a change has to be before it is a change at all. They are technical
+# resolution, not owner decisions (those are in dials.py). Each takes the person's mean.
+FEATURE_FLOORS = {
+    "word_count": lambda mean: max(2.0, 0.15 * abs(mean)),
+    "sentence_words": lambda mean: max(1.5, 0.15 * abs(mean)),
+    "caps_ratio": lambda mean: 0.05,
+    "exclaim_rate": lambda mean: 0.25,
+    "likely_typo_rate": lambda mean: 0.03,
+}
+
+def spread_floor(feature: str, mean: float) -> float:
+    rule = FEATURE_FLOORS.get(feature)
+    return float(rule(mean)) if rule else max(0.05, 0.10 * abs(mean))
+
+
+# Short all-capital words that are ordinary writing, not raised voice.
+PLAIN_CAPITALS = frozenset({"OK", "TV", "AI", "AM", "PM", "ID", "US", "UK", "EU", "DJ", "PC", "FYI", "BTW",
+                            "USB", "GPU", "CPU", "RAM", "PDF", "URL", "API", "LA", "NYC", "CEO", "DM", "PS"})
+
 _WORD = re.compile(r"[A-Za-z][A-Za-z']*")
 _SENTENCE_END = re.compile(r"[.!?]+(?:\s|$)|\n+")
 _CODE_FENCE = "```"
@@ -82,10 +103,6 @@ class FeatureSet:
 
     def to_dict(self) -> Dict[str, Any]:
         return {"values": dict(self.values), "status": dict(self.status), "problems": list(self.problems)}
-
-
-def words_of(text: str) -> List[str]:
-    return [w.lower() for w in _WORD.findall(text or "")]
 
 
 def _edit_distance_at_most_one(a: str, b: str) -> bool:
@@ -111,9 +128,11 @@ def _edit_distance_at_most_one(a: str, b: str) -> bool:
 def likely_typos(words: List[str], vocabulary: Mapping[str, int], min_count: int) -> int:
     """Count words the person has never used that sit one keystroke from a word they use often.
 
-    No dictionary: the reference is the person's own writing, so slang, names and
-    their own spellings are never counted as mistakes once they are habitual.
-    Words shorter than four letters are skipped (too many legitimate neighbours).
+    No dictionary: the reference is the person's own writing, so slang and their own
+    spellings stop counting as mistakes once they are habitual. Words shorter than four
+    letters are skipped (too many legitimate neighbours). Callers pass only lower-case
+    tokens as written, so capitalised words (names, and the first word of a sentence)
+    are never judged: a new name next to a known word is not a typo.
     """
     if not vocabulary:
         return 0
@@ -140,12 +159,14 @@ def text_features(text: str, vocabulary: Mapping[str, int], *, min_count: int) -
     if _CODE_FENCE in text or len(text) > 10000:
         # Pasted code or long documents are not the person's conversational writing.
         return {}, "unavailable", []
-    words = words_of(text)
+    raw_tokens = _WORD.findall(text)
+    words = [w.lower() for w in raw_tokens]
+    judged = [w for w in raw_tokens if w[:1].islower()]  # see likely_typos: capitalised words are not judged
     n = len(words)
     sentences = [s for s in _SENTENCE_END.split(text) if _WORD.search(s or "")]
     letters = [ch for ch in text if ch.isalpha()]
     # A lone capital I and sentence-initial capitals are normal writing, not emphasis.
-    shouted = sum(1 for tok in re.findall(r"[A-Za-z]{2,}", text) if tok.isupper())
+    shouted = sum(1 for tok in re.findall(r"[A-Za-z]{2,}", text) if tok.isupper() and tok not in PLAIN_CAPITALS)
     values: Dict[str, float] = {
         "word_count": float(n),
         "sentence_words": float(n) / max(1, len(sentences)),
@@ -153,7 +174,7 @@ def text_features(text: str, vocabulary: Mapping[str, int], *, min_count: int) -
         "exclaim_rate": text.count("!") / max(1, len(sentences)),
     }
     if n >= 3 and letters:
-        values["likely_typo_rate"] = likely_typos(words, vocabulary, min_count) / n
+        values["likely_typo_rate"] = likely_typos(judged, vocabulary, min_count) / n
     return values, "observed", words
 
 

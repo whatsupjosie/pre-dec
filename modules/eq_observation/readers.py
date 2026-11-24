@@ -67,6 +67,8 @@ class InnerStateReader:
             "status": status,
             "baseline_maturity": round(maturity, 3),
             "groups": agreement["groups"],
+            "departed": agreement["departed"],
+            "mature": agreement["mature"],
             "axes": agreement["axes"],
             "aggregate": agg,
             "weights": agreement["weights"],
@@ -99,12 +101,32 @@ _BRUSH_OFF = re.compile(
     r"\b(i understand( how you feel)?|that must be (hard|difficult|tough)|i'?m sorry you feel|"
     r"it'?s (completely |totally )?(okay|ok|normal|valid) to feel|your feelings are valid|"
     r"i hear you|that sounds (hard|difficult|tough))\b", re.I)
-# Telling someone what they feel reads as presumption (asking is fine; a question mark ends it).
-_TELLING = re.compile(r"\b(you('re| are) (feeling|clearly|obviously)|you must (feel|be feeling)|"
-                      r"you feel (so |really |very )?\w+)\b[^?]*?(?:[.!]|$)", re.I)
-_DIRECTIVE = re.compile(r"(?:^|[.!?]\s+)(try|remember|make sure|take|go|stop|just|don'?t)\b|\byou should\b|\byou need to\b",
-                        re.I)
-_SENTENCE = re.compile(r"[.!?]+(?:\s|$)|\n+")
+# A claim about what the other person feels. Asking is fine, so the sentence it sits in must
+# not be a question, and a conditional or a question word just before it ("if you feel like
+# it", "how do you feel") makes it not a claim. "you feel like <doing>" is about wanting.
+_FEELING_CLAIM = re.compile(r"\byou(?:'re| are) (?:feeling|clearly|obviously)\b|\byou must (?:feel|be feeling)\b|"
+                            r"\byou feel (?!like\b)(?:so |really |very )?[a-z]+", re.I)
+# A hedge ("maybe you feel tired") still names a feeling for them, so hedges are not exempt.
+_NOT_A_CLAIM_BEFORE = re.compile(r"\b(if|when|whenever|whether|unless|do|does|did|how|what|why)\s+(?:\w+\s+){0,2}$",
+                                 re.I)
+# Directives at the start of a sentence, and the two obligation phrases anywhere. Soft openers
+# such as "just" or "go" are left out on purpose: "Just checking in" and "Go for it" are not orders.
+_DIRECTIVE_START = re.compile(r"^(?:try|remember|make sure|take|stop|don'?t|do not|calm down|relax)\b", re.I)
+_OBLIGATION = re.compile(r"\byou (?:should|need to|have to|must)\b(?! (?:feel|be feeling)\b)", re.I)
+_SENTENCES = re.compile(r"[^.!?\n]+[.!?]*")
+
+
+def _sentences(text: str) -> List[str]:
+    return [m.group(0).strip() for m in _SENTENCES.finditer(text or "") if m.group(0).strip()]
+
+
+def _claims_feeling(sentence: str) -> bool:
+    if sentence.rstrip().endswith("?"):
+        return False
+    for match in _FEELING_CLAIM.finditer(sentence):
+        if not _NOT_A_CLAIM_BEFORE.search(sentence[: match.start()]):
+            return True
+    return False
 
 
 class PerceptionReader:
@@ -115,22 +137,25 @@ class PerceptionReader:
 
     def perceive_reply(self, reply: str, *, user_message: str = "") -> Dict[str, Any]:
         """How a reply from Alex (or any character) is likely to come across to the person reading it."""
+        d = self.dials
         reply = reply if isinstance(reply, str) else ""
         words = re.findall(r"[A-Za-z']+", reply)
         user_words = re.findall(r"[A-Za-z']+", user_message or "")
-        sentences = [s for s in _SENTENCE.split(reply) if s.strip()]
+        sentences = _sentences(reply)
         reads: List[str] = []
         if _BRUSH_OFF.search(reply):
             reads.append("may_read_as_script_or_brush_off")
-        if _TELLING.search(reply):
+        if any(_claims_feeling(sentence) for sentence in sentences):
             reads.append("may_read_as_telling_them_how_they_feel")
-        directives = len(_DIRECTIVE.findall(reply))
-        if directives >= 2:
+        directives = sum(1 for sentence in sentences if _DIRECTIVE_START.search(sentence)) \
+            + len(_OBLIGATION.findall(reply))
+        if directives >= d.reply_orders_min_directives:
             reads.append("may_read_as_orders")
-        ratio = (len(words) / max(1, len(user_words))) if user_words else None
-        if ratio is not None and len(user_words) <= 12 and ratio >= 6:
+        ratio = (len(words) / len(user_words)) if user_words else None
+        if ratio is not None and len(user_words) <= d.reply_overwhelming_max_user_words \
+                and ratio >= d.reply_overwhelming_ratio:
             reads.append("may_read_as_overwhelming")
-        if ratio is not None and len(user_words) >= 60 and len(words) <= 8:
+        if user_words and len(user_words) >= d.reply_curt_min_user_words and len(words) <= d.reply_curt_max_words:
             reads.append("may_read_as_curt")
         if "?" in reply:
             reads.append("invites_a_reply")
@@ -141,26 +166,29 @@ class PerceptionReader:
     def perceive_display(self, values: Mapping[str, float]) -> Dict[str, Any]:
         """How a person's or a character's visible behaviour reads to an audience (absolute values).
 
-        For the stage, avatars and voice. These thresholds are first proposals: the
-        perception scorecard, scored against observers, is what will set them."""
+        For the stage, avatars and voice. Thresholds are in dials.py; the perception
+        scorecard, scored against observers, is what should set them."""
+        d = self.dials
+
+        def at_least(name: str, threshold: float) -> bool:
+            v = values.get(name)
+            return isinstance(v, (int, float)) and not isinstance(v, bool) and v >= threshold
+
+        def at_most(name: str, threshold: float) -> bool:
+            v = values.get(name)
+            return isinstance(v, (int, float)) and not isinstance(v, bool) and v <= threshold
+
         reads: List[str] = []
-        caps = values.get("caps_ratio")
-        exclaims = values.get("exclaim_rate")
-        if (caps is not None and caps >= 0.3) or (exclaims is not None and exclaims >= 1.0):
+        if at_least("caps_ratio", d.display_intense_caps) or at_least("exclaim_rate", d.display_intense_exclaims):
             reads.append("reads_as_intense")
-        wc = values.get("word_count")
-        if wc is not None and wc <= 3:
+        if at_most("word_count", d.display_brief_words):
             reads.append("reads_as_brief")
-        typos = values.get("likely_typo_rate")
-        if typos is not None and typos >= 0.15:
+        if at_least("likely_typo_rate", d.display_rushed_typos):
             reads.append("reads_as_rushed")
-        rate = values.get("speech_rate")
-        if rate is not None and rate >= 3.5:  # words per second
+        if at_least("speech_rate", d.display_fast_speech_rate):
             reads.append("sounds_fast")
-        expressivity = values.get("expressivity")
-        if expressivity is not None and expressivity <= 0.15:
+        if at_most("expressivity", d.display_flat_expressivity):
             reads.append("looks_flat")
-        gaze = values.get("gaze_away_ratio")
-        if gaze is not None and gaze >= 0.6:
+        if at_least("gaze_away_ratio", d.display_disengaged_gaze):
             reads.append("looks_disengaged")
         return {"reader": "perception", "label": PERCEPTION_LABEL, "subject": "display", "expected_reads": reads}

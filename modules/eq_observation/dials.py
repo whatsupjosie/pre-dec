@@ -56,9 +56,24 @@ class ObservationDials:
     vocabulary_limit: int = 4000
     vocabulary_min_count: int = 3
 
-    # Readings kept per person for calibration and scoring (numbers only).
+    # Readings kept per person for calibration and scoring (numbers and ids only).
     readings_kept: int = 200
     verdicts_kept: int = 500
+
+    # Perception reader, first proposals. The perception scorecard, scored against
+    # what observers actually reported, is what should set these.
+    reply_orders_min_directives: int = 2       # this many directives in one reply may read as orders
+    reply_overwhelming_ratio: float = 6.0      # reply this many times longer than a short message
+    reply_overwhelming_max_user_words: int = 12
+    reply_curt_min_user_words: int = 60        # a long message answered in
+    reply_curt_max_words: int = 8              # this few words may read as curt
+    display_intense_caps: float = 0.3
+    display_intense_exclaims: float = 1.0
+    display_brief_words: int = 3
+    display_rushed_typos: float = 0.15
+    display_fast_speech_rate: float = 3.5      # words per second
+    display_flat_expressivity: float = 0.15
+    display_disengaged_gaze: float = 0.6
 
 
 DEFAULT_DIALS = ObservationDials()

@@ -38,9 +38,11 @@ def score_inner(card: Scorecard, reading: Mapping[str, Any], answer: str) -> Non
     """Was the band right? A quiet band is right when nothing was going on, and vice versa."""
     if answer not in ("something_was_going_on", "nothing_was_going_on"):
         return
-    band = ((reading.get("aggregate") or {}).get("band")) or "not_enough_witnesses"
     went_on = answer == "something_was_going_on"
-    card.record(f"band:{band}", (band != "quiet") == went_on if band != "not_enough_witnesses" else False)
+    band = (reading.get("aggregate") or {}).get("band")
+    if band in ("quiet", "noticed", "strong"):
+        # A reading with too few witnesses made no prediction, so it is neither a hit nor a miss.
+        card.record(f"band:{band}", (band != "quiet") == went_on)
     gap = reading.get("report_gap")
     if gap:
         card.record(f"gap:{gap.get('kind')}", went_on if gap.get("kind") == "says_fine_witnesses_differ" else not went_on)
