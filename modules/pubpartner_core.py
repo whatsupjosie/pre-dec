@@ -53,6 +53,7 @@ from .pubpartner_relationship import RelationshipEngine
 from .pubpartner_knowledge import PubPartnerKnowledgeBroker
 from .pubpartner_work_notes import WorkNotesStore
 from .companion_advisory import CompanionAdvisor
+from .eq_observation import ObservationLayer
 
 FCP_VERSION = "FCP1"
 DEFAULT_LANGUAGE = "en-US"
@@ -661,6 +662,7 @@ class PubPartnerSpine:
         scoped_memory: bool = False,
         companion_advisory_enabled: bool = True,
         docking_node: Any = None,
+        eq_observation_enabled: bool = True,
     ) -> None:
         self.data_dir = Path(data_dir)
         self.vault = VerbatimVault(self.data_dir)
@@ -686,6 +688,9 @@ class PubPartnerSpine:
         # User-owned project notes: shared by every friend and model the user
         # talks to, never stored inside a character cartridge or vessel.
         self.work_notes = WorkNotesStore(self.data_dir)
+        # Shared EQ observation layer, SHADOW mode: observes and records numbers per person,
+        # never changes a reply. See modules/eq_observation/layer.py.
+        self.eq_observation = ObservationLayer(self.data_dir) if eq_observation_enabled else None
 
     def _default_vessel_friend(self) -> Dict[str, Any]:
         """Combine the single authored Alex voice with her persistent vessel.
@@ -814,6 +819,7 @@ class PubPartnerSpine:
         prompt_mode: str = "auto",
         log_turn: bool = True,
         _companion_advisor: Optional[CompanionAdvisor] = None,
+        behaviour: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         user_id = user_id or "anon"
         session_id = session_id or "default"
@@ -1008,6 +1014,19 @@ class PubPartnerSpine:
         llm_prompt_text = packet.as_compact_text(include_source_text=prompt_policy["include_source_text"])
         llm_prompt_json = packet.as_json(include_source_text=prompt_policy["include_source_text"])
         turn_id = f"turn_{int(_now() * 1000)}_{uuid.uuid4().hex[:8]}"
+        eq_observation: Optional[Dict[str, Any]] = None
+        # Private turns only: a person writes differently on a shared stage, and their
+        # personal baseline must describe how they write to their partner.
+        if self.eq_observation is not None and source.kind == "message" and turn_audience == "private":
+            try:
+                reading = self.eq_observation.observe_turn(
+                    user_id=user_id, session_id=session_id, turn_id=turn_id,
+                    source_id=source.source_id, text=message, behaviour=behaviour)
+                eq_observation = self.eq_observation.shadow_view(reading)
+            except Exception as exc:
+                # Observation enriches a turn; it must never block one.
+                eq_observation = {"status": "unavailable", "influence": "none",
+                                  "error": f"{type(exc).__name__}: {exc}"[:240]}
         result = {
             "ok": True,
             "turn_id": turn_id,
@@ -1032,6 +1051,8 @@ class PubPartnerSpine:
             "vessel_recorded_event_id": vessel_event_id,
             "work_notes_context": work_notes_status,
         }
+        if eq_observation is not None:
+            result["eq_observation"] = eq_observation
         if log_turn:
             if companion is not None:
                 result["companion_advisory"] = companion
@@ -1065,6 +1086,7 @@ class PubPartnerSpine:
         prompt_mode: str = "auto",
         allow_fallback: bool = True,
         knowledge: Optional[Dict[str, Any]] = None,
+        behaviour: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Build an FCP1 turn, dispatch it to a provider, then restore friend voice.
 
@@ -1093,6 +1115,7 @@ class PubPartnerSpine:
             prompt_mode=prompt_mode,
             log_turn=False,
             _companion_advisor=companion_advisor,
+            behaviour=behaviour,
         )
         knowledge_task = dict(task or {})
         knowledge_task.setdefault("content_kind", content_kind)
@@ -1156,6 +1179,15 @@ class PubPartnerSpine:
             review = companion_advisor.review(message, voice.friend_response, content_kind=str((turn.get("source") or {}).get("kind") or content_kind))
             receipt["companion_review"] = review
             live_result["companion_review"] = review
+        if self.eq_observation is not None and turn.get("eq_observation") and isinstance(voice.friend_response, str):
+            # Perception reader, SHADOW: how the reply is likely to come across, recorded for scoring.
+            try:
+                live_result["eq_perception"] = self.eq_observation.perceive_reply(
+                    user_id=user_id or "anon", turn_id=str(turn.get("turn_id") or ""),
+                    reply=voice.friend_response, user_message=message)
+            except Exception as exc:
+                live_result["eq_perception"] = {"status": "unavailable", "influence": "none",
+                                                "error": f"{type(exc).__name__}: {exc}"[:240]}
         receipt_chain_row = self.receipts.append(user_id=user_id or "anon", session_id=session_id or "default", receipt=receipt)
         live_result.update({
             "live_loop": True,

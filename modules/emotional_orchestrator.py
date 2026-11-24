@@ -12,7 +12,7 @@ same broker contract as every other secondary observer.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 import math
 import threading
 import time
@@ -61,14 +61,32 @@ class EmotionSignal:
             raise ValueError("emotion signal requires source, subject_id and session_id")
         if not self.provenance:
             raise ValueError("emotion signal requires provenance")
-        object.__setattr__(self, "confidence", _unit(self.confidence))
-        object.__setattr__(self, "expires_after", max(1.0, min(3600.0, float(self.expires_after))))
+
+        # Ported from the 2026-10-02 empathy pass (zip lineage). Emotional evidence is an
+        # authority-bearing boundary: a non-finite value is malformed evidence, not weak
+        # evidence. Coercing NaN/Inf to zero would manufacture a reading nobody made.
+        def finite_number(name: str, value: Any) -> float:
+            try:
+                number = float(value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"emotion signal {name} must be numeric") from exc
+            if not math.isfinite(number):
+                raise ValueError(f"emotion signal {name} must be finite")
+            return number
+
+        confidence = finite_number("confidence", self.confidence)
+        observed_at = finite_number("observed_at", self.observed_at)
+        expires_after = finite_number("expires_after", self.expires_after)
+        object.__setattr__(self, "confidence", max(0.0, min(1.0, confidence)))
+        object.__setattr__(self, "observed_at", observed_at)
+        object.__setattr__(self, "expires_after", max(1.0, min(3600.0, expires_after)))
         clean: Dict[str, float] = {}
         for key, value in dict(self.dimensions or {}).items():
             name = str(key).strip().lower()
             if not name:
                 continue
-            clean[name] = _signed(value) if name == "valence" else _unit(value)
+            number = finite_number(f"dimension {name!r}", value)
+            clean[name] = max(-1.0, min(1.0, number)) if name == "valence" else max(0.0, min(1.0, number))
         object.__setattr__(self, "dimensions", clean)
 
     def is_live(self, now: float) -> bool:
@@ -225,6 +243,10 @@ class EmotionalOrchestrator:
     def publish(self, signal: EmotionSignal) -> None:
         if signal.source not in self.REGISTERED_SOURCES:
             raise ValueError(f"unregistered emotional signal source: {signal.source!r}")
+        # Source-class invariant at the broker boundary too: a direct EmotionSignal caller
+        # cannot bypass the PEQ/CRE-EQ clinical-hypothesis floor.
+        if signal.source in {"peq", "cre_eq"} and not signal.clinical_hypothesis:
+            signal = replace(signal, clinical_hypothesis=True)
         key = (signal.subject_id, signal.session_id)
         with self._lock:
             bucket = self._signals.setdefault(key, [])
@@ -232,7 +254,21 @@ class EmotionalOrchestrator:
                 bucket[:] = [s for s in bucket if not (s.source == signal.source and s.event_id == signal.event_id)]
             bucket.append(signal)
             now = self._clock()
-            bucket[:] = [s for s in bucket if s.is_live(now)][-self._max_signals:]
+            live = [s for s in bucket if s.is_live(now)]
+            # Fair retention: one noisy producer may hold at most half of the session
+            # buffer, so it cannot evict every other witness.
+            per_source_cap = max(4, self._max_signals // 2)
+            retained: list[EmotionSignal] = []
+            source_counts: Dict[str, int] = {}
+            for item in reversed(live):
+                count = source_counts.get(item.source, 0)
+                if count >= per_source_cap:
+                    continue
+                retained.append(item)
+                source_counts[item.source] = count + 1
+                if len(retained) >= self._max_signals:
+                    break
+            bucket[:] = list(reversed(retained))
 
     def publish_alex(self, *, subject_id: str, session_id: str,
                      affect: Optional[Mapping[str, Any]], dynamics: Optional[Mapping[str, Any]] = None,
@@ -274,6 +310,8 @@ class EmotionalOrchestrator:
         normalized = str(source).strip().lower()
         if normalized not in self.REGISTERED_SOURCES:
             raise ValueError(f"unregistered emotional signal source: {source!r}")
+        # Callers may make evidence more restrictive, never less.
+        clinical_hypothesis = bool(clinical_hypothesis or normalized in {"peq", "cre_eq"})
         self.publish(EmotionSignal(
             source=normalized, subject_id=subject_id, session_id=session_id,
             room_id=room_id, observed_at=self._clock(), confidence=confidence,

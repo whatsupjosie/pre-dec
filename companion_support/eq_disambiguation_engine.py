@@ -697,7 +697,7 @@ class ContextDisambiguator:
         if intensity > 0.7 and valence < 0:
             opportunities.append("validate their feelings")
             opportunities.append("offer specific support")
-            opportunities.append("check if they need crisis resources")
+            opportunities.append("ask them plainly how they are doing; offer a service only if they ask")
         
         if context and context[0] == EmotionContext.FATIGUE:
             opportunities.append("normalize burnout")

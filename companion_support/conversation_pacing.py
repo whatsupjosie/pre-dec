@@ -224,14 +224,14 @@ class PresenceMode:
     def crisis_response(self) -> str:
         """
         When something might be acute/crisis.
-        This is not therapy. This is not a hotline.
-        But it needs to acknowledge and point.
+        This is not therapy and not a hotline. The partner stays, takes it
+        seriously and asks plainly. No service or number is offered unless the
+        person asks for one (owner rule, 2026-11-23: "unless the person asks,
+        no referring to services. No brushing them off.").
         """
         return (
-            "What you're saying matters, and I want to make sure I understand. "
-            "Are you safe right now? "
-            "If you're in immediate danger, please reach out to 988 (Suicide & Crisis Lifeline) "
-            "or text HOME to 741741."
+            "What you're saying matters, and I'm staying right here with you. "
+            "Are you safe right now? Is anyone with you, or someone who could come?"
         )
 
 
@@ -462,10 +462,12 @@ class MomentGuard:
                 f"Stay or hold before advancing."
             )
 
-        # Crisis check — never let anything through during ACUTE
+        # Crisis check: during ACUTE the reply must ask about their safety directly.
+        # It is not required to name a service; a number is given only when asked.
         if pacing_report.grief_weight == GriefWeight.ACUTE:
-            if "988" not in response_text and "crisis" not in response_text.lower():
-                return False, "During possible crisis, response must acknowledge safety first."
+            if not re.search(r"\b(are you safe|you safe|safe right now|is anyone with you|someone with you)\b",
+                             response_text, re.IGNORECASE):
+                return False, "During possible crisis, the reply must ask plainly whether they are safe."
 
         # Check for solution-offering during STAY
         if pacing_report.decision == PacingDecision.STAY:
