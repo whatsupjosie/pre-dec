@@ -135,3 +135,14 @@ def test_josies_bosom_line_is_verbatim_and_stands_alone():
     assert card["text"] == ("So I said, madam, if you can't get your bosom out of the way, then I don't know how "
                             "I'm ever going to be able to shoot your face. Well, she didn't take kindly to that.")
     assert card.get("solo") is True
+
+
+def test_pete_always_shuts_him_down_before_a_story_is_told():
+    from modules.purfluous_cue_cards import reload
+    reload()
+    data = json.loads(Path("data/characters/sir_purfluous.json").read_text(encoding="utf-8"))["cue_cards"]
+    shush = [c for c in data["cards"] if c["id"].startswith("pete_shush_")]
+    assert len(shush) >= 6
+    for c in shush:
+        assert c.get("solo") is True and "(Pete" in c["text"]
+        assert "movie" not in c["text"].lower()   # she never jokes about the movie, and neither does he

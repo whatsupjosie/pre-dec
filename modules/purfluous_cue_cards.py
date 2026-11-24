@@ -56,7 +56,9 @@ def _load(path: str = str(DECK_PATH)) -> Mapping:
         raw.setdefault(intent.get("id", ""), intent.get("patterns", []))
     topics = {name: [re.compile(p, re.IGNORECASE) for p in pats] for name, pats in raw.items() if name}
     return {"topics": topics, "cards": list(deck.get("cards", [])), "slots": dict(deck.get("slots", {})),
-            "priority": list(deck.get("priority_topics", []))}
+            "priority": list(deck.get("priority_topics", [])),
+            "angles": {topic: {name: re.compile(rx, re.IGNORECASE) for name, rx in group.items()}
+                       for topic, group in deck.get("angles", {}).items()}}
 
 
 def priority_topic(message: str) -> Optional[str]:
@@ -124,7 +126,10 @@ def read(message: str) -> Tuple[List[str], str]:
     deck = _load()
     text = message.strip()
     topics = [name for name, pats in deck["topics"].items() if any(p.search(text) for p in pats)]
-    if _HURT_WORDS.search(text.casefold()) or _eq_hurt(text):
+    # The emotion reader takes film words literally ("shot" reads as violence),
+    # so inside a priority subject only plain hurt words count.
+    priority = set(deck.get("priority", [])) & set(topics)
+    if _HURT_WORDS.search(text.casefold()) or (not priority and _eq_hurt(text)):
         mood = "hurt"
     elif "setback" in topics:
         mood = "setback"
@@ -256,13 +261,24 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
             beats = min(by_topic.values(), key=len)
     if not beats:
         return {"topics": topics, "mood": mood, "cards": []}
+    # Within a big subject, the question picks the angle ("why no awards?" gets
+    # the awards grievance, "isn't it just smut?" gets the craft defence).
+    if len(spoken) == 1 and spoken[0] in deck["angles"]:
+        wanted = [name for name, rx in deck["angles"][spoken[0]].items() if rx.search(message)]
+        angled = [c for c in beats if c.get("angle") in wanted]
+        if angled:
+            beats = angled
     beat = _pick(beats, seed, "beat", recent, slots)
     if beat.get("solo"):  # a card that ends on its own beat (a cut-off, an exit) stands alone
         return {"topics": topics, "mood": mood, "cards": [beat]}
     chosen = []
     roll = seed[0]
     if roll % 3 != 0:  # two times in three he opens before the beat
-        opener = _pick([c for c in cards if fits(c, "opener")], seed, "opener", recent, slots)
+        # An opener that only works with Sancho in it ("Sancho! Just the person.")
+        # is skipped when he has used Sancho lately.
+        openers = [c for c in cards if fits(c, "opener")
+                   and (sancho_allowed(history) or not c["text"].startswith("{Sancho}"))]
+        opener = _pick(openers, seed, "opener", recent, slots)
         if opener:
             chosen.append(opener)
     chosen.append(beat)

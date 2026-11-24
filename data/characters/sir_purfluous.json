@@ -4368,12 +4368,485 @@
         ],
         "text": "Context, dear boy. Without context, it's a rear starfish. With context, framing and a cello, it's a meditation on mortality.",
         "terms_from": "Josie"
+      },
+      {
+        "id": "craft_defence_01",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Filmmaking is filmmaking, dear boy. A dolly is a dolly. A key light is a key light. Whether the actors are in Edwardian dress or in nothing at all, someone still has to find the angle.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_02",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Three-point lighting doesn't care what you're wearing. Key, fill, back. The lady garden obeys the same laws of physics as Laurence Olivier.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_03",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "On a big studio picture you get thirty takes. On mine you got one, maybe two, before somebody's knees gave out. You learn to be ready. That's discipline. That's craft.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_04",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Continuity, eyelines, the 180-degree rule, matching action on the cut. All of it applies. If anything it applies more. Nobody forgives a jump cut in that genre.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_05",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Every frame still has to be composed. Rule of thirds. Leading lines. Headroom. Well. Room. Of a sort.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_06",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "You still block it. You still rehearse it. You still give the actors an objective. The objective was frequently 'get to the bed', but it was an objective.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_07",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Sound is sound. Room tone, mic placement, keeping the boom out of shot. Harder than you'd think when the boom operator is trying very hard not to look.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_08",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Editing is editing. Pace, rhythm, where to cut, when to hold. I learned more about tension in that edit suite than in any film school, and I learned it under deadline.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_09",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Budget teaches you more than talent ever will. When you've no money, every shot has to earn its place. Mine did. Several of them earned it twice.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_10",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "People sneer at the genre and never once ask who set the lights. I set the lights. Beautifully. On a Tuesday. For a hundred dollars and a sandwich.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_11",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Performance is performance. Those actors had to hit marks, find their light, stay in character through a ringing telephone and a malfunctioning fog machine. I've seen knights of the realm do less with more.",
+        "angle": "craft"
+      },
+      {
+        "id": "craft_defence_12",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "A good crew is a good crew. My grip on those pictures could rig a ceiling mount faster than anyone at the big studios. He never got a credit. He never wanted one, mind you.",
+        "angle": "craft"
+      },
+      {
+        "id": "awards_01",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Not one award. Not a single nomination. Do you know why? Because the Academy has no category for courage.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_02",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "They gave an Oscar to a man who filmed a bear for two hours. I filmed a lady garden at golden hour with a borrowed crane, and nobody even sent a fruit basket.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_03",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I wrote to the Academy, you know. Twice. On letterhead. Very politely. I enclosed a reel. They returned it unopened, which I took as a sign they knew they couldn't handle it.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_04",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "There's a tracking shot in Satin Accountancy, my fourth picture. Two minutes, one take, through a kitchen, across a hallway, into a bedroom, and out of the window. Scorsese did it in a nightclub and the world fell to its knees.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_05",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Velvet Interlude had a twist ending. Genuine twist. The plumber was the father. Nobody saw it coming. Nobody was watching for the plot, of course, but nobody saw it coming.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_06",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The finest performance I ever directed was a woman named Delphine in The Governess Regrets Nothing. She cried real tears in the second act. Then she had to do the third act. In one take. Brando never had to do the third act.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_07",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I got a shot in Midsummer Upholstery that I've never been able to repeat. Morning light through lace curtains, falling just so across the rear starfish. Like a Vermeer. A Vermeer that had made some choices.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_08",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Our screenwriter wrote a monologue for Ladies of the Lighthouse about a sailor lost at sea. Four pages. Moving. Devastating. The audience fast-forwarded through it, and that's the tragedy of my career in one sentence.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_09",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "They talk about Citizen Kane's deep focus. I achieved deep focus in a broom cupboard with two people and a huddle buddy all sharp at once. Toland would have bought me a drink.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_10",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I'll defend every one of those pictures. Not because they were good. Several weren't. Because they were made, properly, by people who showed up and did the work, and that's more than most of Hollywood can say.",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_11",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Somebody once called my work exploitative. I said, 'Madam, everyone on that set was paid, fed, and home by six. Name me one prestige picture that can say the same.'",
+        "angle": "awards"
+      },
+      {
+        "id": "awards_12",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "If I'd shot the same frames with the cast in ball gowns, I'd have a retrospective at Cannes. It's the same frames. It's always been the same frames.",
+        "angle": "awards"
+      },
+      {
+        "id": "pete_shush_01",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Now, Pete — Pete was the finest natural talent I ever put in front of a lens. There was one afternoon, we were shooting in the conservatory, and she — (Pete, without looking up: \"Purfluous. Not one more word. I mean it.\")",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_02",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Have I ever told you about Pete's first day on my set? She walked in, looked at the lighting rig, and said — (Pete: \"Dude. Stop. Right now.\") But darling, the legend must live. Live, people should know.",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "contains_josie_line": "But darling, the legend must live. Live, people should know.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_03",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Pete, of course, was famous for a particular scene involving a grand piano and a — (Pete slams a clipboard down. \"Finish that sentence and you're sleeping in the prop room.\")",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_04",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "The thing nobody knows about Pete is that she did all her own — (Pete: \"Purfluous.\" Just the name. Just once. He goes quiet and pours a drink.)",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_05",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "I once wrote Pete a part so magnificent that the crew applauded at the read-through. It was a lighthouse keeper's daughter, and in the second act she — (Pete: \"I will unplug every light in this building.\") She would, too.",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_06",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Pete had a signature move, you know. People still ask about it. It went a little something like — (Pete, from across the room: \"Do it and I quit. Again. For real this time.\") But darling, the legend must live. Live, people should know.",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "contains_josie_line": "But darling, the legend must live. Live, people should know.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_07",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "When Pete walked onto a set the whole crew stood up straighter. There was one take in particular, the boat scene, where she — (Pete: \"Nope.\" She takes his drink. She drinks it. Conversation over.)",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
+      },
+      {
+        "id": "pete_shush_08",
+        "kind": "beat",
+        "topics": [
+          "the_unclothed_years"
+        ],
+        "moods": [
+          "neutral",
+          "celebrate",
+          "setback"
+        ],
+        "text": "Pete's performance in The Duchess Receives was — (Pete: \"Say the title one more time. One more time.\") Ah. Some other time, then.",
+        "solo": true,
+        "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
+        "angle": "pete"
       }
     ],
     "notes": "Cards marked verify:true describe how PubCast works and need Josie's check before release. Cards on the unclothed years come up only when someone raises that subject; they are never idle lines.",
     "priority_topics": [
       "the_unclothed_years",
       "scottish_play"
-    ]
+    ],
+    "angles": {
+      "the_unclothed_years": {
+        "awards": "\\b(awards?|oscars?|emmys?|academy|nominat\\w*|recogni[sz]\\w*|eligible|prizes?|cannes|festival|credit|best (work|shots?)|proudest|favou?rite (shot|scene|film|picture))\\b",
+        "craft": "\\b(smut|trash|real (film|filmmaking|movies?|directing)|art|craft|technique|techniques|light|lighting|lit|shoot|shot|camera|lens|edit|editing|block|blocking|hard|difficult|skill|same as)\\b",
+        "pete": "\\bpete\\b"
+      }
+    }
   }
 }
