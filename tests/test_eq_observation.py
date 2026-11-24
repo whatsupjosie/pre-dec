@@ -416,3 +416,41 @@ def test_routes_close_the_calibration_loop_and_stay_owner_scoped(tmp_path, monke
         gone = client.post("/api/pubpartner/eq-observation/forget", headers=a, json={"confirm": "forget"})
         assert gone.json()["removed"] is True
         assert client.get("/api/pubpartner/eq-observation/summary", headers=a).json()["readings_kept"] == 0
+
+
+# ---- the face rule (Josie, 2026-11-23) ------------------------------------------------------------
+# "Faces count for performance and avatar reaction. Unless we are actually looking at somebody in a
+# live camera, seeing their actual living face, then faces don't count. Unless it's an avatar
+# impersonating a human, in which case that is an intentional performance ..."
+
+FACE = {"expressivity": 0.4, "blink_rate": 0.3, "tic_rate": 0.1, "gaze_away_ratio": 0.2}
+
+
+def test_a_live_camera_on_the_persons_own_face_counts_with_consent():
+    values, statuses, problems = behaviour_features(
+        {"consent": {"face": True}, "face": {"origin": "live_camera", "status": "observed", **FACE}})
+    assert statuses["face"] == "observed" and values == FACE and problems == []
+
+
+@pytest.mark.parametrize("origin,status", [("avatar", "performance"), ("rendered", "performance"),
+                                           ("recording", "performance"), (None, "origin_unknown")])
+def test_any_other_face_is_never_inner_state_evidence(origin, status):
+    block = {"status": "observed", **FACE, **({"origin": origin} if origin else {})}
+    values, statuses, problems = behaviour_features({"consent": {"face": True}, "face": block})
+    assert values == {} and statuses["face"] == status and problems
+
+
+def test_an_avatar_face_counts_fully_for_performance():
+    from modules.eq_observation.features import performance_face
+    values, origin = performance_face({"origin": "avatar", "expressivity": 0.1, "gaze_away_ratio": 0.7})
+    assert origin == "avatar" and values == {"expressivity": 0.1, "gaze_away_ratio": 0.7}
+    read = PerceptionReader(DEFAULT_DIALS).perceive_display(values, origin=origin)
+    assert read["origin"] == "avatar" and read["expected_reads"] == ["looks_flat", "looks_disengaged"]
+
+
+def test_an_avatar_face_never_reaches_the_persons_reading(tmp_path):
+    layer = ObservationLayer(tmp_path)
+    reading = layer.observe_turn(user_id="u", session_id="s", turn_id="t", source_id="x", text="hello there",
+                                 behaviour={"consent": {"face": True}, "face": {"origin": "avatar", **FACE}})
+    assert "face" not in reading["groups"] and reading["sources"]["face"] == "performance"
+    assert "expressivity" not in reading["deviations"]

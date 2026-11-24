@@ -163,11 +163,14 @@ class PerceptionReader:
                 "expected_reads": reads, "directive_count": directives,
                 "length_ratio": None if ratio is None else round(ratio, 2), "sentences": len(sentences)}
 
-    def perceive_display(self, values: Mapping[str, float]) -> Dict[str, Any]:
+    def perceive_display(self, values: Mapping[str, float], *, origin: str = "unknown") -> Dict[str, Any]:
         """How a person's or a character's visible behaviour reads to an audience (absolute values).
 
-        For the stage, avatars and voice. Thresholds are in dials.py; the perception
-        scorecard, scored against observers, is what should set them."""
+        For the stage, avatars and voice. An avatar's face counts fully here: it is an intentional
+        performance and this reader judges performance (see features.FACE RULE). origin is carried
+        through so a reading of an avatar is never mistaken for a reading of a person.
+        Thresholds are in dials.py; the perception scorecard, scored against observers, is what
+        should set them."""
         d = self.dials
 
         def at_least(name: str, threshold: float) -> bool:
@@ -191,4 +194,5 @@ class PerceptionReader:
             reads.append("looks_flat")
         if at_least("gaze_away_ratio", d.display_disengaged_gaze):
             reads.append("looks_disengaged")
-        return {"reader": "perception", "label": PERCEPTION_LABEL, "subject": "display", "expected_reads": reads}
+        return {"reader": "perception", "label": PERCEPTION_LABEL, "subject": "display", "origin": str(origin)[:32],
+                "expected_reads": reads}

@@ -457,7 +457,10 @@ class SituationReader:
         cam_status = "unavailable"
         if isinstance(camera, dict) and camera.get("status") in STATUSES:
             cam_status = camera["status"]
-        # The camera never contributes to the estimate. Faces do not map to feelings.
+        # A camera's emotion label never contributes to the estimate: faces do not map to named feelings.
+        # Owner rule, 2026-11-23: a person's own living face on a live camera does count, as one
+        # consent-only witness of "different from their usual" in modules/eq_observation; an avatar's
+        # or a recording's face is a performance and counts only for perception, never here.
         evidence.append(Evidence("camera", "camera", cam_status, 0.0,
                                  "presence only; not used as evidence of feeling"))
 

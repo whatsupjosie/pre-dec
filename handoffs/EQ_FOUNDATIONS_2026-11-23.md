@@ -13,6 +13,8 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. GUESS = 
 - "if the data is gathered and it continually runs in conflict, then you do have to slowly discount more and more what they're reporting. But that remains to be seen until the verdict is in."
 - "with acting, whether or not the person is actually feeling something isn't necessarily as important as if we perceive that they are. So there are two purposes, two goals here that aren't necessarily simpatico, and at the same time they're not in opposition either."
 
+- The face rule: "Faces count for performance and avatar reaction. Unless we are actually looking at somebody in a live camera, seeing their actual living face, then faces don't count. Unless it's an avatar impersonating a human, in which case that is an intentional performance mimicking us as naturally as they are able in the most unnatural way."
+
 ## What is built
 
 1. modules/eq_observation/ (new, stdlib only), SHADOW mode: it observes, records and scores, and changes no reply, move or judgment.
@@ -21,6 +23,7 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. GUESS = 
    - reliability.py: trust per witness group per person, starting at 0.5, moving 0.05 only on an approved calibration account. A disagreement alone changes nothing (tested). The in-the-moment report has its own trust record; "partly" is kept but moves nothing.
    - agreement.py: the agreement map and the report gap ("says fine" with two or more independent groups differing, or "says not fine" with all steady). Never announced; never discounts the report by itself.
    - readers.py: InnerStateReader (personal baselines, "never tell them how they feel") and PerceptionReader (absolute values, because an audience does not know anyone's usual) for replies and for displays (stage, avatars, voice). Perception does not flag "if you feel like it", "how do you feel", "Just checking in", "Go for it"; it does flag a stated or hedged feeling claim, scripted lines, two or more directives.
+   - Face rule: for the inner reading a face counts only with origin "live_camera" (a person's own living face) and consent; an avatar, rendered or recorded face is reported as "performance" and never used there. features.performance_face and PerceptionReader.perceive_display(origin=...) take any face, an avatar's included, for performance and avatar reaction. situation_reading.py's camera line is unchanged in behaviour (a camera's emotion label still never moves its estimate) and its comment now states the rule.
    - scorecards.py: inner scored against the person's approved later account; perception scored against what an observer reported. A reading with too few witnesses made no prediction and is not scored.
    - store.py: one private folder per person, data/pubpartner/eq_observation/<slug>-<digest>/: state.json (atomic), readings.jsonl and perception.jsonl (append-only, trimmed to the newest rows, torn lines skipped, damaged state set aside). Holds numbers, ids and the person's word counts; no whole messages (tested). forget() removes the folder.
    - layer.py: ObservationLayer: observe_turn, shadow_view, perceive_reply, calibration_moments, moment_notes, apply_calibration_verdict (one per moment, delay measured from the reading, calm recorded), record_perception_feedback (one per prediction), summary, forget.
@@ -33,7 +36,7 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. GUESS = 
 
 ## Tested (RAN)
 
-- tests/test_eq_observation.py, tests/test_eq_broker_and_presence.py, tests/test_eq_disambiguation_fixes.py: 78 passed. Deliberate breaks each caught: consent check removed, plain capitals removed, one-account guard removed, a safety question put back into crisis_response, one witness allowed to make a gap; and the old disambiguation engine fails 10 of 17.
+- tests/test_eq_observation.py, tests/test_eq_broker_and_presence.py, tests/test_eq_disambiguation_fixes.py: 85 passed (142 with test_situation_reading.py, which has 2 skips). Deliberate breaks each caught: the face rule removed, the consent check removed, plain capitals removed, one-account guard removed, a safety question put back into crisis_response, one witness allowed to make a gap; and the old disambiguation engine fails 10 of 17.
 - Related existing files, 19 in one run (215 passed) and 9 in another (159 passed). Failing the same way on the starting commit 2541c09, so not caused here and not diagnosed: test_main_route_authorization_parity.py (3), test_internal_routes_guarded.py (12 errors), test_pubpartner_connections.py (2).
 - Not run: the full suite; browser tests for PubPartner screens (none were changed).
 
@@ -41,7 +44,6 @@ Labels: RAN = I ran it and saw the result. READ = I opened and read it. GUESS = 
 
 - The calibration screen (static/pubpartner_calibration_ui.js) does not yet show the "observation" note or offer the approved-account answer. The routes are there.
 - situation_reading.py is still imported by nothing; it needs a model to fill its reading form each turn. Until it is wired, the live layer has no report and no situation, so report gaps cannot fire live.
-- situation_reading.py says faces never count; Josie's aggregation point includes them. The new layer treats face as a consent-only, low-trust witness. Unchanged; her call.
 - No client sends keyboard, voice or face measurements yet, and no consent screen exists.
 - The dial numbers.
 - Where acting is used first: Alex's replies, the avatars, or the stage.

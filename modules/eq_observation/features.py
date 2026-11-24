@@ -11,7 +11,8 @@ independent evidence):
   motor           likely typos, backspaces, typing speed, hesitation before sending
                   (hands and attention: the same cause)
   voice           speech rate, pauses, pitch movement, loudness (needs consent)
-  face            expressivity, blink and tic rate, looking away (needs consent)
+  face            expressivity, blink and tic rate, looking away (needs consent, and only a
+                  live camera on the person's own face; see FACE RULE below)
   situation       what is going on in their life, from the situation reader
   report          what they say about themselves. Kept apart; never a witness against itself.
 
@@ -19,6 +20,16 @@ AXES (behaviour, not feelings):
   contraction  less than usual: fewer words, shorter sentences, looking away
   activation   more than usual: emphasis, speed, loudness, expressivity
   disruption   more broken than usual: typos, corrections, pauses, tics
+
+FACE RULE (Josie, 2026-11-23): "Faces count for performance and avatar reaction. Unless we are
+actually looking at somebody in a live camera, seeing their actual living face, then faces don't
+count. Unless it's an avatar impersonating a human, in which case that is an intentional
+performance mimicking us as naturally as they are able in the most unnatural way."
+So, for the inner-state reading, a face counts only when it is a person's own living face on a
+live camera (origin "live_camera"), with their consent. Any other face (an avatar, a rendered
+character, a recording) is a performance: it is never evidence of what someone feels, and it goes
+to the perception reader instead (performance_face below). A face never becomes an emotion label
+here; like every witness it only says "different from this person's usual".
 
 Stdlib only. Small-model friendly: a turn costs a few microseconds.
 """
@@ -32,6 +43,8 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 GROUPS = ("message_shape", "emphasis", "motor", "voice", "face", "situation", "report")
 AXES = ("contraction", "activation", "disruption")
 CONSENTED_GROUPS = ("keyboard", "voice", "face")  # each must be switched on by the person
+LIVE_FACE_ORIGIN = "live_camera"
+PERFORMANCE_FACE_ORIGINS = ("avatar", "rendered", "recording")
 
 # feature name -> (group, axis, sign). sign +1: a rise moves the axis up.
 FEATURE_MAP: Dict[str, Tuple[str, str, int]] = {
@@ -184,8 +197,10 @@ def behaviour_features(behaviour: Optional[Mapping[str, Any]]) -> Tuple[Dict[str
     Expected shape (all optional):
       {"consent": {"keyboard": true, "voice": false, "face": false},
        "keyboard": {"status": "observed", "chars_per_second": 4.2, ...},
-       "voice": {...}, "face": {...}}
-    Simulated values are refused and written down, never used.
+       "voice": {...}, "face": {"origin": "live_camera", "status": "observed", ...}}
+    Simulated values are refused and written down, never used. A face is used only when its origin
+    is "live_camera" (see FACE RULE); an avatar, rendered or recorded face is a performance and is
+    reported as such, never used as inner-state evidence.
     """
     values: Dict[str, float] = {}
     status: Dict[str, str] = {}
@@ -200,6 +215,15 @@ def behaviour_features(behaviour: Optional[Mapping[str, Any]]) -> Tuple[Dict[str
         if consent.get(source) is not True:
             status[source] = "no_consent"
             problems.append(f"{source}: values offered without the person's consent were not used")
+            continue
+        if source == "face" and block.get("origin") != LIVE_FACE_ORIGIN:
+            origin = block.get("origin")
+            if origin in PERFORMANCE_FACE_ORIGINS:
+                status[source] = "performance"
+                problems.append(f"face: an {origin} face is a performance; it informs perception, never the inner reading")
+            else:
+                status[source] = "origin_unknown"
+                problems.append("face: not marked as a live camera on the person; not used")
             continue
         st = block.get("status", "observed")
         if st == "simulated":
@@ -221,3 +245,17 @@ def behaviour_features(behaviour: Optional[Mapping[str, Any]]) -> Tuple[Dict[str
             used += 1
         status[source] = "observed" if used else "unavailable"
     return values, status, problems
+
+
+def performance_face(face: Optional[Mapping[str, Any]]) -> Tuple[Dict[str, float], str]:
+    """Face measurements for the perception side (performance, avatar reaction, stage).
+
+    Any origin counts here, an avatar included: the question is how the face comes across, not
+    what anyone feels. Returns (values, origin). Values that are not real, non-negative numbers
+    are dropped. A live person's face still needs their consent before it is passed in."""
+    if not isinstance(face, Mapping):
+        return {}, "unavailable"
+    origin = face.get("origin") if face.get("origin") in (LIVE_FACE_ORIGIN, *PERFORMANCE_FACE_ORIGINS) else "unknown"
+    values = {name: float(face[name]) for name in _BEHAVIOUR_FEATURES["face"]
+              if name in face and _finite(face[name]) and float(face[name]) >= 0}
+    return values, origin
