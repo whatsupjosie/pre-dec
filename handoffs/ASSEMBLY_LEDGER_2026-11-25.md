@@ -81,7 +81,7 @@ Totals: 30 in, 5 superseded, 4 waiting on her.
 | PEQ, cre_eq, broker, integration | Breaking-Dawn 96cfff5 | Code in, not mounted | No. RAN: the broker loads the full engine and returns a signal |
 | Camera Engine v2 | Drive, blob 97ed3ee | Code in, not booted | No. RAN: create_camera_engine() builds |
 | Full VDI engine | Drive, blob 6e13c18 | Code in, not wired | No. RAN: scores and returns a voice mode |
-| 2i Word workspace and launcher | Drive zip 2i-Unified-Beta-2026-11-16 | Wired | Yes: File menu "Open Word document (.docx)". RAN: the launcher serves the page, the script, the editor, the DOCX engine and harfbuzz.wasm. Not clicked in a browser |
+| 2i Word workspace and launcher | Drive zip 2i-Unified-Beta-2026-11-16 | Wired | Yes: File menu "Open Word document (.docx)", shown only outside file mode, and a .2i switch is refused while a Word doc is open (as in the zip). RAN: the launcher serves the page, the script, the editor, the DOCX engine and harfbuzz.wasm; both edited scripts pass node --check. Not clicked in a browser |
 | Companion mode, link, avatar preference | Pub-Partner-Base-Horizon c9d053a | In, exported from pubpartner | Library only; no running path calls it in either repo. Its tests pass, 28 (RAN, with a stand-in for scikit-learn) |
 | Renderer binary | rust_crate source with the ported fix | Rebuilt offline | Yes: bin/ws_renderer reads --port and --fps (RAN) |
 
@@ -100,6 +100,9 @@ Left out on purpose: the B-O pubpartner-*.yml workflows; The-Prime wholesale (it
 
 ## Not checked here
 
-- Route and browser tests: fastapi and httpx (in requirements.txt) are not installed, and installing them waits on her yes. Import-level and engine-level checks ran instead, as listed.
+- Route tests (RAN, Nov 25, after her yes to the libraries): fastapi 0.115.14, starlette 0.41.3 and httpx 0.28.1 installed in the cloud session only, matching requirements.txt. Across the Airlock arrivals, camera avatar, PubPartner hardening, Blackbox Light, calibration approval, identity checkpoint, cartridges, work notes, existing wiring and the Base-Horizon companion, link and avatar tests: 101 passed. scikit-learn is not installed (not yet approved), so a stand-in was used for it, and pytest-asyncio is not installed, so async tests ran through a scratch runner.
+- One failed: test_owned_portable_cartridge_memory_reaches_hosted_private_prompt. Its error comes from the scikit-learn stand-in (no fit_transform), so it is unchecked, not known broken.
+- tests/test_airlock.py can't load: it imports AdmissionBlocked from modules.governance, which pre-dec doesn't have. That is the admission gate that switching Airlock on needs (open call 1).
+- Browser (playwright) tests were skipped; playwright is not installed.
 - On the EQ and Purfluous files, 180 passed and 8 failed: four are the expected win-phrase cases tied to the 0.4 tier question, four need fastapi.
 - No full suite since the studio line's last one (22 failed, 3129 passed, before the fixes).
