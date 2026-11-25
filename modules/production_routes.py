@@ -865,32 +865,53 @@ def create_production_router(
             session = recording.get_session(session_id)
         except KeyError as exc:
             raise HTTPException(400, str(exc))
-        if session.state in (RecordingState.ACTIVE, RecordingState.PAUSED) and recording_modes.owns_capture(session_id):
-            # A data-only or main-camera take records through its mode, which has no pause yet. Marking it
-            # paused while it keeps recording would say something untrue.
-            raise HTTPException(409, f"A {session.mode.replace('_', ' ')} take cannot be paused yet; it is still recording")
+        live = session.state in (RecordingState.ACTIVE, RecordingState.PAUSED)
+        word = "paused" if paused else "resumed"
+        problems: List[Dict[str, Any]] = []
         engine_changed = False
-        if capture_engine is not None and capture_engine.is_capturing(session_id) and session.state in (
-                RecordingState.ACTIVE, RecordingState.PAUSED):
-            set_paused = getattr(capture_engine, "set_paused", None)
-            try:
-                if callable(set_paused):
-                    set_paused(session_id, paused)
-                else:
-                    await (capture_engine.pause(session_id) if paused else capture_engine.resume(session_id))
+        modes_changed = False
+
+        async def engine_pause(value: bool) -> List[Dict[str, Any]]:
+            result = capture_engine.set_paused(session_id, value)
+            if asyncio.iscoroutine(result):
+                result = await result
+            return list(result or [])
+
+        try:
+            # The camcorder path's cameras (every chosen camera, for the whole take) ...
+            if live and capture_engine is not None and capture_engine.is_capturing(session_id):
+                problems += await engine_pause(paused)
                 engine_changed = True
-            except (RuntimeError, OSError, NotImplementedError) as exc:
-                raise HTTPException(409, f"The cameras could not be {'paused' if paused else 'resumed'}: {exc}")
+            # ... and what a data-only or main-camera take records itself, with every mode's show data.
+            if live:
+                mode_problems = await recording_modes.set_paused(session_id, paused)
+                if mode_problems is not None:
+                    problems += mode_problems
+                    modes_changed = True
+        except (RuntimeError, OSError, NotImplementedError, ValueError) as exc:
+            if engine_changed:
+                try:
+                    await engine_pause(not paused)
+                except Exception:
+                    logger.exception("Could not put the cameras of %s back after a failed pause", session_id)
+            raise HTTPException(409, f"The take could not be {word}: {exc}")
+        _note_capture_errors(session_id, problems)
         try:
             session = recording.pause_session(session_id, paused)
         except (KeyError, ValueError) as exc:
-            if engine_changed:
-                try:
-                    getattr(capture_engine, "set_paused")(session_id, not paused)
-                except Exception:
-                    logger.exception("Could not put the cameras of %s back after a failed pause", session_id)
+            try:
+                if engine_changed:
+                    await engine_pause(not paused)
+                if modes_changed:
+                    await recording_modes.set_paused(session_id, not paused)
+            except Exception:
+                logger.exception("Could not put the cameras of %s back after a failed pause", session_id)
             raise HTTPException(400, str(exc))
-        return session.to_dict()
+        reply = session.to_dict()
+        if problems:
+            # Named here as well as kept with the take: a camera that did not come back after a pause is not recording.
+            reply["pause_problems"] = problems
+        return reply
 
     @router.post("/api/recording/{session_id}/marker")
     async def add_marker(session_id: str, request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):

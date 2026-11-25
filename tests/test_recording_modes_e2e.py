@@ -20,6 +20,8 @@ What is proved:
   whole take;
 * main camera only with the preview armed: a take (preview to program) lands with no delay;
 * a camera in the dressing room is never recorded: its stretch is black and no file of it exists;
+* pause in every mode records nothing while paused: the files leave the paused stretch out (the cameras' clocks
+  jump by the pause), the show data keeps nothing from it, and a main-camera take comes back on the camera cut to;
 * requests a mode cannot honour are refused with a reason;
 * the show data and mode record travel with an exported take.
 
@@ -401,6 +403,122 @@ def test_an_armed_preview_takes_to_the_live_screen_with_no_delay(host):
     assert record["arm_preview"] is True
     for cut in record["program"]["cuts"][1:]:
         assert cut["handled"] == "armed" and cut["late_by_ms"] == 0, cut
+
+
+# --- pause: a paused take records nothing ------------------------------------------------------------------------
+def paused_length_ok(path, report, paused):
+    """A paused file holds the encoder's run less the pause: one joined file, the paused stretch left out."""
+    seconds = probe(path)["seconds"]
+    assert report["join"]["state"] == "joined" and report["pieces"] == 2, report
+    assert abs(report["paused_seconds"] - paused) < 0.5, report
+    assert abs(seconds - (report["wall_seconds"] - report["paused_seconds"])) < 0.6, (path.name, seconds, report)
+    return seconds
+
+
+def report_for(stopped, name):
+    [report] = [r for r in stopped["capture_report"] if (r.get("join") or {}).get("file") == name]
+    return report
+
+
+def pause(host, session_id, paused=True):
+    r = host.client.post(f"/api/recording/{session_id}/pause", json={"paused": paused})
+    assert r.status_code == 200, r.text
+    assert r.json()["state"] == ("paused" if paused else "active"), r.json()
+    assert not r.json().get("pause_problems"), r.json()["pause_problems"]
+    return r.json()
+
+
+def test_a_paused_camcorder_take_leaves_the_pause_out_of_its_files(host):
+    program(host, "live_red")
+    _, t0 = start(host, "pause_camcorder", "camcorder", sources=["live_red"])
+    at(t0, 4.0)
+    pause(host, "pause_camcorder")
+    at(t0, 8.0)
+    pause(host, "pause_camcorder", False)
+    at(t0, 12.0)
+    stopped = stop(host, "pause_camcorder")
+    folder = session_dir(host, "pause_camcorder")
+    [video] = [a["name"] for a in stopped["artifacts"] if a["name"].endswith(".webm")]
+    # 12 s of take with a 4 s pause: about 8 s recorded, plus the moments the start and stop take, not 12.
+    paused_length_ok(folder / video, report_for(stopped, video), 4.0)
+    assert not [p.name for p in folder.iterdir() if ".part0" in p.name and not p.name.endswith(".log")]
+    # The camera's clock in the picture jumps by the pause: what it showed while paused is not in the file.
+    sampled = [(t, g) for t, colour, g in frames(folder / video) if colour == "R"]
+    jumps = [circular((b[1] - a[1]) / RAMP - (b[0] - a[0])) for a, b in zip(sampled, sampled[1:])]
+    assert max(jumps) > 3.0, f"no jump in the camera's clock: {max(jumps):.2f} s"
+    header, events, _ = show_data(folder / "show_data.jsonl.gz")
+    kinds = [e["kind"] for e in events]
+    assert kinds.count("take.paused") == 1 and kinds.count("take.resumed") == 1
+
+
+def test_a_paused_data_only_take_keeps_nothing_from_the_pause(host):
+    program(host, "live_red"); preview(host, "live_blue")
+    _, t0 = start(host, "pause_data", "data_only", sources=["live_red", "live_blue"])
+    at(t0, 2.0)
+    program(host, "live_blue")                 # kept: the take is recording
+    at(t0, 3.0)
+    pause(host, "pause_data")
+    at(t0, 4.0)
+    program(host, "live_red")                  # not kept: the take is paused
+    at(t0, 7.0)
+    pause(host, "pause_data", False)
+    at(t0, 10.0)
+    stopped = stop(host, "pause_data")
+    folder = session_dir(host, "pause_data")
+    record = mode_record(host, "pause_data")
+    reports = {s["file"]: s["report"] for s in record["sound"]}
+    for name, hz in (("sound_live_red.wav", 440), ("sound_live_blue.wav", 880)):
+        paused_length_ok(folder / name, reports[name], 4.0)
+        assert abs(dominant_hz(folder / name) - hz) < 10
+    assert sorted(a["name"] for a in stopped["artifacts"]) == ["sound_live_blue.wav", "sound_live_red.wav"]
+    header, events, footer = show_data(folder / "show_data.jsonl.gz")
+    paused_at = next(e["t"] for e in events if e["kind"] == "take.paused")
+    resumed = next(e for e in events if e["kind"] == "take.resumed")
+    assert not [e for e in events if paused_at < e["t"] < resumed["t"] and not e["kind"].startswith("take.")], \
+        "nothing that happened during the pause is in the show data"
+    assert resumed["data"]["program"] == "live_red", "the record says where the cameras stood when it resumed"
+    cuts = [e["data"]["source_id"] for e in events if e["kind"] == "camera.switch" and e["data"]["destination"] == "program"]
+    assert cuts == ["live_blue"], cuts
+    assert len(record["pauses"]) == 1 and 3.5 <= record["paused_seconds"] <= 4.5, record["pauses"]
+
+
+def test_a_paused_main_camera_take_leaves_the_pause_out_of_the_program(host):
+    program(host, "live_red"); preview(host, "live_blue")
+    _, t0 = start(host, "pause_main", "main_camera", sources=["live_red", "live_blue"])
+    at(t0, 3.0)
+    program(host, "live_blue")
+    at(t0, 6.0)
+    pause(host, "pause_main")
+    at(t0, 7.0)
+    program(host, "live_red")                  # cut while paused: red is on the live screen when it resumes
+    at(t0, 10.0)
+    pause(host, "pause_main", False)
+    at(t0, 14.0)
+    stop(host, "pause_main")
+    record = mode_record(host, "pause_main", joined=True)
+    assert record["assembly"]["state"] == "complete", record["assembly"]
+    assert not record["assembly"]["warnings"], record["assembly"]["warnings"]
+    path = session_dir(host, "pause_main") / record["assembly"]["file"]
+    info = probe(path)
+    paused = record["paused_seconds"]
+    assert 3.5 <= paused <= 4.5
+    expected = record["stopped_at"] - record["assembly"]["origin"] - paused
+    assert abs(info["seconds"] - expected) < 0.4, f"program {info['seconds']:.2f} s, take less pause {expected:.2f} s"
+    sampled = frames(path)
+    colours = "".join(c for _, c, _ in sampled if c in "RB")
+    runs = [c for i, c in enumerate(colours) if i == 0 or colours[i - 1] != c]
+    assert runs == ["R", "B", "R"], f"the program shows {runs}"
+    # Blue ended where the pause began; red is back with the camera's clock jumped by the pause.
+    blue = [(t, g) for t, c, g in sampled if c == "B"]
+    red_after = [(t, g) for t, c, g in sampled if c == "R" and t > blue[-1][0]]
+    pause_began = record["pauses"][0]["paused_at"]
+    assert blue[-1][0] <= pause_began + 0.2, f"blue lasts to {blue[-1][0]:.2f} s of the program, pause at {pause_began:.2f}"
+    # Each camera's sound runs from its encoder's start to its stop, less the pause, and is one joined file.
+    for sound in record["sound"]:
+        paused_length_ok(session_dir(host, "pause_main") / sound["file"], sound["report"], paused)
+    assert red_after, "red is not back after the pause"
+    cuts = [c for c in record["program"]["cuts"] if c["kind"] == "cut"]
+    assert [c["to"] for c in cuts] == ["live_blue", "live_red"], cuts
 
 
 def test_a_camera_in_the_dressing_room_is_never_recorded(host):

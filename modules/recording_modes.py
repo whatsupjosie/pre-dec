@@ -52,6 +52,7 @@ import threading
 import time
 import zlib
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
@@ -180,6 +181,7 @@ class ShowDataRecorder:
         self.raw_bytes = 0
         self.error: Optional[str] = None
         self.closed = False
+        self.paused = False           # while the take is paused nothing it receives is kept
         self.summary: Dict[str, Any] = {}
 
     def open(self) -> None:
@@ -192,9 +194,9 @@ class ShowDataRecorder:
             self._write(header)
             self._flush()
 
-    def record(self, kind: str, data: Any, *, room: Optional[str] = None) -> None:
+    def record(self, kind: str, data: Any, *, room: Optional[str] = None, during_pause: bool = False) -> None:
         with self._lock:
-            if self.closed or self.error or self._gz is None:
+            if self.closed or self.error or self._gz is None or (self.paused and not during_pause):
                 return
             entry: Dict[str, Any] = {"seq": self.events, "t": round(time.monotonic() - self._t0, 6),
                                      "utc": time.time(), "kind": kind}
@@ -483,6 +485,11 @@ class ModeTake:
         self._loop = asyncio.get_running_loop()
         self._worker: Optional[asyncio.Task] = None
         self._next_index = 1
+        # Each pause as [wall time paused, wall time resumed (None while still paused)].
+        self.pauses: List[List[Optional[float]]] = []
+        # A cut, a pause and a resume never run at the same time: each sees the others finished.
+        self._busy = asyncio.Lock()
+        self._paused_keys: Dict[str, str] = {}
 
     # -- start ---------------------------------------------------------------------------------------------
     async def begin(self) -> List[str]:
@@ -498,8 +505,9 @@ class ModeTake:
             jobs.append(self._start_program())
         if self.mode in ("data_only", "main_camera"):
             jobs.append(self._start_sound())
-        for result in await asyncio.gather(*jobs):
-            paths += result
+        async with self._busy:
+            for result in await asyncio.gather(*jobs):
+                paths += result
         if self.mode == "main_camera":
             self._worker = asyncio.create_task(self._work(), name=f"recording-mode-{self.session_id}")
             self._worker.add_done_callback(_report_task_failure)
@@ -670,7 +678,7 @@ class ModeTake:
         if seg is None or seg.state != "running":
             return
         engine = self.controller.capture_engine
-        seg.stop_requested_at = time.time()
+        seg.stop_requested_at = seg.stop_requested_at or time.time()
         await engine.stop(seg.key)
         report = engine.report(seg.key) if hasattr(engine, "report") else []
         seg.report = report[0] if report else {}
@@ -679,7 +687,7 @@ class ModeTake:
         seg.duration = info.get("duration") or seg.report.get("encoded_seconds")
         seg.has_audio = bool(info.get("audio"))
         speed = seg.report.get("speed")
-        wall = seg.stop_requested_at - seg.spawned_at
+        wall = self._clock(seg.stop_requested_at) - self._clock(seg.spawned_at)     # paused time left out
         if seg.duration and seg.duration - wall > 0.75:
             seg.error = (f"the file holds {seg.duration:.2f} s for {wall:.2f} s of take: the source was not paced to "
                          "the clock (a test pattern does this), so this piece's timing is not the take's")
@@ -687,8 +695,9 @@ class ModeTake:
             seg.error = f"the encoder fell behind real time ({speed:.2f}x), so this piece is shorter than its stretch"
         if seg.duration:
             # FFmpeg writes every frame it read before it was told to stop, so the file ends at the stop request.
-            seg.media_offset = seg.stop_requested_at - seg.duration
-            seg.first_frame_at = max(seg.spawned_at, seg.media_offset)
+            # Both times are take time (see _clock): a paused stretch is in neither the file nor the program.
+            seg.media_offset = self._clock(seg.stop_requested_at) - seg.duration
+            seg.first_frame_at = max(self._clock(seg.spawned_at), seg.media_offset)
         else:
             seg.error = seg.error or "no picture was written"
         self.controller._witness(self.session, "segment_stopped", source_id=seg.source_id, segment=index,
@@ -729,10 +738,13 @@ class ModeTake:
             if event is None:
                 return
             try:
-                if event.destination == "program":
-                    await self._cut(event)
-                elif event.destination == "preview" and self.arm_preview:
-                    await self._preview_changed(event)
+                async with self._busy:
+                    if self.state != "recording":
+                        pass             # paused: nothing records; resume puts the live camera back
+                    elif event.destination == "program":
+                        await self._cut(event)
+                    elif event.destination == "preview" and self.arm_preview:
+                        await self._preview_changed(event)
             except Exception as exc:     # a cut must never take the whole recording down
                 logger.exception("Recording mode %s could not follow a cut", self.session_id)
                 self.notes.append(f"A cut to {getattr(event, 'source_id', '?')} could not be followed: {exc}")
@@ -819,11 +831,125 @@ class ModeTake:
             return          # that camera is already recording, as the one on the live screen
         await self._arm(target)
 
+    # -- pause ---------------------------------------------------------------------------------------------
+    def _clock(self, t: Optional[float]) -> Optional[float]:
+        """Take time: wall time with every paused stretch before ``t`` taken out (a time inside a pause is the
+        moment that pause began). The picture and sound files hold take time, since nothing records while paused.
+        With no pause, take time is wall time."""
+        if t is None:
+            return None
+        removed = 0.0
+        for start, end in self.pauses:
+            if start is None or t <= start:
+                break
+            stop = end if end is not None else (self.stopped_at or time.time())
+            if t < stop:
+                return start - removed
+            removed += stop - start
+        return t - removed
+
+    def paused_seconds(self) -> float:
+        now = self.stopped_at or time.time()
+        return sum((end if end is not None else now) - start for start, end in self.pauses)
+
+    def _engine_keys(self) -> Dict[str, str]:
+        """Every encoder this take runs itself, with the name the operator knows it by."""
+        keys: Dict[str, str] = {}
+        for seg in self.segments.values():
+            if seg.state == "running":
+                keys[seg.key] = seg.source_id
+        for entry in self.sound:
+            if entry.get("key") and entry.get("state") == "recording":
+                keys[entry["key"]] = f"{entry['source_id']} (sound)"
+        if self.microphone and self.microphone.get("state") == "recording" and self.microphone.get("key"):
+            keys[self.microphone["key"]] = "microphone"
+        return keys
+
+    async def set_paused(self, paused: bool) -> List[Dict[str, Any]]:
+        """Pause or resume everything this take records: picture, sound, microphone and show data.
+
+        While paused nothing is written: each encoder has finished its piece, the show data keeps nothing it
+        receives, and cuts are not followed. Resume starts the encoders again into new pieces and, on a
+        main-camera take, records whichever camera is on the live screen by then. Returns the sources that
+        did not pause or resume properly; raises when one could not be stopped (the take then keeps recording).
+        """
+        async with self._busy:
+            if self.state not in ("recording", "paused"):
+                raise ModeRequestError("This take is not recording")
+            if paused == (self.state == "paused"):
+                return []
+            engine = self.controller.capture_engine
+            keys = self._engine_keys() if paused else dict(self._paused_keys)
+            at = time.time()
+            cameras = self.controller.cameras
+            program = cameras.get_program_source()
+            if not paused and self.mode == "main_camera" and not self.arm_preview and self._program is not None:
+                seg = self.segments.get(self._program)
+                if seg is not None and program is not None and program.source_id != seg.source_id:
+                    # Cut away from while paused: that camera is not on the live screen any more, so it does not
+                    # record again; the cut that follows closes it and starts the camera that is.
+                    keys.pop(seg.key, None)
+                    seg.stop_requested_at = self.pauses[-1][0]     # its file ends where the pause began
+            problems: List[Dict[str, Any]] = []
+            if engine is not None and keys:
+                if paused:
+                    results = await asyncio.gather(*(engine.set_paused(key, True) for key in keys), return_exceptions=True)
+                    failed = [key for key, result in zip(keys, results) if isinstance(result, BaseException)]
+                    if failed:
+                        done = [key for key, result in zip(keys, results) if not isinstance(result, BaseException)]
+                        await asyncio.gather(*(engine.set_paused(key, False) for key in done), return_exceptions=True)
+                        raise RuntimeError("could not stop " + ", ".join(keys[key] for key in failed) + "; the take is still recording")
+                else:
+                    results = await asyncio.gather(*(engine.set_paused(key, False) for key in keys), return_exceptions=True)
+                for key, result in zip(keys, results):
+                    if isinstance(result, BaseException):
+                        problems.append({"source_id": keys[key], "error": str(result), "phase": "resume"})
+                    else:
+                        problems += [{**item, "source_id": keys[key]} for item in result]
+            if paused:
+                self._paused_keys = keys
+                self.pauses.append([at, None])
+                self.state = "paused"
+                if self.data is not None:
+                    self.data.record("take.paused", {"paused_seconds_before": round(self.paused_seconds(), 3)},
+                                     during_pause=True)
+                    self.data.paused = True
+            else:
+                self._paused_keys = {}
+                self.pauses[-1][1] = at
+                self.state = "recording"
+                preview = cameras.get_preview_source()
+                if self.data is not None:
+                    self.data.paused = False
+                    # Camera moves while paused were not kept, so the record says where every camera stands now.
+                    self.data.record("take.resumed", {
+                        "paused_seconds": round(self.paused_seconds(), 3),
+                        "program": program.source_id if program else None,
+                        "preview": preview.source_id if preview else None,
+                        "cameras": [{"source_id": c.source_id, "position": list(c.position), "rotation": list(c.rotation),
+                                     "fov": c.fov, "focus": getattr(c, "focus", None)} for c in cameras.list_sources()]})
+                if self.mode == "main_camera":
+                    current = self.intervals[-1].source_id if self.intervals else None
+                    if program is not None and program.source_id != current:
+                        self._queue.put_nowait(SimpleNamespace(destination="program", source_id=program.source_id,
+                                                               timestamp=at, resumed=True))
+                    if self.arm_preview and preview is not None:
+                        self._queue.put_nowait(SimpleNamespace(destination="preview", source_id=preview.source_id,
+                                                               timestamp=at, resumed=True))
+            for item in problems:
+                self.notes.append(f"{item['source_id']} did not {item.get('phase', 'resume')}: {str(item.get('error'))[:200]}")
+            self.controller._witness(self.session, "mode_paused" if paused else "mode_resumed",
+                                     paused_seconds=round(self.paused_seconds(), 3), problems=len(problems))
+            self._write_record()
+            return problems
+
     # -- stop ----------------------------------------------------------------------------------------------
     async def end(self) -> List[Dict[str, Any]]:
         """Stop everything this mode started; returns the media files to register."""
         self.state = "stopping"
         self.stopped_at = time.time()
+        if self.pauses and self.pauses[-1][1] is None:
+            self.pauses[-1][1] = self.stopped_at      # stopped while paused: the pause lasts to the stop
         if self._worker is not None:
             self._queue.put_nowait(None)
             try:
@@ -831,6 +957,8 @@ class ModeTake:
             except asyncio.TimeoutError:
                 self._worker.cancel()
                 self.notes.append("A cut was still being followed when the take stopped")
+        await self._busy.acquire()          # a pause or resume still running finishes first
+        self._busy.release()
         self._end_current(at=self.stopped_at)
         engine = self.controller.capture_engine
         media: List[Dict[str, Any]] = []
@@ -905,7 +1033,9 @@ class ModeTake:
         width, height = (profile.resolution or "1920x1080").lower().split("x")
         rate = profile.frame_rate or "30"
         frame = 1.0 / float(rate)
-        origin, pieces = plan_program(self.intervals, self.segments, frame=frame)
+        # Segment files hold take time (paused stretches left out); the live-screen stretches are wall times.
+        intervals = [dataclasses.replace(i, start=self._clock(i.start), end=self._clock(i.end)) for i in self.intervals]
+        origin, pieces = plan_program(intervals, self.segments, frame=frame)
         if not pieces:
             return {"state": "empty", "error": "nothing was on the live screen long enough to join"}
         total = sum(_piece_duration(p) for p in pieces)
@@ -948,7 +1078,7 @@ class ModeTake:
         if mic_path is not None:
             chains.append("".join(labels) + f"concat=n={len(pieces)}:v=1:a=0[vout]")
             m = input_of(mic_path)
-            mic_first = mic["_stop_at"] - mic["duration"]
+            mic_first = self._clock(mic["_stop_at"]) - mic["duration"]
             offset = origin - mic_first
             lead = f"atrim=start={offset:.6f}," if offset > 0 else ""
             delay = f"adelay={int(round(-offset * 1000))}:all=1," if offset < 0 else ""
@@ -991,6 +1121,8 @@ class ModeTake:
         take = cls(controller, session)
         take.t0 = float(record.get("take_started_utc") or session.started_at)
         absolute = lambda value: None if value is None else take.t0 + float(value)
+        take.pauses = [[absolute(p.get("paused_at")), absolute(p.get("resumed_at"))] for p in record.get("pauses") or []
+                       if p.get("paused_at") is not None]
         program = record.get("program") or {}
         for item in program.get("segments", []):
             seg = Segment(index=int(item["index"]), source_id=str(item["source_id"]), key="",
@@ -1005,7 +1137,7 @@ class ModeTake:
                 info = await asyncio.to_thread(probe_media, seg.file)
                 seg.duration, seg.has_audio = info.get("duration"), bool(info.get("audio"))
                 if seg.duration:
-                    seg.first_frame_at = seg.media_offset = seg.spawned_at
+                    seg.first_frame_at = seg.media_offset = take._clock(seg.spawned_at)
                     seg.stop_requested_at = seg.spawned_at + seg.duration
                     seg.error = "timing estimated: the server stopped before this piece was closed"
             take.segments[seg.index] = seg
@@ -1036,7 +1168,9 @@ class ModeTake:
             if cut.get("handled") in ("started",) and seg is not None and seg.first_frame_at is not None:
                 cut["effective_at"] = seg.first_frame_at
             if cut.get("effective_at") is not None and cut["kind"] == "cut":
-                cut["late_by_ms"] = max(0, int(round((cut["effective_at"] - cut["requested_at"]) * 1000)))
+                # effective_at from a first frame is take time; the request is wall time, so it is moved the same way.
+                requested = self._clock(cut["requested_at"]) if cut.get("handled") == "started" else cut["requested_at"]
+                cut["late_by_ms"] = max(0, int(round((cut["effective_at"] - requested) * 1000)))
 
     def record(self) -> Dict[str, Any]:
         self._effective_cuts()
@@ -1051,7 +1185,10 @@ class ModeTake:
             "description": MODES[self.mode], "record_data": bool(self.session.record_data),
             "arm_preview": self.arm_preview, "state": self.state, "take_started_utc": self.t0,
             "stopped_at": rel(self.stopped_at),
-            "times": "seconds from take_started_utc, wall clock",
+            "times": "seconds from take_started_utc, wall clock; a segment's media_offset and first_frame_at, and a "
+                     "started cut's effective_at, are take time: wall time with the pauses before them taken out",
+            "pauses": [{"paused_at": rel(start), "resumed_at": rel(end)} for start, end in self.pauses],
+            "paused_seconds": round(self.paused_seconds(), 3),
             "program": None if self.mode != "main_camera" else {
                 "cuts": [{**c, "requested_at": rel(c.get("requested_at")), "effective_at": rel(c.get("effective_at"))}
                          for c in self.cuts],
@@ -1124,7 +1261,7 @@ class RecordingModeController:
 
     def _on_hub_message(self, kind: str, room: Optional[str], message: Dict[str, Any]) -> None:
         for take in list(self._takes.values()):
-            if take.data is None:
+            if take.data is None or take.state == "paused":
                 continue
             if kind == "system":
                 take.data.record("hub.system", message)
@@ -1208,6 +1345,16 @@ class RecordingModeController:
             for done in [sid for sid, t in self._assemblies.items() if t.done()][:-50]:
                 self._assemblies.pop(done, None)
         return artifacts if take.mode != "camcorder" else None
+
+    async def set_paused(self, session_id: str, paused: bool) -> Optional[List[Dict[str, Any]]]:
+        """Pause or resume what this take's mode records itself (and its show data, in every mode).
+
+        None when no take of that id is recording here. Otherwise the sources that did not pause or resume
+        properly, as {"source_id", "error", "phase"}. Raises when something could not be stopped."""
+        take = self._takes.get(session_id)
+        if take is None:
+            return None
+        return await take.set_paused(paused)
 
     def start_problems(self, session_id: str) -> List[Dict[str, Any]]:
         """Anything this mode could not start, in the same shape as the camcorder path's capture errors."""
