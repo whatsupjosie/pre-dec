@@ -149,3 +149,38 @@ RAN on Nov 24: these port branches are on no branch on GitHub, and no bundle of 
   - The Big Zip harvest's 2,276 Drive-only items, still unclassified.
 - Waiting on Josie: she said she will unzip Ring Me Jeeves Parts, pucastpy and pub, and the beefed codex_construction zip into the Drive folder "big zip". Those can be compared once they are there.
 - `recovery/beyond_october/` (108 files) is taken from the merge plan task's notes, not re-read.
+
+## Renderer (added 2026-11-25, asked for first)
+
+Question: which build draws avatar pictures for the virtual cameras, and which can turn takes that hold only data into video.
+
+Draws avatar pictures for a virtual camera today:
+- `static/camera_avatar_live.js`, `static/camera_avatar_live.html` and `modules/camera_view_routes.py`, from commit d11a1ff (Nov 21). This is on the studio line, and its router is mounted in `main.py`.
+- READ: it draws one GLB avatar in three.js, from the pose of a registered camera read from CameraManager. It moves the bones through `static/avatar_glb_motion_consumer.js`. With `publish=1` it sends JPEG frames to `/api/studio25d/media/frames/<camera>` every 250 ms.
+- Its motion source is a demo performer (a host-clock wave and breath), and its own docstring says so. It does not read takes.
+
+Records stage pixels to video, live only:
+- `static/stage_3d.html` with `static/studio_take_recorder.js`, on the studio line.
+- READ: it captures the 3D stage canvas at 30 fps, mixes the audio, and records with the browser's MediaRecorder.
+
+Turns a data-only take into video: no build does this end to end.
+- GUESS: the shortest path uses parts already on the studio line. Replace `demo_motion` in `camera_view_routes.py` with motion played back from the take on the timeline transport. Then record the `camera_avatar_live` canvas the way `studio_take_recorder.js` records the stage, or send its frames through FFmpeg.
+- DREAMS `distributed_engine_node_close_loop.py` (e4bb5c7) has a VideoEncoder that pipes raw frames through FFmpeg to libx264 or VP9. It could be a server-side encoder.
+
+The Rust GPU renderers (READ headers, RAN signal counts). All of them draw to a window surface with wgpu and winit. None reads frames back, and none is compiled.
+- `run2_rust/renderer.rs` (422 lines)
+- `rust_crate/pubcast_renderer_hardened.rs` (471 lines). It says headless start "fails honestly".
+- `run2_rust/pubcast_renderer_v5_5_ready.rs` (711 lines)
+- `rust_crate/pubcast_renderer_built_on_claude.rs` (823 lines). The largest. Its header says voxel meshing, the Python to Rust bridge and scene mesh extraction are still not solved.
+- Also `run2_rust/voxel.rs`, `voxel.wgsl` (camera uniform plus a flat colour shader), `scene.rs` (avatars with skeletons) and `skeleton.rs`.
+- RAN: `rust_crate/Cargo.toml` builds only `ws_renderer` and lists no wgpu, winit or image crate. `run2_rust/` has no Cargo.toml, and the donor `.rs` files sit outside `src/`. So the shipped `bin/ws_renderer` cannot draw. It tracks state and replies over the WebSocket.
+- GUESS: `pubcast_renderer_built_on_claude.rs` is the strongest Rust starting point. It would need an offscreen texture and readback before it could feed video.
+
+Not renderers, though they sound like them:
+- `modules/bridge_bulletproof.py`: the twin-engine bridge, moving data over shared memory, TCP or files. It makes no pictures. The largest version is 1,336 lines, blob 54f614cc.
+- `modules/wired/voxel_renderer.py` (30,752 bytes, the same as the four Drive copies of Jun 10): it builds LOD voxel meshes as compressed binary. It makes no pictures.
+- NowCurtsey `voxel_renderer_lighting_fixed.py`: meshes plus lighting.
+- `static/foresight_matter.cpp`: the only C++ found. It is a material renderer (WASM) for the Foresight Counter trays, not for avatars.
+- The Thursday GLB motion consumer bridge, under `recovery/2026-11-23/rediscovery/thursday_animation/` on `claude/rediscovery-early-repos-2026-11-23`: behavior animation, presets and a retargeter. It feeds avatar motion and outputs no pixels.
+
+Not found: a C++ voxel engine, in any repo branch tip or by Drive title. The voxel inventory (Drive `CODEX_VOXEL_ENGINE_INVENTORY_AND_WIRING_PLAN_20260617.md`, READ) points to `engine.rs` inside `podcast_ai_voxel_engine_COMPLETE.zip`. That zip was not opened this pass.
