@@ -134,7 +134,7 @@ try{
   // Only a successfully mounted, recoverable Foresight session may unlock them.
   soloTextarea.readOnly=false;draftArea.readOnly=false;
   saveDocument=()=>session.save();saveDocumentAs=()=>session.saveAs();
-  function activeWork(){return !!chatSending||!!generating||!!PP?.inflight||(typeof editingIdx!=='undefined'&&editingIdx!==null);}
+  function activeWork(){return !!chatSending||!!generating||!!PP?.inflight||!!window.twoiWordDocument?.isOpen()||(typeof editingIdx!=='undefined'&&editingIdx!==null);}
   let switching=false;
   async function openFile(file){
     if(switching||activeWork())throw Error('Finish the active work before opening another file.');
