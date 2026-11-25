@@ -97,26 +97,49 @@ def test_pause_stops_the_encoder_and_is_not_reported_as_lag(tmp_path):
 
 
 def test_a_pause_that_cannot_reach_every_encoder_changes_none_of_them(tmp_path, monkeypatch):
+    from modules import capture
+    tone = _tone(tmp_path / "tone.wav", 10)
+    take = tmp_path / "take"
+    take.mkdir()
+    real_suspend = capture._suspend
+
+    async def run():
+        engine = _engine()
+        await engine.start("take", [_file_source("a", tone), _file_source("b", tone)], _audio_profile(tmp_path), take)
+        first, second = engine._active["take"]
+
+        def suspend(proc, paused):
+            if proc is second.proc:
+                raise OSError("refused")
+            real_suspend(proc, paused)
+
+        monkeypatch.setattr(capture, "_suspend", suspend)
+        with pytest.raises(OSError):
+            await engine.pause("take")
+        assert first.paused is False and second.paused is False
+        monkeypatch.setattr(capture, "_suspend", real_suspend)
+        await engine.stop("take")
+
+    asyncio.run(run())
+
+
+def test_an_encoder_that_already_ended_does_not_block_the_pause(tmp_path):
+    if os.name == "nt":
+        pytest.skip("this test signals FFmpeg the POSIX way")
     tone = _tone(tmp_path / "tone.wav", 10)
     take = tmp_path / "take"
     take.mkdir()
 
     async def run():
         engine = _engine()
-        await engine.start("take", [_file_source("a", tone), _file_source("b", tone)], _audio_profile(tmp_path), take)
-        second = engine._active["take"][1]
-        second.proc.kill()
-        await second.proc.wait()
-        with pytest.raises(RuntimeError):
-            await engine.pause("take")
-        first = engine._active["take"][0]
-        assert first.paused is False and first.proc.returncode is None
+        await engine.start("take", [_file_source("good", tone), _file_source("broken", tmp_path / "missing.wav")],
+                           _audio_profile(tmp_path), take)
+        await engine.pause("take")
+        assert engine.is_paused("take")
+        await engine.resume("take")
         await engine.stop("take")
-        return engine
 
-    engine = asyncio.run(run())
-    failures = engine.failures("take")
-    assert [f["source_id"] for f in failures if f["phase"] == "stop"] == ["b"]
+    asyncio.run(run())
 
 
 def test_one_broken_camera_is_named_and_the_others_still_record(tmp_path):

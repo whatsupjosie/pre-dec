@@ -662,14 +662,15 @@ class FFmpegCaptureEngine:
     def set_paused(self, session_id: str, paused: bool) -> None:
         """Suspend or resume every encoder of ``session_id``, or none of them.
 
-        Raises (PauseUnsupported, OSError, RuntimeError) when any encoder could not change; the ones
+        Raises (PauseUnsupported, OSError, RuntimeError) when a running encoder could not change; the ones
         that already had are put back, so the take is never half paused. A pause that cannot happen
         is reported, never skipped: a "paused" take that keeps recording is the worse failure.
         """
         changed: List[_CaptureProcess] = []
         try:
             for cp in self._active.get(session_id, []):
-                if cp.paused != paused:
+                # An encoder that already ended (one that failed to start, say) records nothing to pause.
+                if cp.paused != paused and cp.proc.returncode is None:
                     cp.set_paused(paused)
                     changed.append(cp)
         except Exception:
