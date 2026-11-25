@@ -299,6 +299,9 @@ def _turn_kwargs(body: Dict[str, Any], request: Request, identity: Dict[str, Any
     message = body.get("message")
     if message is None:
         raise HTTPException(status_code=400, detail="message is required")
+    behaviour = body.get("behaviour")
+    if behaviour is not None and not isinstance(behaviour, dict):
+        raise HTTPException(400, "behaviour must be an object (keyboard, voice and face measurements with consent)")
     if not isinstance(message, str):
         raise HTTPException(status_code=400, detail="message must be a string so exact user text is not silently coerced")
     if not message.strip():
@@ -339,6 +342,9 @@ def _turn_kwargs(body: Dict[str, Any], request: Request, identity: Dict[str, Any
         "history": body.get("history") if isinstance(body.get("history"), list) else None,
         "max_memories": _bounded_int(body.get("max_memories"), default=6, minimum=0, maximum=24, field="max_memories"),
         "prompt_mode": str(body.get("prompt_mode") or "auto")[:40],
+        # Keyboard, voice and face measurements for the EQ observation layer. Each is used only
+        # when its consent flag is true; see modules/eq_observation/features.py.
+        "behaviour": behaviour,
     }
 
 @router.post("/turns")
@@ -1311,8 +1317,23 @@ async def calibration_moments(request: Request, session_id: str = "pubpartner_li
                 "truncated": len(user_text) > 600 or len(partner_text) > 600,
             })
             if len(moments) >= 30:
-                return {"ok": True, "moments": moments}
-    return {"ok": True, "moments": moments}
+                return {"ok": True, "moments": _with_observation_notes(spine, user_id, moments)}
+    return {"ok": True, "moments": _with_observation_notes(spine, user_id, moments)}
+
+
+def _with_observation_notes(spine: PubPartnerSpine, user_id: str, moments: list) -> list:
+    """Add what the EQ observation layer noticed about each listed moment, if anything.
+
+    Additive: existing keys and order are unchanged; a flagged moment gains "observation"
+    (plain behaviour words and the kind of disagreement). A failure leaves the list as it was."""
+    layer = getattr(spine, "eq_observation", None)
+    if layer is None or not moments:
+        return moments
+    try:
+        notes = layer.moment_notes(user_id=user_id, turn_ids=[m.get("turn_id") for m in moments])
+    except Exception:
+        return moments
+    return [{**m, "observation": notes[m["turn_id"]]} if m.get("turn_id") in notes else m for m in moments]
 
 @router.post("/calibration/interviews/{interview_id}/audio")
 async def calibration_upload_audio(interview_id: str, request: Request,
@@ -1353,3 +1374,89 @@ async def calibration_download_audio(interview_id: str, audio_ref: str, request:
     mime = {".webm": "audio/webm", ".ogg": "audio/ogg",
             ".m4a": "audio/mp4", ".wav": "audio/wav"}[path.suffix]
     return FileResponse(path, media_type=mime, headers={"Cache-Control": "no-store"})
+
+
+# ---- EQ observation layer (shadow): owner-scoped views and the calibration loop ----------------
+from .eq_observation import ObservationError, ObservationLayer
+from .eq_observation.reliability import VERDICTS as _EQ_VERDICTS
+
+
+def _eq_layer() -> ObservationLayer:
+    layer = getattr(get_spine(), "eq_observation", None)
+    if layer is None:
+        raise HTTPException(status_code=404, detail="the EQ observation layer is switched off on this host")
+    return layer
+
+
+@router.get("/eq-observation/summary")
+async def eq_observation_summary(request: Request, identity: Dict[str, Any] = Depends(current_identity)) -> Dict[str, Any]:
+    """The caller's own baseline maturity, trust per witness and scorecards. Numbers only."""
+    user = _scoped_user_id(request=request, identity=identity)
+    return {"ok": True, **_eq_layer().summary(user_id=user)}
+
+
+@router.get("/eq-observation/moments")
+async def eq_observation_moments(request: Request, limit: Optional[int] = None,
+                                 identity: Dict[str, Any] = Depends(current_identity)) -> Dict[str, Any]:
+    """Moments worth asking about in calibration, with evidence refs the interview store accepts."""
+    user = _scoped_user_id(request=request, identity=identity)
+    bounded = _bounded_int(limit, default=3, minimum=1, maximum=10, field="limit")
+    return {"ok": True, "moments": _eq_layer().calibration_moments(user_id=user, limit=bounded)}
+
+
+@router.post("/eq-observation/verdicts")
+async def eq_observation_verdict(request: Request, identity: Dict[str, Any] = Depends(current_identity)) -> Dict[str, Any]:
+    """Record the person's approved account of one moment. Moves trust; one account per moment."""
+    body = await _json_dict(request)
+    user = _scoped_user_id(request=request, identity=identity, explicit_value=body.get("user_id"))
+    turn_id = str(body.get("turn_id") or "").strip()[:120]
+    if not turn_id:
+        raise HTTPException(status_code=400, detail="turn_id is required")
+    if body.get("answer") not in _EQ_VERDICTS:
+        raise HTTPException(status_code=400, detail="answer must be one of " + ", ".join(_EQ_VERDICTS))
+    if body.get("approved") is not True:
+        raise HTTPException(status_code=400, detail="approved must be true: only the person's approved account is recorded")
+    if body.get("calm") not in (True, False, None):
+        raise HTTPException(status_code=400, detail="calm must be true, false or null")
+    try:
+        result = _eq_layer().apply_calibration_verdict(user_id=user, turn_id=turn_id, verdict={
+            "answer": body["answer"], "approved": True, "calm": body.get("calm"),
+            "interview_id": str(body.get("interview_id") or "")[:64]})
+    except LookupError:
+        raise HTTPException(status_code=404, detail="no recorded reading for that turn")
+    except ObservationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return {"ok": True, **result}
+
+
+@router.post("/eq-observation/perception-feedback")
+async def eq_observation_perception_feedback(request: Request,
+                                             identity: Dict[str, Any] = Depends(current_identity)) -> Dict[str, Any]:
+    """How a reply actually came across, from the person or an observer. Scores the perception reader."""
+    body = await _json_dict(request)
+    user = _scoped_user_id(request=request, identity=identity, explicit_value=body.get("user_id"))
+    prediction_id = str(body.get("prediction_id") or "").strip()
+    observed = body.get("observed_reads")
+    if not prediction_id:
+        raise HTTPException(status_code=400, detail="prediction_id is required")
+    if not isinstance(observed, list) or not all(isinstance(r, str) for r in observed):
+        raise HTTPException(status_code=400, detail="observed_reads must be a list of strings")
+    try:
+        summary = _eq_layer().record_perception_feedback(user_id=user, prediction_id=prediction_id,
+                                                         observed_reads=observed)
+    except LookupError:
+        raise HTTPException(status_code=404, detail="no recorded prediction with that id")
+    except ObservationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return {"ok": True, "perception_scorecard": summary}
+
+
+@router.post("/eq-observation/forget")
+async def eq_observation_forget(request: Request, identity: Dict[str, Any] = Depends(current_identity)) -> Dict[str, Any]:
+    """Remove everything the observation layer holds about the caller. Their own data, at their request.
+    Requires {"confirm": "forget"} so it cannot happen by accident."""
+    body = await _json_dict(request)
+    user = _scoped_user_id(request=request, identity=identity, explicit_value=body.get("user_id"))
+    if body.get("confirm") != "forget":
+        raise HTTPException(status_code=400, detail='send {"confirm": "forget"} to remove this data')
+    return {"ok": True, "removed": _eq_layer().forget(user_id=user)}

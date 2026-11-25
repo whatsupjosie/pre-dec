@@ -401,13 +401,26 @@ class ContextDisambiguator:
             r'\b(shot|hit|beaten|attacked|assault|violence|rape|abuse|harm)\b',
             msg_lower
         ):
-            # Distinguish between "I shot a goal" vs "I was shot"
-            if not re.search(r'\b(shot (?:a goal|the winning|it|the target))\b', msg_lower):
+            # Distinguish achievement phrasing ("shot/hit a goal") from actual harm. "hit" had no
+            # such exclusion, so "I hit my goal at work" was tagged VIOLENCE as well as ACHIEVEMENT.
+            # Ported from recovery/2026-11-23/donors/eq_disambiguation_fixed_breaking_dawn.
+            is_achievement_phrasing = re.search(
+                r'\b(shot|hit) (?:a goal|the winning|it out of the park|the target|my goal|my target)\b',
+                msg_lower
+            )
+            if not is_achievement_phrasing:
                 contexts.append(EmotionContext.VIOLENCE)
         
-        # Check loss/grief contexts
+        # Check loss/grief contexts. "lost my" alone matched "I lost my keys"; a loss is a person,
+        # an animal, a pregnancy, a home or a livelihood, not a mislaid object.
         if re.search(
-            r'\b(lost someone|lost my|death|died|passed away|funeral|mourning)\b',
+            r'\b(lost someone|death|died|passed away|funeral|mourning|miscarriage)\b',
+            msg_lower
+        ) or re.search(
+            r'\blost (?:my|our|her|his|their) (?:\w+ )?(?:mother|mom|mum|father|dad|parents?|grand\w+|'
+            r'brother|sister|siblings?|son|daughter|kids?|child(?:ren)?|baby|pregnancy|husband|wife|'
+            r'partner|boyfriend|girlfriend|fianc\w*|friends?|best friend|aunt|uncle|cousin|family|'
+            r'dog|cat|pet|horse|home|house|apartment|job|business|livelihood)\b',
             msg_lower
         ):
             contexts.append(EmotionContext.LOSS)
@@ -457,19 +470,25 @@ class ContextDisambiguator:
         """
         Estimate emotional intensity on 0.0-1.0 scale.
         0.0 = neutral, 1.0 = crisis level
+
+        Ported from recovery/2026-11-23/donors/eq_disambiguation_fixed_breaking_dawn (its
+        named-emotion scoring was NOT ported: the owner's design keeps no single emotion label):
+        unmatched text is neutral (0.05), not "moderate" (0.5), so "Hi there" no longer scores like
+        "I'm frustrated"; crisis wording is explicit only ("give up", "end it" and "dying" matched
+        "I give up trying to park", "let's end it here", "dying of laughter").
         """
         msg_lower = message.lower()
         
         # Crisis markers (0.9-1.0)
         if re.search(
-            r'\b(suicide|kill myself|end it|give up|hopeless|dying|can\'t go on)\b',
+            r'\b(suicide|kill myself|end it all|end my life|can\'t go on|no reason to live)\b',
             msg_lower
         ):
             return 1.0
         
         # High intensity (0.7-0.9)
         if re.search(
-            r'\b(devastated|horrified|terrified|rage|can\'t breathe)\b',
+            r'\b(devastated|horrified|terrified|rage|can\'t breathe|hopeless|worthless)\b',
             msg_lower
         ):
             return 0.85
@@ -488,15 +507,15 @@ class ContextDisambiguator:
         ):
             return 0.45
         
-        # Low (0.1-0.3)
+        # Low but present (0.15-0.3), including mild positive affect
         if re.search(
             r'\b(fine|okay|alright|good|nice|happy|proud)\b',
             msg_lower
         ):
-            return 0.25
+            return 0.2
         
-        # Neutral/baseline
-        return 0.5
+        # No keyword signal at all: neutral, not "moderate"
+        return 0.05
     
     # ========================================================================
     # VALENCE ESTIMATION (negative vs positive)
@@ -697,7 +716,7 @@ class ContextDisambiguator:
         if intensity > 0.7 and valence < 0:
             opportunities.append("validate their feelings")
             opportunities.append("offer specific support")
-            opportunities.append("check if they need crisis resources")
+            opportunities.append("stay with them; offer a service only if they ask")
         
         if context and context[0] == EmotionContext.FATIGUE:
             opportunities.append("normalize burnout")

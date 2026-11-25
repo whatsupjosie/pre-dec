@@ -224,15 +224,13 @@ class PresenceMode:
     def crisis_response(self) -> str:
         """
         When something might be acute/crisis.
-        This is not therapy. This is not a hotline.
-        But it needs to acknowledge and point.
+        This is not therapy and not a hotline. The partner stays with them, as a
+        friend. No service or number unless the person asks (owner rule,
+        2026-11-23: "unless the person asks, no referring to services. No
+        brushing them off."). No safety-check questions (owner rule, 2026-11-23:
+        "Don't ask them that. It makes it worse. It always makes it worse.").
         """
-        return (
-            "What you're saying matters, and I want to make sure I understand. "
-            "Are you safe right now? "
-            "If you're in immediate danger, please reach out to 988 (Suicide & Crisis Lifeline) "
-            "or text HOME to 741741."
-        )
+        return "What you're saying matters, and I'm staying right here with you."
 
 
 # ─────────────────────────────────────────────
@@ -462,10 +460,14 @@ class MomentGuard:
                 f"Stay or hold before advancing."
             )
 
-        # Crisis check — never let anything through during ACUTE
+        # During ACUTE the partner stays. A reply that hands them off to a service or
+        # runs a safety-check script is blocked (owner rules, 2026-11-23: no referring
+        # to services unless asked; "Don't ask them that. It makes it worse.").
         if pacing_report.grief_weight == GriefWeight.ACUTE:
-            if "988" not in response_text and "crisis" not in response_text.lower():
-                return False, "During possible crisis, response must acknowledge safety first."
+            if re.search(r"\b(hotline|helpline|crisis (line|text|service)|988|741741|emergency services|"
+                         r"professional help|a therapist|a counsell?or|are you safe|safe right now|"
+                         r"is anyone with you)\b", response_text, re.IGNORECASE):
+                return False, "During possible crisis, stay with them: no hand-off to a service and no safety-check script."
 
         # Check for solution-offering during STAY
         if pacing_report.decision == PacingDecision.STAY:

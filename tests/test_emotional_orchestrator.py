@@ -95,12 +95,26 @@ def test_dynamics_consumes_canonical_judgment():
     d=AffectDynamics().observe_judgment(j).to_dict()
     assert d["state"] == "adjudicated" and d["event_id"] == "e"
 
-@pytest.mark.parametrize("bad", [float("nan"),float("inf"),-99,99,None,"bad"])
-def test_hostile_dimension_inputs_are_bounded(bad):
+# Replaced with the 2026-10-02 empathy pass's own tests for the ported broker fix: malformed
+# evidence is refused, finite out-of-range values are bounded (empathy zip tests/test_emotional_orchestrator.py).
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf"), None, "bad"])
+def test_nonfinite_or_nonnumeric_dimension_inputs_are_rejected(bad):
+    o=EmotionalOrchestrator(clock=Clock())
+    with pytest.raises(ValueError):
+        o.publish_secondary(source="eq",subject_id="u",session_id="s",confidence=1,dimensions={"load":bad},provenance="x")
+
+@pytest.mark.parametrize("bad", [-99, 99])
+def test_finite_out_of_range_dimension_inputs_are_bounded(bad):
     o=EmotionalOrchestrator(clock=Clock())
     o.publish_secondary(source="eq",subject_id="u",session_id="s",confidence=1,dimensions={"load":bad},provenance="x")
     value=o.adjudicate(subject_id="u",session_id="s").dimensions["load"]
     assert 0 <= value <= 1
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_nonfinite_confidence_is_rejected(bad):
+    o=EmotionalOrchestrator(clock=Clock())
+    with pytest.raises(ValueError):
+        o.publish_secondary(source="eq",subject_id="u",session_id="s",confidence=bad,dimensions={"load":.5},provenance="x")
 
 def test_tie_break_is_deterministic_and_prefers_declared_source_priority():
     o=EmotionalOrchestrator(clock=Clock()); pub(o,"conversation",.2,event="a"); pub(o,"eq",.8,event="b")
