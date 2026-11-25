@@ -179,8 +179,11 @@ class VoxelWebRTCBridge:
             try:
                 env = os.environ.copy()
                 env.setdefault("PUBCAST_WS_PORT", str(self.port))
+                # Name the port on the command line too: the rebuilt renderer reads
+                # --port, and an inherited PUBCAST_WS_PORT would otherwise win over
+                # the port this bridge was given and then waits on.
                 self._process = subprocess.Popen(
-                    [str(self.renderer_binary)],
+                    [str(self.renderer_binary), "--port", str(self.port)],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     cwd=str(self.renderer_binary.parent.parent),
