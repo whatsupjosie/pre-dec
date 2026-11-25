@@ -47,10 +47,14 @@ from modules.program_audio import ProgramAudioState, apply_audio_event
 from modules.program_audio_routes import create_program_audio_router
 from modules.participant_audio import create_participant_audio_router
 from starlette.requests import HTTPConnection
-from modules.studio_console_actions import execute_studio_action, list_studio_actions
+from modules.studio_console_actions import confirmed_stop_session_id, execute_studio_action, list_studio_actions
 from modules.recording_modes import MODES as RECORDING_MODE_DESCRIPTIONS, ModeRequestError, RecordingModeController, default_sources
 
 logger = logging.getLogger("pubcast.production")
+
+
+class CaptureNotFinished(RuntimeError):
+    """A take's media is not all finished and added to it yet; stopping again retries."""
 
 
 async def _json_dict(request: Request) -> Dict[str, Any]:
@@ -187,6 +191,34 @@ def create_production_router(
     # Camcorder, data only or main camera only (modules/recording_modes.py); one controller for every route.
     recording_modes = RecordingModeController(cameras=cameras, recording=recording, capture_engine=capture_engine, hub=hub)
     session_mode_options: Dict[str, Dict[str, bool]] = {}
+    # Finished recordings that could not be added to their take (a full disk, say). The file stays on
+    # disk and here, and the next stop, PANIC or shutdown tries again; nothing is forgotten.
+    unregistered_outputs: Dict[str, List[Dict[str, Any]]] = {}
+
+    def _note_capture_errors(session_id: str, errors: List[Dict[str, Any]]) -> None:
+        """Keep failed sources with the take. A record that cannot be written is logged, never raised:
+        the operator has already been told, and the failure must not stop the take from closing."""
+        note = getattr(recording, "note_capture_errors", None)
+        if not errors or not callable(note):
+            return
+        try:
+            note(session_id, errors)
+        except Exception:
+            logger.exception("Could not save the capture failures of %s", session_id)
+
+    def _engine_failures(session_id: str, phase: Optional[str] = None) -> List[Dict[str, Any]]:
+        failures = getattr(capture_engine, "failures", None)
+        items = failures(session_id) if callable(failures) else []
+        return [item for item in items if phase is None or item.get("phase") == phase]
+
+    def _start_errors(session) -> List[Dict[str, Any]]:
+        """What could not start, for the start reply: the camcorder path's failures, then the mode's."""
+        items = [dict(item) for item in getattr(session, "capture_errors", []) or [] if item.get("phase") == "start"]
+        seen = {item.get("source_id") for item in items}
+        for item in recording_modes.start_problems(session.session_id):
+            if item.get("source_id") not in seen:
+                items.append(item)
+        return items
 
     async def _start_capture_for_session(session) -> List[str]:
         # The mode starts first: the show data needs no FFmpeg, and data-only and main-camera
@@ -199,6 +231,12 @@ def create_production_router(
         if session.state != RecordingState.ACTIVE:
             return []
         if capture_engine is None or not getattr(capture_engine, "available", False):
+            if session.sources:
+                # The take is open but nothing is recording it; say so with the take, not only in the log.
+                _note_capture_errors(session.session_id, [
+                    {"source_id": source_id, "phase": "start",
+                     "error": "FFmpeg is not available on this computer, so nothing was recorded for this source"}
+                    for source_id in session.sources])
             return []
         session_id = session.session_id
         source_objects = [cameras.get(source_id) for source_id in session.sources]
@@ -218,6 +256,7 @@ def create_production_router(
             capture_start_tasks[session_id] = task
             task.add_done_callback(lambda _: capture_start_tasks.pop(session_id, None))
         paths = await asyncio.shield(task)
+        _note_capture_errors(session_id, _engine_failures(session_id, "start"))
         if session_id in capture_stop_tasks or session.state != RecordingState.ACTIVE:
             raise HTTPException(409, "Recording was stopped while its cameras were starting")
         return [str(path) for path in paths]
@@ -233,22 +272,30 @@ def create_production_router(
         starting = capture_start_tasks.get(session_id)
         if starting is not None:
             await asyncio.shield(starting)
-        if not capture_engine.is_capturing(session_id):
-            return []
-        paths = await capture_engine.stop(session_id)
-        synthetic_lookup = getattr(capture_engine, "synthetic_outputs", None)
-        synthetic = {Path(p).as_posix() for p in synthetic_lookup(session_id)} if callable(synthetic_lookup) else set()
+        pending = unregistered_outputs.setdefault(session_id, [])
+        if capture_engine.is_capturing(session_id):
+            paths = await capture_engine.stop(session_id)
+            _note_capture_errors(session_id, _engine_failures(session_id, "stop"))
+            synthetic_lookup = getattr(capture_engine, "synthetic_outputs", None)
+            synthetic = {Path(p).as_posix() for p in synthetic_lookup(session_id)} if callable(synthetic_lookup) else set()
+            queued = {item["path"].as_posix() for item in pending}
+            pending.extend({"path": Path(path), "synthetic": Path(path).as_posix() in synthetic}
+                           for path in paths if Path(path).as_posix() not in queued)
         artifacts: List[Dict[str, Any]] = []
-        for path in paths:
-            is_synthetic = Path(path).as_posix() in synthetic
+        not_saved: List[str] = []
+        for item in list(pending):
+            path, is_synthetic = item["path"], item["synthetic"]
             try:
                 # The flag is only passed when set, so recording-service stand-ins
                 # without the keyword keep working.
                 artifact = (recording.register_artifact(session_id, path, synthetic=True)
                             if is_synthetic else recording.register_artifact(session_id, path))
             except Exception as exc:
+                # The file is finished and stays on disk and in the queue; the next stop tries again.
                 logger.warning("Could not register capture artifact %s for %s: %s", path, session_id, exc)
+                not_saved.append(f"{path.name} ({exc})")
                 continue
+            pending.remove(item)
             artifacts.append({
                 "name": artifact.name,
                 "format": artifact.format.value,
@@ -257,6 +304,17 @@ def create_production_router(
                 # True when the file is an FFmpeg test pattern, not camera or PubWorld video.
                 "synthetic": is_synthetic,
             })
+        if not pending:
+            unregistered_outputs.pop(session_id, None)
+        if not_saved:
+            raise CaptureNotFinished(
+                "Recorded but not yet added to the take: " + "; ".join(not_saved)
+                + ". The files are kept on disk; stop the take again to retry.")
+        still = [cp.get("source_id") for cp in getattr(capture_engine, "live_report", lambda _s: [])(session_id) or []]
+        if capture_engine.is_capturing(session_id) and still:
+            raise CaptureNotFinished(
+                "These cameras' encoders did not stop: " + ", ".join(map(str, still))
+                + ". Stop the take again to retry.")
         return artifacts
 
     async def _stop_capture_for_session(session_id: str) -> List[Dict[str, Any]]:
@@ -283,6 +341,7 @@ def create_production_router(
                     "state": session.state.value,
                     "countdown": 0,
                     "capture_paths": paths,
+                    "capture_errors": _start_errors(session),
                 },
             })
         return paths
@@ -302,12 +361,59 @@ def create_production_router(
                     "duration": (session.ended_at or time.time()) - session.started_at,
                     "artifacts": artifacts,
                     "capture_warnings": warnings,
+                    "capture_errors": list(getattr(session, "capture_errors", []) or []),
                 },
             })
         return session, artifacts, warnings
 
+    async def finish_all_captures(reason: str) -> Dict[str, List[Any]]:
+        """Finish every take that is still recording or still has media waiting, all at once.
+
+        Shared by PANIC and server shutdown. Each take's encoders are finished before its session is
+        closed, so the files are complete; one take that fails does not hold back the others."""
+        stopped: List[str] = []
+        errors: List[Dict[str, Any]] = []
+        active_states = (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED)
+
+        async def finish(session) -> None:
+            session_id = session.session_id
+            capturing = session_id in capture_start_tasks or bool(capture_engine and capture_engine.is_capturing(session_id))
+            try:
+                artifacts = await _stop_capture_for_session(session_id)
+                if capturing and not artifacts:
+                    errors.append({"session_id": session_id, "error": "Capture produced no registered media"})
+            except Exception as exc:
+                errors.append({"session_id": session_id, "error": str(exc)})
+            for item in getattr(session, "capture_errors", []) or []:
+                errors.append({"session_id": session_id, "source_id": item.get("source_id"), "error": item.get("error")})
+            if session.state in active_states:
+                try:
+                    recording.stop_session(session_id)
+                    stopped.append(session_id)
+                except Exception as exc:
+                    errors.append({"session_id": session_id, "error": str(exc)})
+
+        sessions = [session for session in recording.list_sessions()
+                    if session.state in active_states
+                    or session.session_id in capture_start_tasks
+                    or session.session_id in capture_stop_tasks
+                    or session.session_id in unregistered_outputs
+                    or bool(capture_engine and capture_engine.is_capturing(session.session_id))]
+        await asyncio.gather(*(finish(session) for session in sessions))
+        if errors:
+            logger.warning("%s: capture problems %s", reason, errors)
+        return {"stopped": stopped, "errors": errors}
+
+    async def shutdown_captures() -> None:
+        """Server shutdown: finish the files of every take still recording (as codex/main-debug does)."""
+        try:
+            await finish_all_captures("Shutdown")
+        except Exception:
+            logger.exception("Recordings could not all be finished at shutdown")
+
     router.begin_take = begin_take
     router.end_take = end_take
+    router.shutdown_captures = shutdown_captures
 
     # —
     # CAMERAS
@@ -535,6 +641,18 @@ def create_production_router(
         """Execute a stable studio action by ID for console art or hotspot overlays."""
         body = await _json_dict(request)
         actor = str(identity.get("user_id") or "director")
+        stop_artifacts: Optional[List[Dict[str, Any]]] = None
+        if action_id == "recording.stop":
+            # The media is finished before the take is closed, the same order as the stop route; closing
+            # first left the encoders writing into a take that already said it had ended.
+            try:
+                stop_artifacts = await _stop_capture_for_session(confirmed_stop_session_id(body))
+            except ValueError as exc:
+                raise HTTPException(400, str(exc))
+            except KeyError as exc:
+                raise HTTPException(404, str(exc))
+            except CaptureNotFinished as exc:
+                raise HTTPException(409, str(exc))
         try:
             response = execute_studio_action(
                 action_id,
@@ -546,6 +664,8 @@ def create_production_router(
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))
+        except KeyError as exc:
+            raise HTTPException(404, str(exc)) from exc
 
         if response.get("ok") and action_id == "recording.start":
             session_data = response.get("result", {})
@@ -555,13 +675,24 @@ def create_production_router(
                 capture_paths = await _start_capture_for_session(session)
                 if capture_paths:
                     session_data["capture_paths"] = capture_paths
+                start_errors = _start_errors(session)
+                if start_errors:
+                    session_data["capture_errors"] = start_errors
         elif response.get("ok") and action_id == "recording.stop":
             session_data = response.get("result", {})
-            session_id = session_data.get("session_id") or body.get("session_id")
-            if session_id:
-                artifacts = await _stop_capture_for_session(str(session_id))
-                if artifacts:
-                    session_data["artifacts"] = artifacts
+            session_id = str(session_data.get("session_id") or body.get("session_id"))
+            if stop_artifacts:
+                session_data["artifacts"] = stop_artifacts
+            report = getattr(capture_engine, "report", None)
+            capture_report = report(session_id) if callable(report) else []
+            if capture_report:
+                session_data["capture_report"] = capture_report
+            try:
+                saved_errors = recording.get_session(session_id).capture_errors
+            except (KeyError, AttributeError):
+                saved_errors = []
+            if saved_errors:
+                session_data["capture_errors"] = list(saved_errors)
 
         _blackbox_event(
             "studio.action",
@@ -644,6 +775,7 @@ def create_production_router(
                     "state": session.state.value,
                     "countdown": countdown,
                     "capture_paths": capture_paths,
+                    "capture_errors": _start_errors(session),
                 },
             })
 
@@ -651,9 +783,7 @@ def create_production_router(
         if capture_paths:
             response["capture_paths"] = capture_paths
         # FFmpeg exiting within moments of starting means nothing is being recorded; say so now.
-        startup = getattr(capture_engine, "startup_failures", None)
-        capture_errors = startup(session.session_id) if callable(startup) else []
-        capture_errors = capture_errors + recording_modes.start_problems(session.session_id)
+        capture_errors = _start_errors(session)
         if capture_errors:
             response["capture_errors"] = capture_errors
         return response
@@ -693,7 +823,7 @@ def create_production_router(
 
         capture_paths = await _start_capture_for_session(session)
         session_audio_inputs.pop(session_id, None)
-        mode_errors = recording_modes.start_problems(session_id)
+        mode_errors = _start_errors(session)
 
         if hub:
             await hub.broadcast_system_event({
@@ -715,6 +845,9 @@ def create_production_router(
             session, _artifacts, _warnings = await end_take(session_id)
         except KeyError as exc:
             raise HTTPException(404, str(exc))
+        except CaptureNotFinished as exc:
+            # The take stays open, so pressing stop again retries with the files already on disk.
+            raise HTTPException(409, str(exc))
 
         response = session.to_dict()
         report = getattr(capture_engine, "report", None)
@@ -729,8 +862,33 @@ def create_production_router(
         body = await _json_dict(request)
         paused = _bool_field(body, "paused", default=True)
         try:
+            session = recording.get_session(session_id)
+        except KeyError as exc:
+            raise HTTPException(400, str(exc))
+        if session.state in (RecordingState.ACTIVE, RecordingState.PAUSED) and recording_modes.owns_capture(session_id):
+            # A data-only or main-camera take records through its mode, which has no pause yet. Marking it
+            # paused while it keeps recording would say something untrue.
+            raise HTTPException(409, f"A {session.mode.replace('_', ' ')} take cannot be paused yet; it is still recording")
+        engine_changed = False
+        if capture_engine is not None and capture_engine.is_capturing(session_id) and session.state in (
+                RecordingState.ACTIVE, RecordingState.PAUSED):
+            set_paused = getattr(capture_engine, "set_paused", None)
+            try:
+                if callable(set_paused):
+                    set_paused(session_id, paused)
+                else:
+                    await (capture_engine.pause(session_id) if paused else capture_engine.resume(session_id))
+                engine_changed = True
+            except (RuntimeError, OSError, NotImplementedError) as exc:
+                raise HTTPException(409, f"The cameras could not be {'paused' if paused else 'resumed'}: {exc}")
+        try:
             session = recording.pause_session(session_id, paused)
         except (KeyError, ValueError) as exc:
+            if engine_changed:
+                try:
+                    getattr(capture_engine, "set_paused")(session_id, not paused)
+                except Exception:
+                    logger.exception("Could not put the cameras of %s back after a failed pause", session_id)
             raise HTTPException(400, str(exc))
         return session.to_dict()
 
@@ -855,25 +1013,9 @@ def create_production_router(
                 "blackout": True,
                 "blackout_seq": now,
             })
-        stopped, capture_errors = [], []
-        for session in recording.list_sessions():
-            session_id = session.session_id
-            capturing = session_id in capture_start_tasks or bool(capture_engine and capture_engine.is_capturing(session_id))
-            finalizing = session_id in capture_stop_tasks
-            if (session.state not in (RecordingState.ACTIVE, RecordingState.COUNTDOWN, RecordingState.PAUSED)
-                    and not capturing and not finalizing):
-                continue
-            try:
-                try:
-                    artifacts = await _stop_capture_for_session(session_id)
-                    if capturing and not artifacts:
-                        capture_errors.append({"session_id": session_id, "error": "Capture produced no registered media"})
-                except Exception as exc:
-                    capture_errors.append({"session_id": session_id, "error": str(exc)})
-                recording.stop_session(session_id)
-                stopped.append(session_id)
-            except Exception as exc:
-                capture_errors.append({"session_id": session_id, "error": str(exc)})
+        # Every take is finished at once: one slow or failing encoder must not hold back the others.
+        outcome = await finish_all_captures("PANIC")
+        stopped, capture_errors = outcome["stopped"], outcome["errors"]
         if hub:
             await hub.broadcast_system_event({
                 "type": "production_panic",

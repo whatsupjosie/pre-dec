@@ -112,6 +112,9 @@ class RecordingSession:
     # Non-media files of this take (show data, the mode record), by file name in the
     # session folder. They travel with the media on export and import.
     data_files: List[str] = field(default_factory=list)
+    # Sources that did not record properly, each {"source_id", "error", "phase"} with phase "start"
+    # or "stop". Kept with the take so a reload still says which camera is missing from it.
+    capture_errors: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         return {
@@ -131,6 +134,8 @@ class RecordingSession:
             "mode": self.mode,
             "record_data": self.record_data,
             "data_files": list(self.data_files),
+            # Only written when something failed, so takes that recorded cleanly keep their files as before.
+            **({"capture_errors": [dict(item) for item in self.capture_errors]} if self.capture_errors else {}),
             "artifacts": [
                 {
                     "name": art.name,
@@ -381,6 +386,25 @@ class RecordingService:
 
         self._blackbox_event("recording.state", actor=operator, data={"session_id": session.session_id, "state": session.state.value, "sources": ",".join(session.sources), "profile_id": session.profile_id})
         logger.info("Recording session %s created with sources %s", session_id, sources)
+        return session
+
+    def note_capture_errors(self, session_id: str, errors: List[Dict[str, Any]]) -> RecordingSession:
+        """Record, with the take, which sources failed to record and why.
+
+        ``errors`` are {"source_id", "error", "phase"}; one already noted for the same source and
+        phase is replaced by the newer account rather than listed twice."""
+        session = self.get_session(session_id)
+        merged = {(item.get("source_id"), item.get("phase")): dict(item) for item in session.capture_errors}
+        for item in errors:
+            source_id = str(item.get("source_id") or "")
+            if not source_id:
+                continue
+            phase = str(item.get("phase") or "start")
+            merged[(source_id, phase)] = {"source_id": source_id, "error": str(item.get("error") or "Capture failed"),
+                                          "phase": phase}
+        updated = list(merged.values())
+        if updated != session.capture_errors:
+            self._commit_metadata(session, capture_errors=updated, updated_at=time.time())
         return session
 
     def _commit_metadata(self, session: RecordingSession, **changes) -> None:
@@ -1104,6 +1128,7 @@ class RecordingService:
                 for name in data_files):
             raise ValueError("Invalid recording data file list")
         session.data_files = list(dict.fromkeys(data_files))
+        session.capture_errors = _capture_errors_from(payload.get("capture_errors"))
         session.artifacts = [
             RecordingArtifact(
                 name=item["name"],
@@ -1125,6 +1150,19 @@ class RecordingService:
         ]
         self._encoded_capture_timing(session)
         return session
+
+
+def _capture_errors_from(value: Any) -> List[Dict[str, Any]]:
+    """Saved capture failures: the list this line writes, or the {source_id: error} map of takes
+    saved by the codex/main-debug line, read as start-or-stop failures with no phase."""
+    if not value:
+        return []
+    if isinstance(value, dict):
+        return [{"source_id": str(k), "error": str(v), "phase": "unknown"} for k, v in value.items()]
+    if not isinstance(value, list) or not all(isinstance(item, dict) and item.get("source_id") for item in value):
+        raise ValueError("Invalid capture error list")
+    return [{"source_id": str(item["source_id"]), "error": str(item.get("error") or "Capture failed"),
+             "phase": str(item.get("phase") or "unknown")} for item in value]
 
 
 # ----------------------------------------------------------------------
