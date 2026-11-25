@@ -175,3 +175,24 @@ def test_every_camera_is_stopped_at_once(tmp_path):
     # One at a time this is at least three 8-second waits for "q"; together it is one.
     assert took < 16, took
     assert not engine._active
+
+
+def test_failed_sources_are_kept_with_the_saved_take_and_read_back(tmp_path):
+    import json
+    service = create_recording_service(tmp_path / "svc", create_default_cameras())
+    sources = [c.source_id for c in service.cameras.list_sources()][:2]
+    session = service.start_session(None, sources, profile_id="audio_only", operator="test",
+                                    countdown_seconds=0, record_data=False)
+    clean = json.loads((service._session_dir(session.session_id) / f"{session.session_id}.json").read_text())
+    assert "capture_errors" not in clean, "a take with no failures keeps its file as before"
+
+    service.note_capture_errors(session.session_id, [{"source_id": sources[0], "error": "no input", "phase": "start"}])
+    service.note_capture_errors(session.session_id, [{"source_id": sources[0], "error": "exit 1", "phase": "start"},
+                                                     {"source_id": sources[1], "error": "no media", "phase": "stop"}])
+    saved = json.loads((service._session_dir(session.session_id) / f"{session.session_id}.json").read_text())
+    assert saved["capture_errors"] == [{"source_id": sources[0], "error": "exit 1", "phase": "start"},
+                                       {"source_id": sources[1], "error": "no media", "phase": "stop"}]
+    assert service._session_from_dict(saved).capture_errors == saved["capture_errors"]
+    older = dict(saved, capture_errors={sources[0]: "no input"})        # the codex/main-debug shape
+    assert service._session_from_dict(older).capture_errors == [{"source_id": sources[0], "error": "no input",
+                                                                 "phase": "unknown"}]
