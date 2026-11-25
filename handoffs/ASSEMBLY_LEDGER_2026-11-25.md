@@ -25,6 +25,7 @@ Evidence words: RAN means it was run here. READ means the code was read. GUESS m
 15. Step three's launcher fix (866b037d): the offline 2i launcher now serves the desk's typewriter and its files. Step three reports its new tests/test_2i_offline_launcher.py passes 15 (their run).
 16. Step three's renderer bridge fix (f0985d6b): modules/voxel_webrtc_bridge.py now passes --port to the rebuilt ws_renderer, so an inherited PUBCAST_WS_PORT no longer wins over the bridge's own port.
 17. The pause rebuild from the fixes thread (claude/studio-line-missing-fixes-2026-11-24, a4fafd1c), merged as de89f7b8. Pause now really pauses camcorder, data-only and main-camera takes: each camera's file closes on pause, the next piece starts on resume, and stop joins the pieces. RAN here, with ffmpeg and ffprobe present: in one run of test_capture_engine_safety and test_recording_modes_e2e together, 18 passed and 2 failed (the data-only and main-camera e2e tests). The two passed when run on their own, and the whole e2e file then passed 10 of 10 twice. GUESS: they are timing-sensitive under load. Not yet tried on Windows.
+   The fixes thread then fixed the join with no ffprobe (4a05e402, handoff line f8270d74): the joined file takes the take's name, every piece stays beside it, and the join is reported as "unchecked". RAN here: test_capture_engine_safety, 11 passed.
 
 ## Every pre-dec branch (39 on GitHub at 04:15Z, Nov 25)
 
@@ -104,7 +105,6 @@ Left out on purpose: the B-O pubpartner-*.yml workflows; The-Prime wholesale (it
 
 ## Not checked here
 
-- The pause join (READ, a4fafd1c): when ffprobe is missing, the join is checked by size alone (at least 90% of the pieces), and then the pieces are removed. Its docstring says that when a join cannot be checked, every piece is kept. I sent this to the fixes thread and did not change it here.
 
 - Route tests (RAN, Nov 25, after her yes to the libraries): fastapi 0.115.14, starlette 0.41.3 and httpx 0.28.1 installed in the cloud session only, matching requirements.txt. Across the Airlock arrivals, camera avatar, PubPartner hardening, Blackbox Light, calibration approval, identity checkpoint, cartridges, work notes, existing wiring and the Base-Horizon companion, link and avatar tests: 81 passed, 1 failed, 4 skipped (browser). scikit-learn is not installed (not yet approved), so a stand-in was used for it, and pytest-asyncio is not installed, so async tests ran through a scratch runner.
 - One failed: test_owned_portable_cartridge_memory_reaches_hosted_private_prompt. Its error comes from the scikit-learn stand-in (no fit_transform), so it is unchecked, not known broken.
