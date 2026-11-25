@@ -18,11 +18,26 @@ STATIC_FILES = frozenset({
     "reach_auth.js",
     "speech_client.js",
     "world/rooms/dressing_typewriter_sitting.png",
+    # The interactive typewriter the studio desk embeds (2i-assets/studio-desk.js)
+    # and everything that page loads.
+    "typewriter_console.html",
+    "console_hotspot_renderer.css",
+    "console_hotspot_renderer.js",
+    "studio_console_hotspots.js",
+    "typewriter_console_demo.js",
+    "typewriter_console_hotspot_manifest.json",
+    "typewriter_keys.webp",
+    "typewriter_sound.js",
 })
 
 
 class TwoiHandler(SimpleHTTPRequestHandler):
-    extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".js": "text/javascript", ".wasm": "application/wasm"}
+    # Fixed types, so a Windows registry entry for an extension cannot change what the browser is told.
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".js": "text/javascript", ".wasm": "application/wasm",
+        ".css": "text/css", ".json": "application/json", ".webp": "image/webp",
+    }
 
     def send_head(self):
         if self.headers.get("Host") != f"127.0.0.1:{self.server.server_port}":
@@ -32,6 +47,9 @@ class TwoiHandler(SimpleHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         if path == "/standalone":
             root, name = APP, "writers-room-v22.html"
+        elif path == "/typewriter-console":
+            # The same address main.py serves, so the desk's iframe works offline too.
+            root, name = STATIC, "typewriter_console.html"
         elif path.startswith("/2i-assets/"):
             root, name = APP / "2i-assets", path.removeprefix("/2i-assets/")
         elif path.startswith("/static/") and path.removeprefix("/static/") in STATIC_FILES:
