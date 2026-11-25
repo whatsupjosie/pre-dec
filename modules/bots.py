@@ -11,6 +11,7 @@ import os
 import time
 import json
 import hashlib
+import re
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -64,6 +65,10 @@ class BotManager:
         self.turn_requests = TurnRequests(self.data_dir)
         self._room_turn_locks = {}
         self._background_bursts = {}
+        # (bot_id, room) -> time of the bot's last uninvited line; see _may_interject.
+        self._last_interjection: Dict[tuple, float] = {}
+        # (bot_id, room) -> True while that bot is speaking from offline lines in that room.
+        self._offline_rooms: Dict[tuple, bool] = {}
         self.reload()
 
     def set_byok_manager(self, byok_mgr: Any) -> None:
@@ -204,6 +209,9 @@ class BotManager:
             if cfg.mention_only and not self._is_mention(cfg, text):
                 continue
             if session.busy:
+                continue
+            addressed = self._is_mention(cfg, text) or await self._answers_bot(cfg, room, payload)
+            if not addressed and not await self._may_interject(cfg, room):
                 continue
             await self._schedule_reply(session, payload)
 
@@ -353,7 +361,69 @@ class BotManager:
     def _is_mention(self, config: BotConfig, text: str) -> bool:
         lowered = (text or "").lower()
         name = config.name.lower()
-        return f"@{name}" in lowered or lowered.strip().startswith(name)
+        if f"@{name}" in lowered or lowered.strip().startswith(name):
+            return True
+        # Optional other names people use for him ("Purfluous", "Sir P"), matched as whole words anywhere.
+        aliases = config.settings.get("mention_aliases") or []
+        return any(isinstance(a, str) and a.strip() and
+                   re.search(r"(?<![\w])" + re.escape(a.strip().lower()) + r"(?![\w])", lowered)
+                   for a in aliases)
+
+    async def _answers_bot(self, config: BotConfig, room: str, payload: Dict[str, Any]) -> bool:
+        """True when this message comes straight after the bot's own line in the room.
+
+        Someone answering a question he just asked is talking to him even without
+        his name. Opt-in through the bot's "answer_direct_replies" setting. The
+        hub stores a message before bots see it, so the entry just before this
+        message's id is what it followed.
+        """
+        if not config.settings.get("answer_direct_replies"):
+            return False
+        try:
+            recent = await self.hub.get_recent_history(room, limit=4)
+        except Exception as exc:
+            logger.warning("Could not read recent history for %s: %s", config.bot_id, exc)
+            return False
+        recent = list(recent or [])
+        message_id = payload.get("message_id")
+        index = next((i for i in range(len(recent) - 1, -1, -1)
+                      if message_id and recent[i].get("message_id") == message_id), None)
+        before = recent[index - 1] if index else None
+        return bool(before) and before.get("user_id") == self.bot_user_id(config.bot_id)
+
+    async def _may_interject(self, config: BotConfig, room: str) -> bool:
+        """Pacing for lines nobody asked for. Being addressed always gets an answer (checked by the caller).
+
+        Bots without the setting keep their previous behaviour. With "interject_cooldown_s"
+        set, an uninvited line needs that many seconds since the bot's last uninvited line in
+        this room, and the bot stays quiet if it is among the last "interject_quiet_after_own_lines"
+        speakers (it never talks over its own recent line). Owner decision 2026-11-24: Sir
+        Purfluous interrupts; starting values 240 s and 3 lines, changeable in his bot file.
+        """
+        cooldown = config.settings.get("interject_cooldown_s")
+        if cooldown is None:
+            return True
+        try:
+            cooldown = max(0.0, float(cooldown))
+            quiet_after = max(0, int(config.settings.get("interject_quiet_after_own_lines", 0)))
+        except (TypeError, ValueError):
+            logger.warning("Bot %s has invalid interjection settings; staying quiet", config.bot_id)
+            return False
+        key = (config.bot_id, room)
+        now = time.time()
+        if now - self._last_interjection.get(key, 0.0) < cooldown:
+            return False
+        if quiet_after:
+            try:
+                recent = await self.hub.get_recent_history(room, limit=quiet_after)
+            except Exception as exc:
+                logger.warning("Could not read recent history for %s pacing: %s", config.bot_id, exc)
+                return False
+            bot_uid = self.bot_user_id(config.bot_id)
+            if any((entry.get("user_id") or entry.get("sender_id")) == bot_uid for entry in recent or []):
+                return False
+        self._last_interjection[key] = now
+        return True
 
     async def _schedule_reply(self, session: BotSession, payload: Dict[str, Any]) -> None:
         async with self._lock:
@@ -405,7 +475,14 @@ class BotManager:
                     history = await cricket.enrich_context(payload.get("text", ""), history)
                 except Exception as memory_exc:
                     logger.warning("Jeremy Cricket memory failed for %s: %s", cfg.bot_id, memory_exc)
-            prompt = self._build_prompt(cfg, history, stage_hint=payload.get("text") if payload.get("nudge") else None)
+            hint = payload.get("text") if payload.get("nudge") else None
+            if hint is None and cfg.bot_id == "sir_purfluous" and payload.get("text"):
+                try:
+                    from .purfluous_cue_cards import cues_for
+                    hint = cues_for(payload["text"], history)
+                except Exception as cue_exc:  # cues are advisory; never block a reply
+                    logger.warning("Sir Purfluous cue cards failed: %s", cue_exc)
+            prompt = self._build_prompt(cfg, history, stage_hint=hint)
             if not prompt:
                 audit('skipped', reason='No prompt')
                 return
@@ -421,6 +498,7 @@ class BotManager:
             receipt = await self.hub.post_chat_message(payload["room"], self.bot_user_id(cfg.bot_id), reply)
             audit('completed', message_id=receipt.get('message_id') if isinstance(receipt, dict) else None,
                   offline=REPLY_WAS_OFFLINE.get())
+            await self._announce_offline_change(cfg, payload["room"], REPLY_WAS_OFFLINE.get())
             session.last_reply_at = time.time()
             if self._cricket_keeper is not None:
                 try:
@@ -439,10 +517,34 @@ class BotManager:
         finally:
             session.busy = False
 
+    async def _announce_offline_change(self, config: BotConfig, room: str, offline: bool) -> None:
+        """Say so in the room when a character starts speaking from offline lines.
+
+        Without this, a model failure (no key, a retired model name) silently swapped the
+        AI for canned dialogue and the room could not tell. The notice is the character's
+        own authored offline note (OFFLINE_NOTE in its offline runtime), posted once per
+        room when it goes offline; nothing is posted for characters without one. Coming
+        back online is recorded but not announced.
+        """
+        key = (config.bot_id, room)
+        was_offline = self._offline_rooms.get(key, False)
+        self._offline_rooms[key] = offline
+        if not offline or was_offline or config.bot_id not in OFFLINE_RESPONDERS:
+            return
+        try:
+            from importlib import import_module
+            module = import_module(f".{OFFLINE_RESPONDERS[config.bot_id][0]}", __package__)
+            note = getattr(module, "OFFLINE_NOTE", None)
+            if isinstance(note, str) and note.strip():
+                await self.hub.post_chat_message(room, self.bot_user_id(config.bot_id), note.strip())
+        except Exception:
+            logger.exception("Could not announce offline dialogue for %s in %s", config.bot_id, room)
+
     def _build_prompt(self, config: BotConfig, history: Sequence[Dict[str, Any]], stage_hint: Optional[str] = None) -> str:
+        # The system prompt is not repeated here: every provider call already sends it
+        # separately (Anthropic "system", OpenAI system message, Gemini prefix, Ollama
+        # "system"). Repeating it sent the whole character prompt twice on every turn.
         lines: List[str] = []
-        if config.system_prompt:
-            lines.append(f"System instruction: {config.system_prompt.strip()}")
         if stage_hint:
             lines.append(f"Stage direction (private): {stage_hint.strip()}")
         for entry in history:
@@ -471,12 +573,12 @@ class BotManager:
                 lines = prompt.rstrip().splitlines()
                 latest = "status"
                 for line in reversed(lines[:-1]):
-                    if re.match(r"^(?:[^:\n]{1,128}):\s+", line) and not line.startswith("System instruction:"):
+                    if re.match(r"^(?:[^:\n]{1,128}):\s+", line) and not line.startswith(("System instruction:", "Stage direction (private):")):
                         latest = line.split(":", 1)[1].strip()
                         break
                 hist = []
                 for line in lines[:-1]:
-                    if ": " in line and not line.startswith("System instruction:"):
+                    if ": " in line and not line.startswith(("System instruction:", "Stage direction (private):")):
                         who, _, said = line.partition(": ")
                         hist.append({"speaker": who, "text": said})
                 return respond(latest, hist)
@@ -589,8 +691,9 @@ class BotManager:
                 role=requested_role,
                 context=ctx,
                 temperature=config.temperature,
-                max_tokens=160,
+                max_tokens=int(config.settings.get("ollama_num_predict", 160)),
                 studio_model=(config.model or "").strip() or None,
+                num_ctx=int(config.settings.get("ollama_num_ctx", 2048)),
             )
             if result.text:
                 return result.text
@@ -614,12 +717,15 @@ class BotManager:
                     json={
                         "model": model,
                         "prompt": prompt,
+                        "system": config.system_prompt or "",
                         "stream": False,
                         "keep_alive": keep_alive,
                         "options": {
                             "temperature": config.temperature,
-                            "num_ctx": 2048,
-                            "num_predict": 160,
+                            # A long character prompt (Sir Purfluous's canon is about 5,000
+                            # tokens) does not fit the old 2,048 window; bots may set their own.
+                            "num_ctx": int(config.settings.get("ollama_num_ctx", 2048)),
+                            "num_predict": int(config.settings.get("ollama_num_predict", 160)),
                         },
                     },
                 )

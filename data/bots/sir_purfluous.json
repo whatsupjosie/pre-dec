@@ -6,8 +6,6 @@
   "model": "claude-sonnet-4-6",
   "api_key_env": "ANTHROPIC_API_KEY",
   "rooms": [
-    "waiting_room",
-    "airlock",
     "greenroom",
     "vortex",
     "studio",
@@ -21,6 +19,16 @@
   "max_history": 20,
   "temperature": 0.92,
   "settings": {
-    "ollama_host": "http://localhost:11434"
+    "ollama_host": "http://localhost:11434",
+    "interject_cooldown_s": 240,
+    "interject_quiet_after_own_lines": 3,
+    "mention_aliases": [
+      "purfluous",
+      "sir purfluous",
+      "sir p"
+    ],
+    "ollama_num_ctx": 8192,
+    "ollama_num_predict": 400,
+    "answer_direct_replies": true
   }
 }

@@ -11,7 +11,7 @@ validation do not drift out of sync with the actual canon.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Any, Dict, List
 
 
 @dataclass(frozen=True)
@@ -152,17 +152,58 @@ EXTRA_CHARACTER_PROFILES: Dict[str, CharacterProfile] = {
 # Full profile lives in sir_purfluous_character_profile.py (with monologues,
 # tall tales, borrowed lines, and studio/bar lore). We import and register
 # here so the BYOK system, bot manager, and room conductor can find him.
+def compose_full_prompt(system_prompt: str, *, behavioral_rules: List[str] = (), canonical_facts: List[str] = (),
+                        relationship_notes: List[str] = (), monologues: List[Any] = (),
+                        borrowed_lines: List[Dict[str, str]] = ()) -> str:
+    """The character's whole canon as one prompt for a speaking model.
+
+    The authored system prompt comes first, unchanged. Each list follows under a
+    plain heading, every item copied word for word from the profile. Only the
+    headings and the "when" labels are framing; nothing authored is reworded,
+    trimmed or reordered. Empty lists add nothing.
+    """
+    parts = [system_prompt.strip()]
+    if behavioral_rules:
+        parts.append("YOUR RULES\n" + "\n".join(f"- {r}" for r in behavioral_rules))
+    if canonical_facts:
+        parts.append("WHAT IS TRUE ABOUT YOU\n" + "\n".join(f"- {f}" for f in canonical_facts))
+    if relationship_notes:
+        parts.append("YOUR PEOPLE\n" + "\n".join(f"- {n}" for n in relationship_notes))
+    if monologues:
+        blocks = []
+        for m in monologues:
+            head = f"[{m.label}] ({m.duration_tier}, {m.tone})"
+            if getattr(m, "context_hint", ""):
+                head += f" When: {m.context_hint}"
+            blocks.append(f"{head}\n{m.text}")
+        parts.append("YOUR MONOLOGUES (your own repertoire, to perform when the moment fits)\n\n" + "\n\n".join(blocks))
+    if borrowed_lines:
+        parts.append("LINES YOU BORROW FROM FILMS\n" + "\n".join(
+            f"- \"{b['line']}\" ({b['source']}). When: {b['trigger'].replace('_', ' ')}" for b in borrowed_lines))
+    return "\n\n".join(p for p in parts if p)
+
+
 try:
+    from .sir_purfluous_character_profile import BORROWED_LINES as _SP_BORROWED
+    from .sir_purfluous_character_profile import MONOLOGUE_POOL as _SP_MONOLOGUES
     from .sir_purfluous_character_profile import PURFLUOUS_PROFILE as _SP
 
     # Re-wrap into this module's CharacterProfile dataclass (same fields,
     # but this module's dataclass is the canonical one for the runtime).
+    # A speaking model receives his whole canon: the authored prompt plus his
+    # rules, facts (his look: velvet jacket, cane, monocle, rings), people,
+    # monologues and borrowed lines. Before 2026-11-24 only the prompt was sent,
+    # so the model never saw his rules or his props, and his monologues worked
+    # only offline. The authored prompt itself stays available as _SP.system_prompt.
     SIR_PURFLUOUS_PROFILE = CharacterProfile(
         character_id=_SP.character_id,
         display_name=_SP.display_name,
         role=_SP.role,
         voice_notes=_SP.voice_notes,
-        system_prompt=_SP.system_prompt,
+        system_prompt=compose_full_prompt(
+            _SP.system_prompt, behavioral_rules=list(_SP.behavioral_rules),
+            canonical_facts=list(_SP.canonical_facts), relationship_notes=list(_SP.relationship_notes),
+            monologues=list(_SP_MONOLOGUES), borrowed_lines=list(_SP_BORROWED)),
         public_blurb=_SP.public_blurb,
         behavioral_rules=list(_SP.behavioral_rules),
         relationship_notes=list(_SP.relationship_notes),

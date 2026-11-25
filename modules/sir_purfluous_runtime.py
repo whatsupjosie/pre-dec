@@ -16,11 +16,13 @@ import hashlib
 import re
 from typing import Mapping, Sequence
 
-from . import offline_brain
+from . import offline_brain, purfluous_cue_cards
 from .sir_purfluous_waiting_room import load_profile
 
 _OFFLINE_NOTE = ("My full powers wait on the speaking model, Sancho. Offline I keep to the door, "
                  "the craft, and my own history.")
+# Public name read by BotManager to say so in the room when he falls back to these lines.
+OFFLINE_NOTE = _OFFLINE_NOTE
 
 
 def _pick(options: Sequence[str], message: str) -> str:
@@ -44,7 +46,7 @@ def _idle(profile: Mapping, message: str) -> str:
 def _monologue(tone: str | None, message: str) -> str:
     from .sir_purfluous_character_profile import MONOLOGUE_POOL
     pool = [m.text for m in MONOLOGUE_POOL if tone is None or m.tone == tone]
-    return _pick(pool, message)
+    return _Verbatim(_pick(pool, message))   # Josie's speeches are never trimmed
 
 
 def _borrowed(trigger: str, message: str) -> str:
@@ -53,10 +55,25 @@ def _borrowed(trigger: str, message: str) -> str:
     if not hits:
         return ""
     b = hits[int(hashlib.sha256(message.encode()).digest()[0]) % len(hits)]
-    return f"Borrowed from {b['source']}, and better than I could manage: “{b['line']}”"
+    return _Verbatim(f"Borrowed from {b['source']}, and better than I could manage: “{b['line']}”")
+
+
+class _Verbatim(str):
+    """A line that must reach the user exactly as written (Josie's monologues, quotations)."""
+
+
+# Intents whose answers name the right person to ask; cards never replace those.
+_KEEP_INTENT = {"refer_pete", "refer_repete"}
 
 
 def respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
+    reply = _respond(message, history)
+    if isinstance(reply, _Verbatim):
+        return str(reply)
+    return purfluous_cue_cards.limit_sancho(reply, purfluous_cue_cards.sancho_allowed(history))
+
+
+def _respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
     """Answer in character from authored material; never fabricate operations."""
     if not isinstance(message, str) or not message.strip():
         raise ValueError("Sir Purfluous needs a non-empty message")
@@ -72,9 +89,30 @@ def respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
     if re.search(r"\b(approved|admitted|admission|denied|my status|am i in|how long|still waiting|when will)\b", text):
         return ("I am the host, not the ledger, Sancho; I cannot see the verdict from here, so I will not guess it. "
                 "Watch the door's own notice for the answer. " + _state(profile, "pending", message))
+    # Someone hurting is answered before anything else, so "my dog died" never
+    # gets a cheerful line about the studio dog.
+    if purfluous_cue_cards.read(message)[1] == "hurt":
+        composed = purfluous_cue_cards.compose(message, history)
+        if composed:
+            return composed
+    if purfluous_cue_cards.priority_topic(message):
+        composed = purfluous_cue_cards.compose(message, history)
+        if composed:
+            return composed
     social = offline_brain.match_intent("sir_purfluous", message)
     if social:
+        if social not in _KEEP_INTENT:
+            composed = purfluous_cue_cards.compose(message, history)
+            # Cards and the older craft answer take turns, two to one, so a
+            # topic asked twice is answered two different ways.
+            if composed and hashlib.sha256((message + str(len(history))).encode()).digest()[0] % 3:
+                return composed
         return offline_brain.respond("sir_purfluous", message, history)
+    if re.search(r"\b(who are you|your name|who is this|what are you(?=\s*\??\s*$)|introduce yourself)\b", text) is None:
+        # His own cue cards: composed lines for the studio and the bar, plain warmth for hurt.
+        composed = purfluous_cue_cards.compose(message, history)
+        if composed:
+            return composed
     if re.search(r"\b(consent|waiver|sign|signature|terms|agree)\b", text):
         return _state(profile, "consent", message)
     if re.search(r"\b(avatar|identity|my name|what name|display name|nickname|persona)\b", text):
@@ -82,7 +120,7 @@ def respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
     if re.search(r"\b(proving ground|body|walk|motion|calibrat)", text):
         return _state(profile, "proving_ground", message)
 
-    if re.search(r"\b(who are you|your name|who is this|what are you|introduce yourself)\b", text):
+    if re.search(r"\b(who are you|your name|who is this|what are you(?=\s*\??\s*$)|introduce yourself)\b", text):
         return ("Sir Purfluous, Sancho: self-appointed knight of cinema, host of this threshold, "
                 "and the only man here who knighted himself and kept the receipt. " + _OFFLINE_NOTE)
     if re.search(r"\bjeremy\b|\bsystem guidance\b", text):
@@ -108,9 +146,14 @@ def respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
         return "Gratitude accepted, Sancho, and entered in the ledger of small mercies."
     if re.search(r"\b(bye|goodbye|farewell|see you|good night)\b", text):
         return "Exit, pursued by applause. Go well, Sancho."
-    if re.search(r"\b(hello|hey|hi|morning|evening|welcome|greetings)\b", text) or len(words) <= 1:
+    if re.search(r"\b(hello|hey|hi|morning|evening|welcome|greetings)\b", text):
         return _state(profile, "arrival", message)
+    if len(words) <= 1:
+        return purfluous_cue_cards.converse(message, history) or _state(profile, "arrival", message)
 
     # Honest limit: no invented sources, no pretending to understand.
+    chat = purfluous_cue_cards.converse(message, history)
+    if chat:
+        return chat
     return ("That, Sancho, is a larger question than I can answer without the speaking model, and I will not "
             "invent an answer to flatter the lighting. " + _idle(profile, message))

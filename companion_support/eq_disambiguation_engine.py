@@ -345,6 +345,15 @@ class ContextDisambiguator:
         Is it about THEM, about SOMEONE ELSE, or about a SITUATION?
         """
         msg_lower = message.lower()
+
+        # Someone did something to the speaker: "he hit me", "she cheated on me".
+        if re.search(r"\b(he|she|they|someone|somebody|my (?:\w+ )?\w+)\s+(hit|hurt|attacked|beat|cheated on|lied to|left|abandoned|yelled at)\s+me\b", msg_lower):
+            if re.search(r"\b(lied|cheated|left|abandoned)\b", msg_lower):
+                return SubjectRole.OTHER  # betrayal: the story is about what the other person did
+            return SubjectRole.SELF
+        # Grief is about the one who is gone: "my dog died", "I lost my mother".
+        if re.search(r"\b(died|passed away|passed on|funeral|lost (?:my|our) (?:\w+ )?(?:mother|mom|father|dad|brother|sister|son|daughter|wife|husband|partner|friend|dog|cat|grandma|grandmother|grandpa|grandfather|baby|uncle|aunt|cousin))\b", msg_lower):
+            return SubjectRole.OTHER
         
         # The action happens TO the actor (self-directed)
         self_directed = re.search(
@@ -364,7 +373,7 @@ class ContextDisambiguator:
         
         # The action is about a group
         group_directed = re.search(
-            r'(hurt my family|team|group|them all|the company|the department)',
+            r'\b(hurt my family|team|group|them all|the company|the department)\b',
             msg_lower
         )
         if group_directed:
@@ -372,12 +381,17 @@ class ContextDisambiguator:
         
         # Abstract/situational (about a concept, event, situation)
         abstract = re.search(
-            r'(the situation|everything|it|the system|my life|my future|the world)',
+            r'\b(the situation|everything|the system|my life|my future|the world)\b',
             msg_lower
         )
         if abstract:
             return SubjectRole.ABSTRACT
-        
+
+        # Nothing points elsewhere: a first-person feeling or event is about the speaker.
+        if re.search(r"\b(i|i'm|im|i've|me|my|myself)\b", msg_lower):
+            return SubjectRole.SELF
+        if re.search(r"\b(we|we're|us|our)\b", msg_lower):
+            return SubjectRole.GROUP
         return SubjectRole.UNCLEAR
     
     # ========================================================================
@@ -393,7 +407,8 @@ class ContextDisambiguator:
         contexts = []
         
         # Check achievement contexts
-        if re.search(r'\b(won|won the|scored|goal|success|achieved|accomplished|made it)\b', msg_lower):
+        if re.search(r"\b(won|won the|scored|goal|success|achieved|accomplished|made it|nailed it|nailed|i did it|we did it|"
+                     r"got the (?:part|role|job|gig|callback)|hit (?:the|my) (?:target|goal|mark)|booked (?:it|the)|landed (?:the|a)|passed (?:the|my))\b", msg_lower):
             contexts.append(EmotionContext.ACHIEVEMENT)
         
         # Check violence/harm contexts
@@ -408,7 +423,11 @@ class ContextDisambiguator:
                 r'\b(shot|hit) (?:a goal|the winning|it out of the park|the target|my goal|my target)\b',
                 msg_lower
             )
-            if not is_achievement_phrasing:
+            # Purfluous's own list of win phrases, kept beside EQ's (both sides fixed the same bug).
+            if not is_achievement_phrasing and not re.search(
+                r'\b(shot (?:a goal|the winning|it|the target)|hit (?:the|my) (?:target|goal|mark)|hit it out)\b',
+                msg_lower
+            ):
                 contexts.append(EmotionContext.VIOLENCE)
         
         # Check loss/grief contexts. "lost my" alone matched "I lost my keys"; a loss is a person,
@@ -430,14 +449,14 @@ class ContextDisambiguator:
             r'\b(betrayed|lied|cheated|broke my trust|broke up|affair|infidelity)\b',
             msg_lower
         ):
-            if re.search(r'\b(my (?:friend|partner|family|boyfriend|girlfriend))\b', msg_lower):
+            if re.search(r"\bmy (?:\w+ )?(?:friend|partner|family|boyfriend|girlfriend|husband|wife|sister|brother|mom|dad)\b", msg_lower):
                 contexts.append(EmotionContext.BETRAYAL)
             else:
                 contexts.append(EmotionContext.INTERPERSONAL)
         
         # Check identity/self-concept contexts
         if re.search(
-            r'\b(who i am|my identity|what i am|belong|my values|my beliefs|who\'s speaking)\b',
+            r"\b(who i am|my identity|what i am|belong|my values|my beliefs|who's speaking|guilty|my fault|ashamed)\b",
             msg_lower
         ):
             contexts.append(EmotionContext.IDENTITY)
@@ -493,6 +512,20 @@ class ContextDisambiguator:
         ):
             return 0.85
         
+        # Grief, harm and betrayal (0.8): below crisis, above everyday upset.
+        if re.search(
+            r"\b(died|passed away|funeral|lost (?:my|our) (?:\w+ )?(?:mother|mom|father|dad|brother|sister|son|daughter|wife|husband|partner|friend|dog|cat|grandma|grandmother|grandpa|grandfather|baby|uncle|aunt|cousin)|was shot|got shot|shot me|hit me|attacked|beat me|assaulted|betrayed|cheated on|lied to me|abandoned)\b",
+            msg_lower
+        ):
+            return 0.8
+
+        # Burnout, being stuck, guilt (0.65)
+        if re.search(
+            r"\b(burned out|burnt out|exhausted|drained|running on empty|trapped|stuck|no choice|guilty|my fault|ashamed)\b",
+            msg_lower
+        ):
+            return 0.65
+
         # Moderate-high (0.5-0.7)
         if re.search(
             r'\b(upset|angry|sad|scared|anxious|hurting)\b',
@@ -529,12 +562,14 @@ class ContextDisambiguator:
         
         positive_words = [
             "good", "happy", "great", "awesome", "love", "proud", "won",
-            "achieved", "success", "accomplished", "excited", "thrilled"
+            "achieved", "success", "accomplished", "excited", "thrilled",
+            "nailed", "booked", "landed", "amazing", "finally"
         ]
         
         negative_words = [
             "bad", "sad", "terrible", "awful", "hate", "angry", "lost",
-            "failed", "devastated", "hurt", "upset", "scared"
+            "failed", "devastated", "hurt", "upset", "scared",
+            "died", "lied", "cheated", "betrayed", "exhausted", "trapped", "guilty", "tired", "alone"
         ]
         
         pos_count = sum(1 for word in positive_words if re.search(rf"\b{re.escape(word)}\b", msg_lower))

@@ -316,8 +316,37 @@ PROMPT_TEMPLATES = {
 }
 
 
+def _purfluous_canon_template() -> Optional[Dict[str, Any]]:
+    """Sir Purfluous tested against his canon, not the older template above.
+
+    The entry in PROMPT_TEMPLATES ("1-2 sentences", "elder statesman", "indeed / quite /
+    rather") predates his canon in sir_purfluous_character_profile.py, which says he
+    monologues without asking, always calls the user Sancho, and is 70 percent bluster.
+    Scoring him against the old template marked the real character as wrong. The old
+    entry is kept unchanged for history; this is what the voice tests now use.
+    """
+    try:
+        from .character_profiles import SIR_PURFLUOUS_PROFILE
+    except ImportError:
+        return None
+    if SIR_PURFLUOUS_PROFILE is None:
+        return None
+    return {
+        "system": SIR_PURFLUOUS_PROFILE.system_prompt,
+        # From his canon: "Always call the user Sancho"; his drink, his cat, his origin.
+        "voice_markers": ["sancho", "dear boy", "whiskey", "pints", "la mancha", "o'toole"],
+        # Used as a word limit by the test suite; his canon allows monologues.
+        "max_tokens": 300,
+        "temperature": 0.92,
+    }
+
+
 def get_prompt_template(bot_id: str) -> Dict[str, Any]:
     """Get the tuned prompt template for a bot."""
+    if bot_id in ("purfluous", "sir_purfluous"):
+        canon = _purfluous_canon_template()
+        if canon is not None:
+            return canon
     return PROMPT_TEMPLATES.get(bot_id, PROMPT_TEMPLATES.get("pete"))
 
 

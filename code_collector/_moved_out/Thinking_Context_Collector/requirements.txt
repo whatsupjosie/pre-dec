@@ -1,0 +1,31 @@
+# Thinking Context Collector — Requirements
+# Rear View Foresight LLC / PubCast AI
+# Python 3.10+
+
+# Core async web framework (already in PubCast)
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Data validation (already in PubCast)
+pydantic>=2.0.0
+
+# HTTP client for LLM adapter calls
+httpx>=0.27.0
+
+# Retry logic for LLM adapters
+tenacity>=8.2.0
+
+# System resource monitoring (irm.py)
+psutil>=5.9.0
+
+# Async utilities (stdlib in 3.10+, explicit pin for older envs)
+anyio>=4.0.0
+
+# SQLite is stdlib — no install needed
+# asyncio is stdlib — no install needed
+
+# Optional — only needed if you use the LLM reflection feature
+# and are calling Anthropic/OpenAI/Gemini directly:
+# anthropic>=0.25.0
+# openai>=1.30.0
+# google-generativeai>=0.5.0
