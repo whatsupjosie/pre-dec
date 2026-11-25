@@ -62,6 +62,7 @@ The studio line does not have main-debug's SessionCapture class, so main-debug's
 1. Answered: Josie said a paused camera should stop recording and actually pause. Done for all three take modes, as above.
 2. Pause on Windows needs one real try on her laptop: start a take, pause for a few seconds, resume, stop, and check the file is about the take less the pause and that the pieces are gone.
 3. bin/ws_renderer was not rebuilt, on hold. The renderer libraries (94 crates in rust_crate/Cargo.lock, 80 MB) are packaged, not built, on branch claude/renderer-crates-vendored-2026-11-24 (commit 151ce1d, from 2541c09), so they are kept. READ: rust_crate/src/ws_renderer.rs only acknowledges frames; its render tick logs a line and never sends a rendered picture back, and the voxel bridge is not written. So the renderer does not yet do what its own header says.
+   Update, Nov 25 (integration thread): on claude/integrate-strongest-parts-2026-11-24 the vendored libraries were merged and bin/ws_renderer was rebuilt offline from the ported source. RAN: --help and listening on a port at 30 fps. That does not change the READ above: it still only acknowledges frames. See handoffs/ASSEMBLY_LEDGER_2026-11-25.md, step 12.
 4. The director panel's pause shows "PAUSE FAILED" without the server's reason, because postJSON drops the reply on a 409. Not changed (not in main-debug, and it is her screen).
 5. static/control_stations.js listens for recording_paused and recording_resumed events that nothing sends. Not changed.
 
