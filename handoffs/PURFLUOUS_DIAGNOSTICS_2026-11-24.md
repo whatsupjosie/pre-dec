@@ -47,3 +47,22 @@ Produced by tools/purfluous_diagnostics.py. No AI model used. Numbers are from t
 
 Misses (expected, message, what it looked like, reply):
 
+
+## Full test suite, branch claude/purfluous-more-cards-2026-11-24 (run 2026-11-24, 37 min)
+
+2,885 passed, 13 failed, 17 errors, 10 skipped. None traced to today's work:
+
+- Same on main (checked by running the same tests on origin/main): 10 failures
+  (5 in test_2i_claude_functionality_browser, 3 in test_2i_format_matrix
+  [m4a, mov, mp4 decode], test_camera_pool_browser, test_clacker_recording_browser)
+  and all 17 errors (14 in tests/primp_chromium/test_mirror.py: fixture 'page'
+  not found, i.e. the pytest-playwright plugin is not installed here; 3 in
+  test_2i_typewriter_event_browser).
+- Pass on main, failed in the branch's full run, but pass when run alone on the
+  branch: test_alex_routes_bridge::test_alex_routes_message_and_recent_memory
+  (also fails on main when run in a group, so it depends on test order there
+  too), test_production_notes::test_the_store_closes_every_database_connection_it_opens,
+  test_participant_audio_browser::test_renderer_crash_recovers_...
+  These are order- or load-dependent. Today's changes touch none of their modules.
+  Not proven harmless: a full branch run with those three in isolation order has
+  not been done.
