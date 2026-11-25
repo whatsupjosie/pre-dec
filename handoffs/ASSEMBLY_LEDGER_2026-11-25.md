@@ -100,7 +100,7 @@ Left out on purpose: the B-O pubpartner-*.yml workflows; The-Prime wholesale (it
 
 ## Not checked here
 
-- Route tests (RAN, Nov 25, after her yes to the libraries): fastapi 0.115.14, starlette 0.41.3 and httpx 0.28.1 installed in the cloud session only, matching requirements.txt. Across the Airlock arrivals, camera avatar, PubPartner hardening, Blackbox Light, calibration approval, identity checkpoint, cartridges, work notes, existing wiring and the Base-Horizon companion, link and avatar tests: 101 passed. scikit-learn is not installed (not yet approved), so a stand-in was used for it, and pytest-asyncio is not installed, so async tests ran through a scratch runner.
+- Route tests (RAN, Nov 25, after her yes to the libraries): fastapi 0.115.14, starlette 0.41.3 and httpx 0.28.1 installed in the cloud session only, matching requirements.txt. Across the Airlock arrivals, camera avatar, PubPartner hardening, Blackbox Light, calibration approval, identity checkpoint, cartridges, work notes, existing wiring and the Base-Horizon companion, link and avatar tests: 81 passed, 1 failed, 4 skipped (browser). scikit-learn is not installed (not yet approved), so a stand-in was used for it, and pytest-asyncio is not installed, so async tests ran through a scratch runner.
 - One failed: test_owned_portable_cartridge_memory_reaches_hosted_private_prompt. Its error comes from the scikit-learn stand-in (no fit_transform), so it is unchecked, not known broken.
 - tests/test_airlock.py can't load: it imports AdmissionBlocked from modules.governance, which pre-dec doesn't have. That is the admission gate that switching Airlock on needs (open call 1).
 - Browser (playwright) tests were skipped; playwright is not installed.
