@@ -25,11 +25,10 @@ import logging
 import os
 import re
 import shutil
-import signal
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlsplit, urlunsplit
 
 logger = logging.getLogger(__name__)
@@ -207,6 +206,43 @@ def _reserve_output_path(session_dir: Path, stem: str, ext: str, reserved: set) 
     return candidate
 
 
+def _probe(path: Path) -> Optional[dict]:
+    """Duration and stream kinds of a media file, from ffprobe; None when ffprobe is not there."""
+    probe = shutil.which(os.environ.get("PUBCAST_FFPROBE", "") or "ffprobe")
+    if not probe:
+        return None
+    import json
+    import subprocess
+    try:
+        out = subprocess.run([probe, "-v", "error", "-show_entries", "stream=codec_type:format=duration", "-of", "json",
+                              str(path)], capture_output=True, timeout=120, check=True).stdout
+        data = json.loads(out)
+        duration = float(data.get("format", {}).get("duration"))
+    except (subprocess.SubprocessError, OSError, ValueError, TypeError):
+        return {}
+    return {"duration": duration, "streams": sorted(s.get("codec_type") for s in data.get("streams", []))}
+
+
+def _joined_problem(joined: Path, pieces: List[Path]) -> Optional[str]:
+    """Why ``joined`` does not hold what ``pieces`` held, or None when it does."""
+    size = joined.stat().st_size
+    total = sum(p.stat().st_size for p in pieces)
+    if size < 0.9 * total:
+        return f"the joined file holds {size} bytes; the pieces hold {total}"
+    found = _probe(joined)
+    if found is None:
+        return None          # no ffprobe on this machine: the size is what can be checked
+    parts = [_probe(p) or {} for p in pieces]
+    if not found or any(not part for part in parts):
+        return "the joined file or a piece could not be read back"
+    expected = sum(part["duration"] for part in parts)
+    if abs(found["duration"] - expected) > 0.5 + 0.1 * len(parts):
+        return f"the joined file lasts {found['duration']:.2f} s; the pieces last {expected:.2f} s"
+    if any(part["streams"] != found["streams"] for part in parts):
+        return "the pieces do not all carry the same picture and sound streams"
+    return None
+
+
 def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
     """Return FFmpeg codec/output arguments from an EncodingProfile."""
     args: List[str] = []
@@ -247,108 +283,112 @@ _STOPPED_CLEANLY = (0, 255, -15)
 
 
 class PauseUnsupported(RuntimeError):
-    """This machine has no way to suspend a running FFmpeg, so a pause would not stop the recording."""
+    """A pause could not stop every encoder of a take, so the take was left recording."""
 
 
-def _windows_suspend(pid: int, paused: bool) -> None:
-    """Suspend or resume every thread of process ``pid`` (Windows has no SIGSTOP).
-
-    Uses the same system calls as Task Manager and Process Explorer (NtSuspendProcess and
-    NtResumeProcess in ntdll), so nothing has to be installed.
-    """
-    import ctypes
-    from ctypes import wintypes
-
-    process_suspend_resume = 0x0800
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-    ntdll = ctypes.WinDLL("ntdll")
-    kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
-    kernel32.OpenProcess.restype = wintypes.HANDLE
-    kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
-    call = ntdll.NtSuspendProcess if paused else ntdll.NtResumeProcess
-    call.argtypes = (wintypes.HANDLE,)
-    call.restype = ctypes.c_long
-    handle = kernel32.OpenProcess(process_suspend_resume, False, pid)
-    if not handle:
-        raise OSError(ctypes.get_last_error(), f"Windows would not let PubCast {'pause' if paused else 'resume'} FFmpeg")
-    try:
-        status = call(handle)
-    finally:
-        kernel32.CloseHandle(handle)
-    if status < 0:
-        raise OSError(f"Windows refused to {'pause' if paused else 'resume'} FFmpeg (status 0x{status & 0xFFFFFFFF:08X})")
-
-
-def _suspend(proc: "asyncio.subprocess.Process", paused: bool) -> None:
-    """Stop or restart an encoder's clock: SIGSTOP/SIGCONT where they exist, the Windows calls on Windows."""
-    if os.name == "nt":
-        _windows_suspend(proc.pid, paused)
-        return
-    sig = getattr(signal, "SIGSTOP" if paused else "SIGCONT", None)
-    if sig is None:
-        raise PauseUnsupported("This machine cannot suspend a running FFmpeg capture, so the take cannot be paused")
-    proc.send_signal(sig)
+@dataclass
+class _Piece:
+    """One stretch of a source's recording: from a start or resume to the pause or stop after it."""
+    path: Path
+    log_path: Optional[Path]
+    started_at: float
+    stopped_at: Optional[float] = None
+    returncode: Optional[int] = None
 
 
 # ── Per-source process handle ─────────────────────────────────────────────────
 @dataclass
 class _CaptureProcess:
+    """One source's recording.
+
+    A pause finishes the file the running FFmpeg is writing and ends that FFmpeg, so nothing at all is read
+    from the camera while the take is paused. Suspending FFmpeg instead (SIGSTOP, or NtSuspendProcess on
+    Windows) only delays the recording: a live camera keeps sending, the stream waits in the network buffer,
+    and on resume FFmpeg writes the paused stretch into the file (measured 2026-11-25: a 5 s pause in 8 s of
+    recording gave a 13.9 s file from an SRT camera). Resume starts a new FFmpeg on the same camera writing
+    the next piece, and stop joins the pieces into ``output_path`` without re-encoding them.
+    """
     source_id: str
     output_path: Path
     proc: asyncio.subprocess.Process
     started_at: float = field(default_factory=time.time)
     log_path: Optional[Path] = None
     stopped_at: Optional[float] = None
+    cmd: List[str] = field(default_factory=list)     # the FFmpeg command; its last item is the file it writes
     paused: bool = False
     paused_since: Optional[float] = None
-    paused_seconds: float = 0.0        # time spent suspended, finished pauses only
+    paused_seconds: float = 0.0        # time spent paused, finished pauses only
+    pieces: List[_Piece] = field(default_factory=list)   # finished pieces, oldest first
+    current_path: Optional[Path] = None                  # the file the running FFmpeg writes
+    piece_started_at: Optional[float] = None
+    join: Dict[str, Any] = field(default_factory=dict)   # what stop did with the pieces, when there was more than one
 
-    def set_paused(self, paused: bool) -> None:
-        """Suspend (True) or resume (False) this encoder. Raises when that did not happen."""
-        if self.paused == paused:
-            return
-        if self.proc.returncode is not None:
-            raise RuntimeError(f"The encoder for {self.source_id} has already stopped")
-        _suspend(self.proc, paused)
-        now = time.time()
-        if paused:
-            self.paused_since = now
-        else:
-            self.paused_seconds += now - (self.paused_since or now)
-            self.paused_since = None
-        self.paused = paused
+    def __post_init__(self) -> None:
+        if self.current_path is None:
+            self.current_path = self.output_path
+        if self.piece_started_at is None:
+            self.piece_started_at = self.started_at
+
+    @property
+    def ended(self) -> bool:
+        """True when this source records nothing more on its own: its FFmpeg exited without being paused."""
+        return self.proc.returncode is not None and not self.paused
+
+    def all_pieces(self, at: Optional[float] = None) -> List[_Piece]:
+        """Every piece so far, the one being written included."""
+        pieces = list(self.pieces)
+        if not self.paused:
+            pieces.append(_Piece(self.current_path, self.log_path, self.piece_started_at,
+                                 self.stopped_at or at, self.proc.returncode))
+        return pieces
 
     def suspended_seconds(self, at: Optional[float] = None) -> float:
-        """Seconds this encoder has been suspended, counting a pause still in progress."""
+        """Seconds this source has been paused, counting a pause still in progress."""
         current = ((at or time.time()) - self.paused_since) if self.paused_since is not None else 0.0
         return self.paused_seconds + max(0.0, current)
 
+    async def _finish(self) -> None:
+        """Have FFmpeg finish the file it is writing: "q" first, then the stop signal, then kill."""
+        if self.proc.returncode is not None:
+            return
+        try:
+            if self.proc.stdin:
+                self.proc.stdin.write(b"q")
+                await self.proc.stdin.drain()
+        except (BrokenPipeError, ConnectionResetError):
+            # FFmpeg cannot hear "q". Waiting for it to end by itself would hang on a live camera,
+            # which never ends, so it gets the same grace time and then the stop signal.
+            pass
+        try:
+            await asyncio.wait_for(self.proc.wait(), timeout=8.0)
+        except asyncio.TimeoutError:
+            try:
+                self.proc.terminate()
+                await asyncio.wait_for(self.proc.wait(), timeout=5.0)
+            except asyncio.TimeoutError:
+                self.proc.kill()
+                await self.proc.wait()
+
+    async def pause(self) -> bool:
+        """Finish this source's current piece. False when there was nothing recording to pause."""
+        if self.paused or self.proc.returncode is not None:
+            return False
+        at = time.time()
+        await self._finish()
+        self.pieces.append(_Piece(self.current_path, self.log_path, self.piece_started_at, at, self.proc.returncode))
+        self.paused, self.paused_since = True, at
+        logger.info("Capture for %s paused (piece %d ended, rc=%s)", self.source_id, len(self.pieces),
+                    self.proc.returncode)
+        return True
+
     async def terminate(self) -> None:
         self.stopped_at = time.time()
-        if self.proc.returncode is None:
-            if self.paused:
-                # A suspended FFmpeg cannot read the "q" that finishes its file; let it run again first.
-                try:
-                    self.set_paused(False)
-                except (ProcessLookupError, OSError, RuntimeError):
-                    logger.warning("Could not resume the paused encoder for %s before stopping it", self.source_id)
-            try:
-                if self.proc.stdin:
-                    self.proc.stdin.write(b"q")
-                    await self.proc.stdin.drain()
-            except (BrokenPipeError, ConnectionResetError):
-                # FFmpeg cannot hear "q". Waiting for it to end by itself would hang on a live camera,
-                # which never ends, so it gets the same grace time and then the stop signal.
-                pass
-            try:
-                await asyncio.wait_for(self.proc.wait(), timeout=8.0)
-            except asyncio.TimeoutError:
-                try:
-                    self.proc.terminate()
-                    await asyncio.wait_for(self.proc.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    self.proc.kill()
-                    await self.proc.wait()
+        if self.paused:
+            # Nothing is running: the last piece was finished when the take was paused.
+            self.paused_seconds += self.stopped_at - (self.paused_since or self.stopped_at)
+            self.paused_since = None
+            return
+        await self._finish()
         logger.info("Capture process for %s finished (rc=%s)", self.source_id, self.proc.returncode)
 
 
@@ -367,6 +407,8 @@ class FFmpegCaptureEngine:
         # What FFmpeg actually did, per session: failed starts and encoders that fell behind real time.
         self._reports: Dict[str, List[dict]] = {}
         self._startup_failures: Dict[str, List[dict]] = {}
+        # Sources that did not pause or resume properly, per session ({"source_id", "error", "phase"}).
+        self._pause_failures: Dict[str, List[dict]] = {}
         try:
             self._bin = _ffmpeg_bin()
             logger.info("FFmpegCaptureEngine ready: %s", self._bin)
@@ -483,6 +525,7 @@ class FFmpegCaptureEngine:
             for cp in procs:
                 if cp.output_path.parent.resolve() == folder:
                     names.add(cp.output_path.name.casefold())
+                    names.update(piece.path.name.casefold() for piece in cp.all_pieces())
         return names
 
     async def _spawn(self, cmd: List[str], source_id: str, out_path: Path) -> Optional["_CaptureProcess"]:
@@ -502,7 +545,7 @@ class FFmpegCaptureEngine:
             logger.error("Failed to start FFmpeg for %s: %s", source_id, e)
             return None
         logger.info("Capture started for %s → %s (pid=%d)", source_id, out_path, proc.pid)
-        return _CaptureProcess(source_id=source_id, output_path=out_path, proc=proc, log_path=log_path)
+        return _CaptureProcess(source_id=source_id, output_path=out_path, proc=proc, log_path=log_path, cmd=list(cmd))
 
     async def _register_started(self, session_id: str, procs: List["_CaptureProcess"],
                                 spawn_failures: Optional[List[dict]] = None) -> None:
@@ -553,10 +596,11 @@ class FFmpegCaptureEngine:
         return {"source_id": cp.source_id, "returncode": cp.proc.returncode,
                 "error": self._log_tail(cp.log_path) or f"FFmpeg exited with status {cp.proc.returncode}"}
 
-    def _report_for(self, cp: "_CaptureProcess") -> dict:
-        """What this encode did, read from FFmpeg's own progress lines."""
+    @staticmethod
+    def _log_stats(path: Optional[Path]):
+        """(speed, encoded seconds, log text) from one FFmpeg log's progress lines."""
         try:
-            text = cp.log_path.read_text(errors="replace") if cp.log_path else ""
+            text = path.read_text(errors="replace") if path else ""
         except OSError:
             text = ""
         speeds = re.findall(r"speed=\s*([0-9.]+)x", text)
@@ -566,30 +610,54 @@ class FFmpegCaptureEngine:
         if times:
             h, m, sec = times[-1]
             encoded = int(h) * 3600 + int(m) * 60 + float(sec)
+        return speed, encoded, text
+
+    def _report_for(self, cp: "_CaptureProcess") -> dict:
+        """What this source's recording did, read from FFmpeg's own progress lines (every piece of it)."""
         end = cp.stopped_at or time.time()
-        wall = end - cp.started_at
-        suspended = cp.suspended_seconds(end)
-        if suspended > 0 and encoded is not None and wall - suspended > 0:
-            # FFmpeg's own speed counts the paused time as time it fell behind; a pause is not lag.
-            speed = round(encoded / (wall - suspended), 3)
-        size = cp.output_path.stat().st_size if cp.output_path.exists() else 0
+        pieces = cp.all_pieces(end)
+        speed, encoded, any_unopened, recorded = None, None, False, 0.0
         warnings: List[str] = []
-        rc = cp.proc.returncode
-        if rc not in _STOPPED_CLEANLY + (None,):
-            warnings.append(f"FFmpeg exited with status {rc}: {self._log_tail(cp.log_path)}")
-        if text and "Input #0" not in text:
+        for piece in pieces:
+            piece_speed, piece_encoded, text = self._log_stats(piece.log_path)
+            if piece_encoded is not None:
+                encoded = (encoded or 0.0) + piece_encoded
+            speed = piece_speed if len(pieces) == 1 else speed
+            if piece.path.exists() and piece.path.stat().st_size > 0:
+                recorded += max(0.0, (piece.stopped_at or end) - piece.started_at)
+            elif cp.join.get("state") == "joined" and piece.path.name in cp.join.get("pieces", []) and piece_encoded:
+                recorded += max(0.0, (piece.stopped_at or end) - piece.started_at)   # its file is now in the joined one
+            if text and "Input #0" not in text:
+                any_unopened = True
+            if piece.returncode not in _STOPPED_CLEANLY + (None,):
+                warnings.append(f"FFmpeg exited with status {piece.returncode}: {self._log_tail(piece.log_path)}")
+        if len(pieces) > 1 and encoded is not None and recorded > 0:
+            # FFmpeg's own speed is per piece; across pieces it is what was encoded over the time recorded.
+            speed = round(encoded / recorded, 3)
+        if cp.output_path.exists():
+            size = cp.output_path.stat().st_size
+        else:
+            size = sum(p.path.stat().st_size for p in pieces if p.path.exists())
+        if any_unopened:
             warnings.append("FFmpeg never opened the input: nothing connected to this listener, or the device or address could not be opened")
         if size == 0:
             warnings.append("No media was written for this source")
-        if speed is not None and speed < _LAG_SPEED and wall - suspended >= 3.0:
+        if speed is not None and speed < _LAG_SPEED and recorded >= 3.0:
             warnings.append(f"Encoder ran at {speed:.2f}x real time: this recording is shorter than the take "
                             "and the missing footage is not recoverable. Use a lighter profile or a faster preset "
                             "(PUBCAST_CAPTURE_X264_PRESET).")
-        report = {"source_id": cp.source_id, "returncode": rc, "output_bytes": size,
-                  "wall_seconds": round(wall, 2), "encoded_seconds": encoded, "speed": speed,
+        if cp.join.get("state") == "failed":
+            warnings.append(f"The pieces of this paused recording could not be joined, so each is kept: {cp.join.get('error')}")
+        report = {"source_id": cp.source_id, "returncode": cp.proc.returncode, "output_bytes": size,
+                  "wall_seconds": round(end - cp.started_at, 2), "encoded_seconds": encoded, "speed": speed,
                   "warnings": warnings, "log": cp.log_path.as_posix() if cp.log_path else None}
-        if suspended > 0:
+        suspended = cp.suspended_seconds(end)
+        if suspended > 0 or len(pieces) > 1:
             report["paused_seconds"] = round(suspended, 2)
+            report["recorded_seconds"] = round(recorded, 2)
+            report["pieces"] = len(pieces)
+        if cp.join:
+            report["join"] = dict(cp.join)
         return report
 
     @staticmethod
@@ -625,6 +693,10 @@ class FFmpegCaptureEngine:
         output_paths: List[Path] = []
         # Every camera is told to stop at once: one slow encoder must not hold the others (or a PANIC) back.
         results = await asyncio.gather(*(cp.terminate() for cp in procs), return_exceptions=True)
+        # A take that was paused has its pieces joined back into one file per camera, all cameras at once.
+        await asyncio.gather(*(self._join(cp) for cp, result in zip(procs, results)
+                               if not isinstance(result, BaseException) and cp.proc.returncode is not None),
+                             return_exceptions=True)
         reports = self._reports.setdefault(session_id, [])
         for cp, result in zip(procs, results):
             error = result if isinstance(result, BaseException) else None
@@ -635,7 +707,10 @@ class FFmpegCaptureEngine:
                 report["error"] = failure
                 logger.warning("Capture %s/%s: %s", session_id, cp.source_id, failure)
             reports.append(report)
-            if cp.proc.returncode is not None and report["output_bytes"] > 0:
+            if cp.proc.returncode is not None and cp.join.get("state") == "failed":
+                # Nothing is lost: every piece is a whole file of its own and is handed on as it is.
+                output_paths += [Path(p) for p in cp.join.get("kept", [])]
+            elif cp.proc.returncode is not None and report["output_bytes"] > 0:
                 output_paths.append(cp.output_path)
                 logger.info("Artifact ready: %s (%d bytes)", cp.output_path, report["output_bytes"])
             elif cp.proc.returncode is not None:
@@ -649,47 +724,161 @@ class FFmpegCaptureEngine:
             self._active.pop(session_id, None)
         return output_paths
 
-    def failures(self, session_id: str) -> List[dict]:
-        """Sources of a session that did not record properly: failed to start, or failed when stopped.
+    async def _join(self, cp: "_CaptureProcess") -> None:
+        """Join the pieces of a paused recording into ``cp.output_path`` without re-encoding them.
 
-        Each is ``{"source_id", "error", "phase"}`` with phase "start" or "stop"."""
+        The pieces are removed only after the joined file has been read back and holds what they held; if the
+        join fails, or cannot be checked, every piece is kept and handed on as it is.
+        """
+        pieces = cp.all_pieces()
+        if len(pieces) < 2 or cp.join:
+            return
+        folder = cp.output_path.parent
+        stem, ext = cp.output_path.stem, cp.output_path.suffix.lstrip(".")
+        usable = [p for p in pieces if p.path.is_file() and p.path.stat().st_size > 0]
+        cp.join = {"state": "running", "pieces": [p.path.name for p in pieces]}
+        if not usable:
+            cp.join = {"state": "empty", "pieces": cp.join["pieces"]}
+            return
+        try:
+            first = pieces[0]
+            if first.path == cp.output_path and first.path.exists():
+                # The first piece was written under the take's own name; it moves aside so the joined file can have it.
+                moved = _reserve_output_path(folder, f"{stem}.part001", ext, self._reserved_names(folder))
+                if moved.exists():
+                    raise FileExistsError(moved.name)
+                os.rename(first.path, moved)
+                if first.log_path and first.log_path.exists():
+                    log_moved = moved.with_name(moved.name + _LOG_SUFFIX)
+                    if not log_moved.exists():
+                        os.rename(first.log_path, log_moved)
+                        first.log_path = log_moved
+                first.path = moved
+                cp.join["pieces"][0] = moved.name
+            usable = [p for p in pieces if p.path.is_file() and p.path.stat().st_size > 0]
+            listing = folder / f".{cp.output_path.name}.pieces.txt"
+            listing.write_text("ffconcat version 1.0\n" + "".join(
+                "file '" + p.path.name.replace("'", "'\\''") + "'\n" for p in usable), encoding="utf-8")
+            joining = folder / f".{stem}.joining.{ext}"
+            if joining.exists() or cp.output_path.exists():
+                raise FileExistsError(joining.name if joining.exists() else cp.output_path.name)
+            log_path = cp.output_path.with_name(cp.output_path.name + _LOG_SUFFIX)
+            cmd = [self._bin, "-n", "-hide_banner", "-nostdin", "-f", "concat", "-safe", "0", "-i", listing.name,
+                   "-map", "0", "-c", "copy", joining.name]
+            with open(log_path, "ab") as log:
+                proc = await asyncio.create_subprocess_exec(*cmd, cwd=str(folder), stdin=asyncio.subprocess.DEVNULL,
+                                                            stdout=asyncio.subprocess.DEVNULL, stderr=log)
+                await asyncio.wait_for(proc.wait(), timeout=3600)
+            if proc.returncode != 0 or not joining.is_file():
+                raise RuntimeError(f"FFmpeg exited with status {proc.returncode}: {self._log_tail(log_path, 2)}")
+            problem = await asyncio.to_thread(_joined_problem, joining, [p.path for p in usable])
+            if problem:
+                raise RuntimeError(problem)
+            os.rename(joining, cp.output_path)
+            for piece in usable:
+                piece.path.unlink()
+            listing.unlink()
+            cp.join = {"state": "joined", "pieces": cp.join["pieces"], "file": cp.output_path.name}
+        except Exception as exc:
+            logger.error("Pieces of %s could not be joined: %s", cp.output_path, exc)
+            kept = [str(p.path) for p in pieces if p.path.is_file() and p.path.stat().st_size > 0]
+            cp.join = {"state": "failed", "pieces": cp.join.get("pieces", []), "kept": kept, "error": str(exc)[:400]}
+
+    def failures(self, session_id: str) -> List[dict]:
+        """Sources of a session that did not record properly: failed to start, pause, resume, or stop.
+
+        Each is ``{"source_id", "error", "phase"}`` with phase "start", "pause", "resume" or "stop"."""
         items = [{"source_id": f.get("source_id"), "error": f.get("error"), "phase": "start"}
                  for f in self._startup_failures.get(session_id, [])]
+        items += [dict(f) for f in self._pause_failures.get(session_id, [])]
         items += [{"source_id": r.get("source_id"), "error": r.get("error"), "phase": "stop"}
                   for r in self._reports.get(session_id, []) if r.get("failed")]
         return items
 
-    def set_paused(self, session_id: str, paused: bool) -> None:
-        """Suspend or resume every encoder of ``session_id``, or none of them.
+    async def set_paused(self, session_id: str, paused: bool) -> List[dict]:
+        """Pause or resume every source of ``session_id``. Returns the sources that did not (failures).
 
-        Raises (PauseUnsupported, OSError, RuntimeError) when a running encoder could not change; the ones
-        that already had are put back, so the take is never half paused. A pause that cannot happen
-        is reported, never skipped: a "paused" take that keeps recording is the worse failure.
+        A pause finishes each running encoder's file and ends it, so nothing is recorded until resume. Resume
+        starts each paused source again into a new piece. Raises PauseUnsupported when an encoder could not be
+        ended; the sources already paused are then started again, so the take is never half paused.
         """
-        changed: List[_CaptureProcess] = []
-        try:
-            for cp in self._active.get(session_id, []):
-                # An encoder that already ended (one that failed to start, say) records nothing to pause.
-                if cp.paused != paused and cp.proc.returncode is None:
-                    cp.set_paused(paused)
-                    changed.append(cp)
-        except Exception:
-            for cp in reversed(changed):
-                try:
-                    cp.set_paused(not paused)
-                except (RuntimeError, OSError):
-                    logger.exception("Could not put the encoder for %s back as it was", cp.source_id)
-            raise
+        procs = self._active.get(session_id, [])
+        problems: List[dict] = []
+        if paused:
+            results = await asyncio.gather(*(cp.pause() for cp in procs), return_exceptions=True)
+            stuck = [cp for cp, result in zip(procs, results)
+                     if isinstance(result, BaseException) and cp.proc.returncode is None]
+            if stuck:
+                paused_now = [cp for cp, result in zip(procs, results) if result is True]
+                await self._resume_all(session_id, paused_now)
+                raise PauseUnsupported("These cameras could not be stopped, so the take is still recording: "
+                                       + ", ".join(cp.source_id for cp in stuck))
+            for cp, result in zip(procs, results):
+                if result is True and cp.pieces and cp.pieces[-1].returncode not in _STOPPED_CLEANLY:
+                    problems.append({"source_id": cp.source_id, "phase": "pause",
+                                     "error": f"FFmpeg exited with status {cp.pieces[-1].returncode} when paused: "
+                                              f"{self._log_tail(cp.pieces[-1].log_path, 2)}"})
+        else:
+            problems = await self._resume_all(session_id, [cp for cp in procs if cp.paused])
+        if problems:
+            self._pause_failures.setdefault(session_id, []).extend(problems)
+            self._bound(self._pause_failures)
+            for item in problems:
+                logger.error("Capture for %s did not %s: %s", item["source_id"], item["phase"], item["error"])
+        return problems
+
+    async def _resume_all(self, session_id: str, procs: List["_CaptureProcess"]) -> List[dict]:
+        results = await asyncio.gather(*(self._resume_one(cp) for cp in procs), return_exceptions=True)
+        problems: List[dict] = []
+        started: List[_CaptureProcess] = []
+        for cp, result in zip(procs, results):
+            if isinstance(result, BaseException):
+                problems.append({"source_id": cp.source_id, "phase": "resume", "error": f"could not be started again: {result}"})
+            elif isinstance(result, dict):
+                problems.append(result)
+            else:
+                started.append(cp)
+        if started:
+            # A camera that cannot be opened again exits within moments; say so now, as at the start.
+            await asyncio.sleep(_STARTUP_CHECK_SECONDS)
+            problems += [{**self._describe(cp), "phase": "resume"} for cp in started if cp.proc.returncode is not None]
+        for item in problems:
+            item.pop("returncode", None)
+        return problems
+
+    async def _resume_one(self, cp: "_CaptureProcess") -> Optional[dict]:
+        """Start a paused source again, writing its next piece. A dict says why it could not be."""
+        if not cp.paused:
+            return None
+        if not cp.cmd or cp.cmd[-1] != str(cp.output_path):
+            return {"source_id": cp.source_id, "phase": "resume", "error": "the command that recorded this source is not known"}
+        folder = cp.output_path.parent
+        path = _reserve_output_path(folder, f"{cp.output_path.stem}.part{len(cp.pieces) + 1:03d}",
+                                    cp.output_path.suffix.lstrip("."), self._reserved_names(folder))
+        cmd = cp.cmd[:-1] + [str(path)]
+        if "-re" in cmd:
+            # A file camera plays on while the take is paused, as a live one does: it comes back where it has got to.
+            at = cmd.index("-re") + 1
+            cmd[at:at] = ["-ss", f"{time.time() - cp.started_at:.3f}"]
+        fresh = await self._spawn(cmd, cp.source_id, path)
+        if fresh is None:
+            return {"source_id": cp.source_id, "phase": "resume",
+                    "error": "FFmpeg could not be started again after the pause; see the server log"}
+        now = time.time()
+        cp.proc, cp.log_path, cp.current_path, cp.piece_started_at = fresh.proc, fresh.log_path, path, fresh.started_at
+        cp.paused_seconds += now - (cp.paused_since or now)
+        cp.paused, cp.paused_since = False, None
+        return None
 
     def is_paused(self, session_id: str) -> bool:
-        procs = self._active.get(session_id, [])
-        return bool(procs) and all(cp.paused for cp in procs if cp.proc.returncode is None)
+        procs = [cp for cp in self._active.get(session_id, []) if not cp.ended]
+        return bool(procs) and all(cp.paused for cp in procs)
 
-    async def pause(self, session_id: str) -> None:
-        self.set_paused(session_id, True)
+    async def pause(self, session_id: str) -> List[dict]:
+        return await self.set_paused(session_id, True)
 
-    async def resume(self, session_id: str) -> None:
-        self.set_paused(session_id, False)
+    async def resume(self, session_id: str) -> List[dict]:
+        return await self.set_paused(session_id, False)
 
     def is_capturing(self, session_id: str) -> bool:
         return session_id in self._active

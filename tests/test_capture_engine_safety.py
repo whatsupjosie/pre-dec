@@ -1,10 +1,12 @@
-"""The capture engine keeps every recording, pauses for real, and says which camera failed.
+"""The capture engine keeps every recording, pauses for real (nothing is recorded while paused), and says which camera failed.
 
 These run the real FFmpeg (skipped where it is not installed) on short real-time inputs, so each
 test takes a few seconds.
 """
 import asyncio
+import json
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -64,9 +66,71 @@ def test_a_file_already_in_the_take_folder_is_never_written_over(tmp_path):
     assert engine.failures("take") == []
 
 
-def test_pause_stops_the_encoder_and_is_not_reported_as_lag(tmp_path):
-    if os.name == "nt":
-        pytest.skip("this test signals FFmpeg the POSIX way")
+def _probe(path: Path) -> dict:
+    out = subprocess.run([shutil.which("ffprobe"), "-v", "error", "-show_entries", "format=duration:stream=codec_type",
+                          "-of", "json", str(path)], capture_output=True, check=True).stdout
+    data = json.loads(out)
+    return {"duration": float(data["format"]["duration"]), "streams": sorted(s["codec_type"] for s in data["streams"])}
+
+
+def _live_camera(port: int):
+    """A camera that streams live over UDP whether or not anyone is recording it, as a real one does."""
+    return subprocess.Popen([FFMPEG, "-v", "error", "-re", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=30",
+                             "-f", "lavfi", "-i", "sine=frequency=300", "-c:v", "libx264", "-preset", "ultrafast",
+                             "-tune", "zerolatency", "-g", "30", "-c:a", "aac", "-f", "mpegts",
+                             f"udp://127.0.0.1:{port}?pkt_size=1316"])
+
+
+def _udp_source(source_id, port):
+    return SimpleNamespace(source_id=source_id, transport=SimpleNamespace(value="udp"),
+                           endpoint=f"udp://127.0.0.1:{port}?fifo_size=100000&overrun_nonfatal=1")
+
+
+def _video_profile(tmp_path):
+    return create_recording_service(tmp_path / "svc", create_default_cameras()).get_profile("web_stream")
+
+
+@pytest.mark.skipif(shutil.which("ffprobe") is None, reason="ffprobe is not installed")
+def test_a_paused_stretch_is_not_in_a_live_cameras_file(tmp_path):
+    # Suspending FFmpeg left a 5 s pause in the file: the stream waited and was written on resume.
+    port = 24000 + os.getpid() % 1000
+    camera = _live_camera(port)
+    take = tmp_path / "take"
+    take.mkdir()
+
+    async def run():
+        engine = _engine()
+        [path] = await engine.start("take", [_udp_source("cam", port)], _video_profile(tmp_path), take)
+        await asyncio.sleep(7.0)
+        assert await engine.pause("take") == []
+        assert engine.is_paused("take")
+        await asyncio.sleep(1.0)
+        held = path.stat().st_size
+        await asyncio.sleep(4.0)
+        assert path.stat().st_size == held, "the file grew while the take was paused"
+        assert await engine.resume("take") == []
+        await asyncio.sleep(7.0)
+        await engine.stop("take")
+        return engine, path
+
+    try:
+        engine, path = asyncio.run(run())
+    finally:
+        camera.terminate()
+    [report] = engine.report("take")
+    media = _probe(path)
+    assert report["join"]["state"] == "joined", report
+    assert report["paused_seconds"] >= 5.0
+    assert media["streams"] == ["audio", "video"]
+    # 14 s recorded around a 5 s pause: the file holds the recorded time, not the wall time.
+    assert media["duration"] <= report["wall_seconds"] - 4.0, (media, report)
+    assert abs(media["duration"] - report["recorded_seconds"]) < 1.5, (media, report)
+    assert not report["warnings"], report["warnings"]
+    assert sorted(p.name for p in take.iterdir() if not p.name.endswith(".log")) == ["cam.webm"]
+    assert engine.failures("take") == []
+
+
+def test_a_take_stopped_while_paused_keeps_what_was_recorded(tmp_path):
     tone = _tone(tmp_path / "tone.wav", 30)
     take = tmp_path / "take"
     take.mkdir()
@@ -74,58 +138,50 @@ def test_pause_stops_the_encoder_and_is_not_reported_as_lag(tmp_path):
     async def run():
         engine = _engine()
         [path] = await engine.start("take", [_file_source("mic", tone)], _audio_profile(tmp_path), take)
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(3.0)
         await engine.pause("take")
-        assert engine.is_paused("take")
-        await asyncio.sleep(0.5)               # anything already buffered reaches the file
-        held = path.stat().st_size
-        await asyncio.sleep(2.0)
-        still = path.stat().st_size
-        await engine.resume("take")
-        assert not engine.is_paused("take")
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(1.0)
         await engine.stop("take")
-        return engine, path, held, still
+        return engine, path
 
-    engine, path, held, still = asyncio.run(run())
-    assert still == held, "the file kept growing while the take was paused"
-    assert path.stat().st_size > held, "recording did not continue after resume"
+    engine, path = asyncio.run(run())
     [report] = engine.report("take")
-    assert report["paused_seconds"] >= 2.0
-    assert not any("shorter" in w or "behind" in w for w in report["warnings"]), report["warnings"]
-    assert not report.get("failed")
+    assert not report.get("failed"), report
+    assert path.stat().st_size > 0
+    assert report["paused_seconds"] >= 1.0
 
 
-def test_a_pause_that_cannot_reach_every_encoder_changes_none_of_them(tmp_path, monkeypatch):
-    from modules import capture
-    tone = _tone(tmp_path / "tone.wav", 10)
+def test_a_file_camera_resumes_where_it_has_got_to(tmp_path):
+    # Five seconds of tone, then silence. Resumed about 6.5 s in, the clip has reached the silence; a camera
+    # that started its clip over would record the tone again.
+    clip = tmp_path / "clip.wav"
+    subprocess.run([FFMPEG, "-v", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=5", "-f", "lavfi",
+                    "-i", "anullsrc=r=44100:cl=mono", "-filter_complex", "[1]atrim=duration=25[s];[0][s]concat=n=2:v=0:a=1",
+                    str(clip)], check=True)
     take = tmp_path / "take"
     take.mkdir()
-    real_suspend = capture._suspend
 
     async def run():
         engine = _engine()
-        await engine.start("take", [_file_source("a", tone), _file_source("b", tone)], _audio_profile(tmp_path), take)
-        first, second = engine._active["take"]
-
-        def suspend(proc, paused):
-            if proc is second.proc:
-                raise OSError("refused")
-            real_suspend(proc, paused)
-
-        monkeypatch.setattr(capture, "_suspend", suspend)
-        with pytest.raises(OSError):
-            await engine.pause("take")
-        assert first.paused is False and second.paused is False
-        monkeypatch.setattr(capture, "_suspend", real_suspend)
+        [path] = await engine.start("take", [_file_source("clip", clip)], _audio_profile(tmp_path), take)
+        await asyncio.sleep(3.0)
+        await engine.pause("take")
+        await asyncio.sleep(3.0)
+        await engine.resume("take")
+        await asyncio.sleep(3.0)
         await engine.stop("take")
+        return engine, path
 
-    asyncio.run(run())
+    engine, path = asyncio.run(run())
+    [report] = engine.report("take")
+    assert report["join"]["state"] == "joined", report
+    after = subprocess.run([FFMPEG, "-hide_banner", "-ss", "5.0", "-i", str(path), "-af", "volumedetect", "-f", "null", "-"],
+                           capture_output=True, text=True).stderr
+    level = float(re.search(r"max_volume: (-?[0-9.]+) dB", after).group(1))
+    assert level < -60, f"the resumed piece holds the start of the clip again (max {level} dB)"
 
 
 def test_an_encoder_that_already_ended_does_not_block_the_pause(tmp_path):
-    if os.name == "nt":
-        pytest.skip("this test signals FFmpeg the POSIX way")
     tone = _tone(tmp_path / "tone.wav", 10)
     take = tmp_path / "take"
     take.mkdir()
@@ -140,6 +196,34 @@ def test_an_encoder_that_already_ended_does_not_block_the_pause(tmp_path):
         await engine.stop("take")
 
     asyncio.run(run())
+
+
+def test_a_camera_that_cannot_come_back_after_a_pause_is_named(tmp_path):
+    tone = _tone(tmp_path / "tone.wav", 30)
+    gone = tmp_path / "gone.wav"
+    shutil.copy(tone, gone)
+    take = tmp_path / "take"
+    take.mkdir()
+
+    async def run():
+        engine = _engine()
+        await engine.start("take", [_file_source("stays", tone), _file_source("unplugged", gone)],
+                           _audio_profile(tmp_path), take)
+        await asyncio.sleep(2.0)
+        await engine.pause("take")
+        gone.unlink()                       # the camera is unplugged while the take is paused
+        problems = await engine.resume("take")
+        await asyncio.sleep(1.0)
+        paths = await engine.stop("take")
+        return engine, problems, paths
+
+    engine, problems, paths = asyncio.run(run())
+    assert [p["source_id"] for p in problems] == ["unplugged"]
+    assert problems[0]["phase"] == "resume"
+    assert {"source_id": "unplugged", "phase": "resume"}.items() <= next(
+        f for f in engine.failures("take") if f["phase"] == "resume").items()
+    # What it recorded before the pause is kept.
+    assert sorted(p.name for p in paths) == ["stays.wav", "unplugged.wav"]
 
 
 def test_one_broken_camera_is_named_and_the_others_still_record(tmp_path):
