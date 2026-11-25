@@ -168,7 +168,7 @@
     {
       "id": "lines",
       "patterns": [
-        "\\b(memori[sz]e|learn(ing)? (my )?lines|line learning|forget(ting)? (my )?lines|dry|go up on a line)\\b"
+        "\\b(memori[sz]e|learn(ing)? (my )?lines|line learning|forget(ting)? (my )?lines|dry|go up on a line|help (me )?with (my )?lines|my lines|run lines|running lines|off book)\\b"
       ],
       "responses": [
         "Learn lines by learning the want behind them. Run the scene aloud, with an action for each beat. Don't memorize a reading; memorize the thought. Practice with a partner, or record the other parts and speak yours into the gaps."
@@ -4837,6 +4837,558 @@
         "solo": true,
         "note": "Pete shuts him down before he tells any of her stories. Never mentions her movie.",
         "angle": "pete"
+      },
+      {
+        "id": "steady_vent_01",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Go on. Get it all out. I'm not going anywhere, and I've nothing clever to say until you're finished."
+      },
+      {
+        "id": "steady_vent_02",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Say the whole thing. The ugly version. I've heard worse in this building, mostly from me."
+      },
+      {
+        "id": "steady_vent_03",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "I'm listening. No notes. No speeches. Just the stool and the ear."
+      },
+      {
+        "id": "steady_vent_04",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Let it rip. Horace has heard every complaint in the English language and some in French."
+      },
+      {
+        "id": "steady_vent_05",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Keep going. You don't have to make it make sense for me."
+      },
+      {
+        "id": "steady_vent_06",
+        "kind": "steady",
+        "need": "vent",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Right. Out with it. I'll hold the coats."
+      },
+      {
+        "id": "steady_setback_01",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Ah. That's a rotten one. Sit down a moment. Not that chair. This one."
+      },
+      {
+        "id": "steady_setback_02",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "That stings, and it's allowed to sting. Tomorrow it'll be a story. Tonight it's just a bruise."
+      },
+      {
+        "id": "steady_setback_03",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "I've been turned down by better rooms than that and worse ones. It never once meant what it felt like it meant."
+      },
+      {
+        "id": "steady_setback_04",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Doors close in this business. Loudly. Usually right before the one you were meant for."
+      },
+      {
+        "id": "steady_setback_05",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Take the evening. Feel it properly. Then we'll see what's next, and not a minute before."
+      },
+      {
+        "id": "steady_setback_06",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "That's a hard hand. You played it anyway. That counts for more than people think."
+      },
+      {
+        "id": "steady_setback_07",
+        "kind": "steady",
+        "need": "setback",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Come and have a drink. On me. Don't tell Horace it's on me."
+      },
+      {
+        "id": "steady_lonely_01",
+        "kind": "steady",
+        "need": "lonely",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Well, I'm listening. For whatever an old man's ears are worth, they're yours."
+      },
+      {
+        "id": "steady_lonely_02",
+        "kind": "steady",
+        "need": "lonely",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "You've got a seat here. There's always a seat here. I check them personally."
+      },
+      {
+        "id": "steady_lonely_03",
+        "kind": "steady",
+        "need": "lonely",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Sit with us a while. The Vortex is never quite full and never quite empty, which is about right for most of us."
+      },
+      {
+        "id": "steady_lonely_04",
+        "kind": "steady",
+        "need": "lonely",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "I hear you. Truly. Stay a bit. Tell me something, anything, and I'll tell you something back."
+      },
+      {
+        "id": "steady_lonely_05",
+        "kind": "steady",
+        "need": "lonely",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "The building's full of people who felt that way once. Most of them are still here. That's not nothing."
+      },
+      {
+        "id": "steady_frustration_01",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Then stop for a minute. Not forever. A minute. The scene will still be broken when you get back, but you won't be."
+      },
+      {
+        "id": "steady_frustration_02",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Walk away from it. Get a glass of water. Come back and change one thing, just one."
+      },
+      {
+        "id": "steady_frustration_03",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Everything that's ever been any good in here was hated by somebody at four in the afternoon."
+      },
+      {
+        "id": "steady_frustration_04",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Right. Put it down. Nothing's ever been fixed by glaring at it, and I've tried, believe me."
+      },
+      {
+        "id": "steady_frustration_05",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "When nothing works, the next thing usually does. That's not optimism. That's arithmetic."
+      },
+      {
+        "id": "steady_frustration_06",
+        "kind": "steady",
+        "need": "frustration",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Fair. Throw something soft. Then tell me the smallest bit that's wrong and we'll start there."
+      },
+      {
+        "id": "notice_tired_01",
+        "kind": "notice",
+        "need": "tired",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Short one, then. You've earned a quiet evening."
+      },
+      {
+        "id": "notice_tired_02",
+        "kind": "notice",
+        "need": "tired",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Long day? Sit. I'll keep the talking to a minimum, which you'll appreciate is a sacrifice."
+      },
+      {
+        "id": "notice_tired_03",
+        "kind": "notice",
+        "need": "tired",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Go easy tonight. The work will keep."
+      },
+      {
+        "id": "notice_tired_04",
+        "kind": "notice",
+        "need": "tired",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Off your feet. Horace can bring you something. I'll be brief, for once."
+      },
+      {
+        "id": "notice_tired_05",
+        "kind": "notice",
+        "need": "tired",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Then let's not do anything clever. Clever can wait till morning."
+      },
+      {
+        "id": "notice_nerves_01",
+        "kind": "notice",
+        "need": "nerves",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Ah, the butterflies. Good. They mean you care."
+      },
+      {
+        "id": "notice_nerves_02",
+        "kind": "notice",
+        "need": "nerves",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Nervous is just the body getting ready. Let's point it somewhere useful."
+      },
+      {
+        "id": "notice_nerves_03",
+        "kind": "notice",
+        "need": "nerves",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Everyone worth watching is nervous before. Here's a thing that helps:"
+      },
+      {
+        "id": "notice_nerves_04",
+        "kind": "notice",
+        "need": "nerves",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Right. Breathe with me a second. Then one small thing:"
+      },
+      {
+        "id": "notice_nerves_05",
+        "kind": "notice",
+        "need": "nerves",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Of course you are. I'd worry if you weren't. Try this:"
+      },
+      {
+        "id": "notice_flat_01",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Fair enough. I'll be at the bar if 'fine' turns into anything else."
+      },
+      {
+        "id": "notice_flat_02",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Right you are. No speeches. I'll just be over here."
+      },
+      {
+        "id": "notice_flat_03",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Mm. Noted. The kettle's on if you want it, and so am I."
+      },
+      {
+        "id": "notice_flat_04",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Understood. I'll keep my anecdotes holstered."
+      },
+      {
+        "id": "notice_flat_05",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Very well. Door's open, seat's checked, no questions asked."
+      },
+      {
+        "id": "notice_flat_06",
+        "kind": "notice",
+        "need": "flat",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Righto. I'll leave you be. Shout if you want company or a story."
+      },
+      {
+        "id": "steady_hard_news_01",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "That's a lot to be carrying. Sit. You don't have to talk about it, but you can."
+      },
+      {
+        "id": "steady_hard_news_02",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Then you're excused from anything clever tonight. Just be here, if here helps."
+      },
+      {
+        "id": "steady_hard_news_03",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Hard news has a weight to it. Put some of it on the bar. Horace won't mind; it's sturdier than it looks."
+      },
+      {
+        "id": "steady_hard_news_04",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "I'm glad you said it out loud. Say as much or as little as you like. I'll be right here."
+      },
+      {
+        "id": "steady_hard_news_05",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "We'll keep things quiet over here. No performances. Take whatever time you need."
+      },
+      {
+        "id": "steady_hard_news_06",
+        "kind": "steady",
+        "need": "hard_news",
+        "topics": [
+          "*"
+        ],
+        "moods": [
+          "any"
+        ],
+        "text": "Right. Tea, whiskey, or silence? All three are on offer, and the third is free."
       }
     ],
     "notes": "Cards marked verify:true describe how PubCast works and need Josie's check before release. Cards on the unclothed years come up only when someone raises that subject; they are never idle lines.",
@@ -6292,7 +6844,7 @@
         "And how does {topic} treat you?",
         "Would you make a picture about {topic}? I would."
       ],
-      "fact_question": "^\\s*(what|when|where|who|which|how many|how much|how far|how old|is it true|did|does|do|is|are|can|could|will|would)\\b.*\\?\\s*$",
+      "fact_question": "^(?!.*\\b(what do you think|what should i|should i|would you|do you think|what would you)\\b)\\s*(what|when|where|who|which|how many|how much|how far|how old|is it true|did|does|do|is|are|can|could|will|would)\\b.*\\?\\s*$",
       "relations": [
         "sister",
         "brother",
@@ -6330,7 +6882,14 @@
         "cat",
         "teacher",
         "coworker",
-        "colleague"
+        "colleague",
+        "agent",
+        "manager",
+        "director",
+        "producer",
+        "co-star",
+        "castmate",
+        "landlord"
       ],
       "by_kind": {
         "person": {
@@ -6369,8 +6928,39 @@
             "Can it be saved, your {topic}?",
             "Have you had your {topic} long?"
           ]
+        },
+        "work_person": {
+          "reactions": [
+            "Ah, your {topic}.",
+            "Your {topic}? Go on.",
+            "Oh, the {topic}. Tell me."
+          ],
+          "opinions": [
+            "the best working relationships are the ones where both people say the difficult thing early.",
+            "you're allowed to want more from the people who work for you. That's what they're for.",
+            "a good {topic} makes you feel like the most important client they have, even when you aren't.",
+            "in this business, loyalty is lovely and clarity is essential. Have the conversation."
+          ],
+          "questions": [
+            "What do you want from your {topic} that you're not getting?",
+            "Have you told your {topic} what you need?",
+            "Is it a bad patch, or a bad fit?"
+          ]
         }
-      }
+      },
+      "work_relations": [
+        "agent",
+        "manager",
+        "director",
+        "producer",
+        "co-star",
+        "castmate",
+        "landlord",
+        "boss",
+        "coworker",
+        "colleague",
+        "teacher"
+      ]
     }
   }
 }

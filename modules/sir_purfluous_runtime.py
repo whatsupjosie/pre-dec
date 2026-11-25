@@ -16,7 +16,7 @@ import hashlib
 import re
 from typing import Mapping, Sequence
 
-from . import offline_brain, purfluous_cue_cards
+from . import offline_brain, purfluous_cue_cards, purfluous_room_read
 from .sir_purfluous_waiting_room import load_profile
 
 _OFFLINE_NOTE = ("My full powers wait on the speaking model, Sancho. Offline I keep to the door, "
@@ -58,6 +58,12 @@ def _borrowed(trigger: str, message: str) -> str:
     return _Verbatim(f"Borrowed from {b['source']}, and better than I could manage: “{b['line']}”")
 
 
+def _security_or_admission(message: str) -> bool:
+    """Door rules always answer first, whatever the mood."""
+    text = message.casefold()
+    return bool(re.search(r"\b(bypass|override|hack|skip the (line|queue|door)|let me in|admit me|verdict|admission)\b", text))
+
+
 class _Verbatim(str):
     """A line that must reach the user exactly as written (Josie's monologues, quotations)."""
 
@@ -67,7 +73,20 @@ _KEEP_INTENT = {"refer_pete", "refer_repete"}
 
 
 def respond(message: str, history: Sequence[Mapping[str, str]] = ()) -> str:
-    reply = _respond(message, history)
+    if not isinstance(message, str) or not message.strip():
+        return _respond(message, history)          # keeps the documented ValueError for blank input
+    room = purfluous_room_read.read(message, purfluous_cue_cards.own_messages(history))
+    if room.level in ("stay", "steady", "notice") and not _security_or_admission(message):
+        line = purfluous_cue_cards.room_line(room, message, history)
+        if line:
+            return line
+    # Quiet: no stage business, and no frames or Mad Libs when someone is
+    # struggling or has asked for real help.
+    token = purfluous_cue_cards.QUIET.set(room.level in ("steady", "notice") or "help" in room.needs)
+    try:
+        reply = _respond(message, history)
+    finally:
+        purfluous_cue_cards.QUIET.reset(token)
     if isinstance(reply, _Verbatim):
         return str(reply)
     return purfluous_cue_cards.limit_sancho(reply, purfluous_cue_cards.sancho_allowed(history))

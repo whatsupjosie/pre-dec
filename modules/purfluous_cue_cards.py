@@ -23,6 +23,7 @@ import hashlib
 import json
 import logging
 import re
+from contextvars import ContextVar
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
@@ -31,6 +32,10 @@ logger = logging.getLogger(__name__)
 
 DECK_PATH = Path(__file__).resolve().parent.parent / "data" / "characters" / "sir_purfluous.json"
 RECENT_WINDOW = 24
+
+# Set by the runtime when the room read says notice or steady: he keeps his
+# words but drops openers, asides, stage business and closers.
+QUIET: ContextVar[bool] = ContextVar("purfluous_quiet", default=False)
 
 # Words that mean the person is hurting. The EQ reader adds its own judgement
 # when it is importable; these keep him safe when it is not.
@@ -317,7 +322,7 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         if told:
             beat = told
     # One time in four, on chatty topics, a Mad Lib stands in for the card.
-    if not beat.get("solo") and not angle_chosen and mood == "neutral" and seed[7] % 4 == 0:
+    if not beat.get("solo") and not angle_chosen and not QUIET.get() and mood == "neutral" and seed[7] % 4 == 0:
         for t in spoken:
             built = _madlib_line(deck, t, seed, recent)
             if built:
@@ -326,7 +331,7 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
     # One time in three, a line built from a frame stands in for the card, so a
     # topic he has covered before still gets something new.
     kit_topic = _kit_topic(deck["kit"], spoken) if deck["kit"] else None
-    if kit_topic and not beat.get("solo") and not angle_chosen and seed[5] % 3 == 0:
+    if kit_topic and not beat.get("solo") and not angle_chosen and not QUIET.get() and seed[5] % 3 == 0:
         framed = _frame_line(deck["kit"], kit_topic, mood, seed, recent)
         if framed:
             beat = framed
@@ -334,6 +339,8 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         return {"topics": topics, "mood": mood, "cards": [beat]}
     chosen = []
     roll = seed[0]
+    if QUIET.get():
+        return {"topics": topics, "mood": mood, "cards": [beat]}
     if roll % 3 != 0:  # two times in three he opens before the beat
         # An opener that only works with Sancho in it ("Sancho! Just the person.")
         # is skipped when he has used Sancho lately.
@@ -553,6 +560,9 @@ def extract_topic(message: str):
             if not kept:
                 continue
             phrase = " ".join(kept)
+            work = set(_load().get("segments", {}).get("work_relations", []))
+            if phrase in work or kept[-1] in work:
+                return phrase, "work_person"
             return phrase, ("person" if phrase in relations or kept[-1] in relations else "thing")
         while words and words[-1].lower() in _STOP:
             words.pop()
@@ -624,16 +634,68 @@ def compose(message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional
     return _join([p for p in parts if p])
 
 
+def own_messages(history: Sequence[Mapping[str, str]], speaker: Optional[str] = None) -> List[str]:
+    """The person's own earlier messages from a shared history (oldest first).
+    With a speaker name, only that speaker's; otherwise everyone but him."""
+    out = []
+    for e in history:
+        if not isinstance(e, Mapping):
+            continue
+        who = str(e.get("speaker", ""))
+        if "purfluous" in who.casefold():
+            continue
+        if speaker is None or who == speaker:
+            out.append(str(e.get("text", "")))
+    return out
+
+
+_ROOM_NEED_ORDER = {"steady": ("vent", "hard_news", "setback", "lonely", "frustration"), "notice": ("nerves", "tired", "flat")}
+
+
+def room_line(rr, message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional[str]:
+    """His line for a notice or steady moment, in his own voice. None when the
+    moment is better served by the normal path (for example, they asked for help)."""
+    deck = _load()
+    recent = _recent_text(history)
+    seed = hashlib.sha256((message.strip().casefold() + "\x00" + recent[-2000:]).encode()).digest()
+    if rr.level == "stay":
+        plain = [c for c in deck["cards"] if c["kind"] == "plain"]
+        card = _pick(plain, seed, "plain", recent, deck["slots"])
+        return limit_sancho(_fill(card["text"], deck["slots"]), sancho_allowed(history)) if card else None
+    if rr.level not in _ROOM_NEED_ORDER:
+        return None
+    if "help" in rr.needs and "nerves" not in rr.needs:
+        return None    # an explicit request is honoured: the normal path answers it, quietly
+    need = next((n for n in _ROOM_NEED_ORDER[rr.level] if n in rr.needs), None)
+    if need is None:
+        return None
+    pool = [c for c in deck["cards"] if c["kind"] == rr.level and c.get("need") == need]
+    card = _pick(pool, seed, f"room-{need}", recent, deck["slots"])
+    if not card:
+        return None
+    text = _fill(card["text"], deck["slots"], sancho=sancho_allowed(history))
+    if need == "nerves":
+        tips = [c for c in deck["cards"] if c["kind"] == "beat" and "voice_nerves" in c["topics"]]
+        tip = _pick(tips, seed, "nerves-tip", recent, deck["slots"])
+        if tip:
+            text = f"{text} {_fill(tip['text'], deck['slots'], sancho=False)}"
+    return text
+
+
 def cues_for(message: str, history: Sequence[Mapping[str, str]] = ()) -> Optional[str]:
     """A private note for the speaking model: the cards for this moment, to use or ignore."""
     if not isinstance(message, str) or not message.strip():
         return None
+    from . import purfluous_room_read
+    rr = purfluous_room_read.read(message, own_messages(history))
+    note = purfluous_room_read.model_note(rr)
     picked = select(message, history)
     if not picked["cards"]:
-        return None
+        return note
     slots = _load()["slots"]
     lines = " | ".join(_fill(card["text"], slots) for card in picked["cards"])
     if picked["mood"] == "hurt":
-        return ("Cue (private): this person is hurting. Be plain and warm, no jokes, no stage business, "
+        return ((note + " ") if note else "") + ("Cue (private): this person is hurting. Be plain and warm, no jokes, no stage business, "
                 f"do not point them to services. A line in your voice: {lines}")
-    return (f"Cue cards (private; use, rephrase or ignore, never read them out as a list): {lines}")
+    cue = f"Cue cards (private; use, rephrase or ignore, never read them out as a list): {lines}"
+    return f"{note} {cue}" if note else cue
