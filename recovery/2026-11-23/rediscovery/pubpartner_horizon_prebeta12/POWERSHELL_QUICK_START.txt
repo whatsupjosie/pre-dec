@@ -1,0 +1,21 @@
+PUBPARTNER CANONICAL RC7 — WINDOWS QUICK START
+
+1. Extract the zip into a normal folder. A path with spaces is supported.
+2. Open that folder.
+3. Double-click RUN_PUBPARTNER_WINDOWS.bat
+
+PowerShell alternative:
+
+  .\run_pubpartner_windows.ps1
+
+Direct Python alternative:
+
+  python .\run_pubpartner.py
+
+Diagnostics only:
+
+  python .\run_pubpartner.py --preflight
+
+Do not use the optional full PubCast main.py unless you are deliberately testing camera, recording, voxel, Bubble Stack, e-PETE, avatar, or studio systems.
+
+On first launch, create the local owner account in the browser. Keep the generated data folder with the program if you want sessions and login state to survive restarts.

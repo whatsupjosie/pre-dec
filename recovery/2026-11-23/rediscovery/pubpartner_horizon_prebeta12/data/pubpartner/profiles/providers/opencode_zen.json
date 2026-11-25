@@ -1,0 +1,11 @@
+{
+  "provider": "opencode_zen",
+  "model": "big-pickle",
+  "fixes": [
+    "trim_boilerplate",
+    "reference_only",
+    "verify_current_facts"
+  ],
+  "created_at": 1783837283.6554863,
+  "updated_at": 1783837283.6554863
+}

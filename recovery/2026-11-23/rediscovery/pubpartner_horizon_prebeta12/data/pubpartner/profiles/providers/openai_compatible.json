@@ -1,0 +1,10 @@
+{
+  "provider": "openai_compatible",
+  "model": "",
+  "fixes": [
+    "trim_boilerplate",
+    "preserve_alex_voice"
+  ],
+  "created_at": 1783837283.6554863,
+  "updated_at": 1783837283.6554863
+}

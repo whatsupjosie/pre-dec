@@ -1,0 +1,93 @@
+--- main.py.original.bak	2026-05-08 22:00:21.046554151 +0000
++++ main.py.patched	2026-05-08 22:01:00.956767594 +0000
+@@ -1254,9 +1254,88 @@
+ 
+ @app.post("/api/motion/frame")
+ async def push_motion_frame(payload: Dict[str, Any]):
+-    """Ingest a live motion-capture frame and broadcast it to all rooms."""
++    """Ingest a live motion-capture frame, run behavior pipeline, and broadcast commands.
++
++    Backward-compatible: also emits the original raw ``motion_frame`` event for
++    older clients, but the preferred event is now ``avatar_motion_commands``.
++    """
+     await hub.broadcast_system_event({"type": "motion_frame", "payload": payload})
+-    return {"ok": True}
++    try:
++        result = _get_avatar_motion_runtime().ingest_payload(payload)
++        await hub.broadcast_system_event(result.event)
++        return {"ok": True, "event": result.event, "warnings": result.warnings}
++    except Exception as exc:
++        logger.exception("avatar motion frame pipeline failed")
++        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
++
++
++# ════════════════════════════════════════════════════════════════════════════════
++# AVATAR BEHAVIOR MOTION RUNTIME
++# Server-level behavior + emotional cue + mocap pipeline. UI-free by design.
++# ════════════════════════════════════════════════════════════════════════════════
++
++_avatar_motion_runtime: Optional[Any] = None
++
++def _get_avatar_motion_runtime():
++    global _avatar_motion_runtime
++    if _avatar_motion_runtime is None:
++        from modules.avatar_behavior_runtime import AvatarBehaviorRuntime
++        _avatar_motion_runtime = AvatarBehaviorRuntime(DATA_DIR, default_room="studio")
++    return _avatar_motion_runtime
++
++
++@app.get("/api/avatar-motion/status")
++async def avatar_motion_status():
++    return _get_avatar_motion_runtime().status()
++
++
++@app.get("/api/avatar-motion/profiles")
++async def avatar_motion_profiles():
++    return {"avatars": _get_avatar_motion_runtime().list_avatars()}
++
++
++@app.put("/api/avatar-motion/profiles/{avatar_id}")
++async def avatar_motion_update_profile(avatar_id: str, payload: Dict[str, Any]):
++    try:
++        return _get_avatar_motion_runtime().update_profile(avatar_id, payload or {})
++    except Exception as exc:
++        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
++
++
++@app.post("/api/avatar-motion/tick")
++async def avatar_motion_tick(payload: Dict[str, Any]):
++    """Run one avatar behavior tick and broadcast layered motion commands."""
++    try:
++        result = _get_avatar_motion_runtime().ingest_payload(payload or {})
++        await hub.broadcast_system_event(result.event)
++        return {"ok": True, "event": result.event, "warnings": result.warnings}
++    except Exception as exc:
++        logger.exception("avatar motion tick failed")
++        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
++
++
++@app.post("/api/avatar-motion/frame")
++async def avatar_motion_frame(payload: Dict[str, Any]):
++    """Preferred mocap endpoint; emits avatar_motion_commands."""
++    return await avatar_motion_tick(payload)
++
++
++@app.post("/api/avatar-motion/{avatar_id}/emotion")
++async def avatar_motion_emotion(avatar_id: str, payload: Dict[str, Any]):
++    """Inject an emotional cue, then immediately tick/broadcast that avatar."""
++    try:
++        result = _get_avatar_motion_runtime().push_emotion(
++            avatar_id=avatar_id,
++            label=str(payload.get("label", "neutral")),
++            intensity=float(payload.get("intensity", 0.5)),
++            ttl_ms=int(payload.get("ttl_ms", payload.get("ttlMs", 2500))),
++            source=str(payload.get("source", "manual")),
++        )
++        await hub.broadcast_system_event(result.event)
++        return {"ok": True, "event": result.event, "warnings": result.warnings}
++    except Exception as exc:
++        logger.exception("avatar motion emotion failed")
++        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
+ 
+ 
+ # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

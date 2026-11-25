@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "friend_response": "Source preserved as src_1783872664701_3718ac615657_b93e43d8. I can work from the included turn text.\nGoal: answer_as_recognizable_friend.\nNext: keep the friend voice pass conservative and do not rewrite exact artifacts.",
+  "source_id": "src_1783872664701_3718ac615657_b93e43d8",
+  "receipt_verify": {
+    "ok": true,
+    "entries": 1,
+    "last_hash": "e42f65d5a0141af0ca9e68ac30ac52cf6558d3210470dc84e8382b7a4ebe4135"
+  },
+  "token_comparison": {
+    "ok": true,
+    "provider": "mock",
+    "model": "mock-v1",
+    "compact": {
+      "provider": "mock",
+      "method": "rough_local",
+      "chars": 3177,
+      "bytes": 3177,
+      "estimated_tokens": 794,
+      "exact": false,
+      "warning": ""
+    },
+    "full": {
+      "provider": "mock",
+      "method": "rough_local",
+      "chars": 3177,
+      "bytes": 3177,
+      "estimated_tokens": 794,
+      "exact": false,
+      "warning": ""
+    },
+    "estimated_tokens_saved": 0,
+    "estimated_savings_ratio": 0.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "provider": "ollama",
+  "model": "llama3.1",
+  "fixes": [
+    "repair_structure",
+    "simple_syntax",
+    "no_dense_codes",
+    "preserve_alex_voice"
+  ],
+  "created_at": 1783660665.799684,
+  "updated_at": 1783837283.6554863
+}

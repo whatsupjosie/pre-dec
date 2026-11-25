@@ -1,0 +1,723 @@
+PEQ STATE
+According to the available evidence and PEQ assessment, the most probable emotional state is excitement. Operational confidence: 82.3%.
+
+Explanation:
+PEQ considered general priors, available baseline/context/history/current evidence, and the logical truth-testing reliability assessment. The leading state is excitement at 82.3% operational confidence, with neutral as the strongest alternative. Evidence domains used: current, general_knowledge, individual_baseline, population_baseline, situation, truth_test. Truth status: supported. Strongest contributing observations: Current proposition is supported by the logical reasoning layer.; High capitalization is evidence of elevated expressivity/arousal, not proof of a specific emotion.; capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.; typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.; Current lexical signal associated with excitement: great
+
+Top candidates:
+[{'operational_confidence': 0.8235,
+  'posterior_score': 0.3304,
+  'prior': 0.1185,
+  'state': 'excitement',
+  'supporting': ['capitalization_ratio deviates +0.28 from individual '
+                 'baseline; this is an arousal/expressivity change, not a '
+                 'direct emotion label.',
+                 'typing_wpm deviates +0.65 from individual baseline; this is '
+                 'an arousal/expressivity change, not a direct emotion label.',
+                 'Current lexical signal associated with excitement: great',
+                 'Situation/context: situation=build just succeeded after '
+                 'repeated failures; context strongly favors a positive '
+                 'outcome.'],
+  'weakening': []},
+ {'operational_confidence': 0.1098,
+  'posterior_score': 0.1334,
+  'prior': 0.1706,
+  'state': 'neutral',
+  'supporting': [],
+  'weakening': ['Current lexical signal associated with excitement: great']},
+ {'operational_confidence': 0.0864,
+  'posterior_score': 0.105,
+  'prior': 0.1185,
+  'state': 'anxiety',
+  'supporting': ['capitalization_ratio deviates +0.28 from individual '
+                 'baseline; this is an arousal/expressivity change, not a '
+                 'direct emotion label.',
+                 'typing_wpm deviates +0.65 from individual baseline; this is '
+                 'an arousal/expressivity change, not a direct emotion label.'],
+  'weakening': ['Current lexical signal associated with excitement: great']}]
+
+PEQ RESPONSE
+celebrate with the user
+Modulation: full
+Intensity: 0.64
+Recommended response: celebrate with the user. This is not an instruction to mirror the user's emotion. It is the response with the highest current appraisal score. Error-cost control reduces commitment when confidence is lower and permits stronger expression when confidence is high. Operational confidence remains capped at 98.5%.
+
+AUDIT
+{
+  "system": "PEQ",
+  "run_id": "peq_6cfb64ffad79",
+  "subject_id": "owner",
+  "blackbox_access": false,
+  "questions": {
+    "state": "What is the most probable emotional state of subject owner?",
+    "response": "Given the assessed state and available context, what response is most likely to be appropriate?"
+  },
+  "state": {
+    "proposition": "What is the most probable emotional state of subject owner?",
+    "leading_state": "excitement",
+    "formal_determination": "According to the available evidence and PEQ assessment, the most probable emotional state is excitement. Operational confidence: 82.3%.",
+    "operational_confidence": 0.8235,
+    "uncertainty": 0.1765,
+    "confidence_note": "Operational confidence, not calibrated probability; hard-capped at 98.5%.",
+    "candidates": [
+      {
+        "state": "excitement",
+        "prior": 0.1185,
+        "posterior_score": 0.3304,
+        "operational_confidence": 0.8235,
+        "supporting": [
+          "capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+          "typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+          "Current lexical signal associated with excitement: great",
+          "Situation/context: situation=build just succeeded after repeated failures; context strongly favors a positive outcome."
+        ],
+        "weakening": []
+      },
+      {
+        "state": "neutral",
+        "prior": 0.1706,
+        "posterior_score": 0.1334,
+        "operational_confidence": 0.1098,
+        "supporting": [],
+        "weakening": [
+          "Current lexical signal associated with excitement: great"
+        ]
+      },
+      {
+        "state": "anxiety",
+        "prior": 0.1185,
+        "posterior_score": 0.105,
+        "operational_confidence": 0.0864,
+        "supporting": [
+          "capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+          "typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label."
+        ],
+        "weakening": [
+          "Current lexical signal associated with excitement: great"
+        ]
+      },
+      {
+        "state": "frustration",
+        "prior": 0.1185,
+        "posterior_score": 0.0989,
+        "operational_confidence": 0.0815,
+        "supporting": [
+          "capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+          "typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label."
+        ],
+        "weakening": [
+          "Current lexical signal associated with excitement: great",
+          "Situation/context: situation=build just succeeded after repeated failures; context strongly favors a positive outcome."
+        ]
+      },
+      {
+        "state": "anger",
+        "prior": 0.1185,
+        "posterior_score": 0.0944,
+        "operational_confidence": 0.0778,
+        "supporting": [
+          "capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+          "typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label."
+        ],
+        "weakening": [
+          "Current lexical signal associated with excitement: great",
+          "Situation/context: situation=build just succeeded after repeated failures; context strongly favors a positive outcome."
+        ]
+      }
+    ],
+    "contributions": [
+      {
+        "source_id": "obs_ebc44321",
+        "domain": "current",
+        "statement": "High capitalization is evidence of elevated expressivity/arousal, not proof of a specific emotion.",
+        "direction": 0.0,
+        "strength": 0.2931,
+        "reliability": 0.9,
+        "provenance": "",
+        "state_directions": {}
+      },
+      {
+        "source_id": "dev_383115f0",
+        "domain": "individual_baseline",
+        "statement": "capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+        "direction": 0.0,
+        "strength": 0.2831,
+        "reliability": 1.0,
+        "provenance": "",
+        "state_directions": {
+          "excitement": 0.25,
+          "frustration": 0.25,
+          "anger": 0.2,
+          "anxiety": 0.2,
+          "fatigue": -0.1,
+          "sadness": 0.0
+        }
+      },
+      {
+        "source_id": "dev_bdbf80fd",
+        "domain": "individual_baseline",
+        "statement": "typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.",
+        "direction": 0.0,
+        "strength": 0.6471,
+        "reliability": 1.0,
+        "provenance": "",
+        "state_directions": {
+          "excitement": 0.25,
+          "frustration": 0.25,
+          "anger": 0.2,
+          "anxiety": 0.2,
+          "fatigue": -0.1,
+          "sadness": 0.0
+        }
+      },
+      {
+        "source_id": "lexical:excitement",
+        "domain": "current",
+        "statement": "Current lexical signal associated with excitement: great",
+        "direction": 0.0,
+        "strength": 0.67,
+        "reliability": 0.88,
+        "provenance": "current text lexical evidence",
+        "state_directions": {
+          "excitement": 1.0,
+          "frustration": -0.15,
+          "anger": -0.15,
+          "anxiety": -0.15,
+          "sadness": -0.15,
+          "grief": -0.15,
+          "fatigue": -0.15,
+          "neutral": -0.15
+        }
+      },
+      {
+        "source_id": "knowledge:emotion-baselines",
+        "domain": "general_knowledge",
+        "statement": "General emotional knowledge maps observable linguistic/behavioral patterns to multiple plausible latent states; no single cue is definitive.",
+        "direction": 0.0,
+        "strength": 0.0,
+        "reliability": 1.0,
+        "provenance": "PEQ evidence model",
+        "state_directions": {}
+      },
+      {
+        "source_id": "baseline:population",
+        "domain": "population_baseline",
+        "statement": "Population baseline is used as a prior context; individual deviation can override generic expectations.",
+        "direction": 0.0,
+        "strength": 0.0,
+        "reliability": 0.85,
+        "provenance": "PEQ population prior contract",
+        "state_directions": {}
+      },
+      {
+        "source_id": "context:interaction_goal",
+        "domain": "situation",
+        "statement": "Situation/context: interaction_goal=support the user while working",
+        "direction": 0.0,
+        "strength": 0.3,
+        "reliability": 0.85,
+        "provenance": "caller-provided context",
+        "state_directions": {}
+      },
+      {
+        "source_id": "context:situation:positive",
+        "domain": "situation",
+        "statement": "Situation/context: situation=build just succeeded after repeated failures; context strongly favors a positive outcome.",
+        "direction": 0.0,
+        "strength": 0.48,
+        "reliability": 0.88,
+        "provenance": "caller-provided context",
+        "state_directions": {
+          "excitement": 1.0,
+          "frustration": -0.25,
+          "anger": -0.25,
+          "sadness": -0.25,
+          "grief": -0.2
+        }
+      },
+      {
+        "source_id": "truth:supported",
+        "domain": "truth_test",
+        "statement": "Current proposition is supported by the logical reasoning layer.",
+        "direction": 0.25,
+        "strength": 0.65,
+        "reliability": 0.96,
+        "provenance": "CriticalReasoningEngine",
+        "state_directions": {}
+      }
+    ],
+    "truth_assessment": {
+      "status": "supported",
+      "proposition": "The positive outcome is genuine rather than blocked.",
+      "reliability": 0.96,
+      "reasons_for_review": [],
+      "tests_run": [],
+      "unresolved_questions": [],
+      "source_summary": "Outcome context is consistent with the user's positive report."
+    },
+    "assumptions": [
+      "Emotional state is latent; observable signals are evidence rather than direct access to inner state.",
+      "General emotional knowledge supplies priors and signal relationships, not certainty.",
+      "Population baseline is different from this individual's baseline.",
+      "Individual modifiers can move the likelihood away from population expectations.",
+      "Current statements may be highly informative but may still require reliability checking when incongruity appears.",
+      "Operational confidence is capped at 98.5%; it is not a claim of metaphysical certainty."
+    ],
+    "unresolved_questions": [],
+    "explanation": "PEQ considered general priors, available baseline/context/history/current evidence, and the logical truth-testing reliability assessment. The leading state is excitement at 82.3% operational confidence, with neutral as the strongest alternative. Evidence domains used: current, general_knowledge, individual_baseline, population_baseline, situation, truth_test. Truth status: supported. Strongest contributing observations: Current proposition is supported by the logical reasoning layer.; High capitalization is evidence of elevated expressivity/arousal, not proof of a specific emotion.; capitalization_ratio deviates +0.28 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.; typing_wpm deviates +0.65 from individual baseline; this is an arousal/expressivity change, not a direct emotion label.; Current lexical signal associated with excitement: great"
+  },
+  "response": {
+    "question": "Given the assessed state and available context, what response is most likely to be appropriate?",
+    "recommended_response": "celebrate with the user",
+    "operational_confidence": 0.7709,
+    "modulation": "full",
+    "intensity": 0.6388,
+    "candidates": [
+      {
+        "response": "celebrate with the user",
+        "score": 0.6187,
+        "rationale": "Primary response family for the assessed state excitement."
+      },
+      {
+        "response": "continue naturally without inventing an emotional need",
+        "score": 0.4509,
+        "rationale": "Reversible low-assumption alternative when state or response fit is uncertain."
+      }
+    ],
+    "rationale": "PEQ Response is a separate inference from PEQ State. The assessed state is excitement; the interaction goal is support the user while working; relationship context is the current relationship. Because response-appraisal confidence is 77.1%, response intensity is modulated to full.",
+    "explanation": "Recommended response: celebrate with the user. This is not an instruction to mirror the user's emotion. It is the response with the highest current appraisal score. Error-cost control reduces commitment when confidence is lower and permits stronger expression when confidence is high. Operational confidence remains capped at 98.5%."
+  },
+  "evidence_retrieval": {
+    "query": "OH GREAT!!! That's EXACTLY what I needed. I can't believe we finally fixed it. build just succeeded after repeated failures support the user while working",
+    "primary": [
+      {
+        "evidence_id": "gad_cbt",
+        "kind": "intervention",
+        "title": "CBT and related structured psychological approaches for GAD",
+        "score": 0.4611,
+        "relevance": 0.0778,
+        "authority": 1.0,
+        "diversity": 1.0,
+        "recency": 0.9439,
+        "operational_value": {
+          "interaction": 0.35,
+          "assessment": 0.3333333333333333,
+          "response": 1.0,
+          "prediction": 0.0,
+          "risk_management": 0.3333333333333333,
+          "test_selection": 0.0
+        },
+        "source_ids": [
+          "gad_nma",
+          "gad_2025_nma"
+        ],
+        "source_organizations": [
+          "PubMed / JAMA Psychiatry",
+          "PubMed / Translational Psychiatry"
+        ],
+        "source_types": [
+          "peer_reviewed_network_meta_analysis"
+        ],
+        "claim_or_scope": "Systematic reviews and network meta-analyses support CBT and several related approaches for reducing GAD symptoms, while effects vary by protocol and delivery format.",
+        "role": "PEQ can test low-risk conversational behaviors such as reducing ambiguity, structured problem orientation and supporting agency; it should not conduct formal therapy.",
+        "limitations": [
+          "Remote and group formats do not necessarily perform identically to individual CBT; intervention evidence is clinical.",
+          "Clinical treatment evidence; patient populations differ from general conversation users.",
+          "Evidence quality varied; remote CBT was not uniformly superior."
+        ],
+        "target_patterns": [
+          "anxiety_like_pattern"
+        ],
+        "automation_status": "reference_only",
+        "why_retrieved": [
+          "query term coverage 11%",
+          "high-authority evidence type",
+          "provenance attached to 2 registered source(s)"
+        ]
+      },
+      {
+        "evidence_id": "panic_like_pattern",
+        "kind": "working_pattern",
+        "title": "acute panic-like arousal hypothesis",
+        "score": 0.3973,
+        "relevance": 0.0778,
+        "authority": 1.0,
+        "diversity": 1.0,
+        "recency": 0.8409,
+        "operational_value": {
+          "interaction": 0.0,
+          "assessment": 0.75,
+          "response": 0.6666666666666666,
+          "prediction": 0.0,
+          "risk_management": 0.35,
+          "test_selection": 0.3333333333333333
+        },
+        "source_ids": [
+          "panic_umbrella",
+          "gad_nma"
+        ],
+        "source_organizations": [
+          "PubMed / JAMA Psychiatry",
+          "PubMed / Journal of Anxiety Disorders"
+        ],
+        "source_types": [
+          "peer_reviewed_network_meta_analysis",
+          "peer_reviewed_umbrella_review"
+        ],
+        "claim_or_scope": "A panic-like pattern is a descriptive working model only; medical and environmental causes of acute physiological symptoms must remain possible.",
+        "role": "non-diagnostic working hypothesis and response-principle reference",
+        "limitations": [
+          "do not diagnose panic disorder",
+          "do not assume physiological symptoms are psychological",
+          "do not force breathing techniques when they worsen symptoms",
+          "Most included reviews were critically low quality under AMSTAR-2.",
+          "Clinical treatment evidence; patient populations differ from general conversation users."
+        ],
+        "target_patterns": [
+          "panic_like_pattern"
+        ],
+        "automation_status": "working_hypothesis_only",
+        "why_retrieved": [
+          "query term coverage 11%",
+          "high-authority evidence type",
+          "provenance attached to 2 registered source(s)",
+          "diversified against repeated source family"
+        ]
+      },
+      {
+        "evidence_id": "caps5_psychometrics",
+        "kind": "measurement_or_framework",
+        "title": "CAPS-5 development and subsequent reliability generalization",
+        "score": 0.3495,
+        "relevance": 0.0389,
+        "authority": 1.0,
+        "diversity": 1.0,
+        "recency": 0.8909,
+        "operational_value": {
+          "interaction": 0.0,
+          "assessment": 1.0,
+          "response": 0.0,
+          "prediction": 0.0,
+          "risk_management": 0.0,
+          "test_selection": 0.35
+        },
+        "source_ids": [
+          "caps5_development",
+          "caps5_meta"
+        ],
+        "source_organizations": [
+          "PubMed",
+          "PubMed / Frontiers in Psychology"
+        ],
+        "source_types": [
+          "peer_reviewed_clinician_assessment",
+          "peer_reviewed_meta_analysis"
+        ],
+        "claim_or_scope": "CAPS-5 is a widely used clinician-administered structured PTSD assessment with strong interrater/test-retest reliability; meta-analytic reliability remains strong while some subscale and cross-language heterogeneity persists.",
+        "role": "Reference clinician-defined PTSD symptom constructs and what formal assessment entails; never emulate the clinical diagnosis process autonomously.",
+        "limitations": [
+          "Requires trained clinician administration for its intended use.",
+          "Reliability does not eliminate construct, cultural or diagnostic-interpretation limitations.",
+          "Requires trained administration.",
+          "Residual heterogeneity; divergent validity and cultural adaptation remain areas for research."
+        ],
+        "target_patterns": [],
+        "automation_status": "reference_only",
+        "why_retrieved": [
+          "query term coverage 6%",
+          "high-authority evidence type",
+          "provenance attached to 2 registered source(s)",
+          "diversified against repeated source family"
+        ]
+      },
+      {
+        "evidence_id": "alliance_collaboration",
+        "kind": "intervention",
+        "title": "Collaborative working relationship / therapeutic alliance principles",
+        "score": 0.3865,
+        "relevance": 0.0556,
+        "authority": 1.0,
+        "diversity": 1.0,
+        "recency": 0.63,
+        "operational_value": {
+          "interaction": 1.0,
+          "assessment": 0.3333333333333333,
+          "response": 1.0,
+          "prediction": 0.3333333333333333,
+          "risk_management": 0.0,
+          "test_selection": 0.0
+        },
+        "source_ids": [
+          "alliance_meta_2018"
+        ],
+        "source_organizations": [
+          "PubMed / Psychotherapy"
+        ],
+        "source_types": [
+          "peer_reviewed_meta_analysis"
+        ],
+        "claim_or_scope": "A large meta-analysis across 295 independent psychotherapy studies and more than 30,000 patients found a robust association between alliance and treatment outcome.",
+        "role": "PEQ should treat collaboration, responsiveness, agreement on goals and transparent partnership as high-value response variables rather than diagnostic symptoms.",
+        "limitations": [
+          "Association with therapy outcome does not mean every conversational problem is solved by maximizing alliance.",
+          "Outcome association is not proof of simple causality."
+        ],
+        "target_patterns": [
+          "all_patterns"
+        ],
+        "automation_status": "reference_plus_safe_principles",
+        "why_retrieved": [
+          "query term coverage 6%",
+          "title directly overlaps query",
+          "high-authority evidence type",
+          "provenance attached to 1 registered source(s)",
+          "diversified against repeated source family"
+        ]
+      },
+      {
+        "evidence_id": "therapeutic_alliance",
+        "kind": "measurement_or_framework",
+        "title": "The alliance in adult psychotherapy: a meta-analytic synthesis",
+        "score": 0.3404,
+        "relevance": 0.0389,
+        "authority": 1.0,
+        "diversity": 1.0,
+        "recency": 0.63,
+        "operational_value": {
+          "interaction": 1.0,
+          "assessment": 0.9,
+          "response": 0.6666666666666666,
+          "prediction": 0.3333333333333333,
+          "risk_management": 0.0,
+          "test_selection": 0.35
+        },
+        "source_ids": [
+          "alliance_meta_2018"
+        ],
+        "source_organizations": [
+          "PubMed / Psychotherapy"
+        ],
+        "source_types": [
+          "peer_reviewed_meta_analysis"
+        ],
+        "claim_or_scope": "Across 295 independent studies and more than 30,000 patients, therapeutic alliance is reliably associated with psychotherapy outcome, independent of theoretical orientation.",
+        "role": "Strong evidence that collaboration, agreement, responsiveness and working relationship are consequential response variables.",
+        "limitations": [
+          "Association does not establish that alliance alone causes outcome.",
+          "Clinical psychotherapy findings should not be overgeneralized to casual AI companionship.",
+          "Outcome association is not proof of simple causality."
+        ],
+        "target_patterns": [],
+        "automation_status": "reference_only",
+        "why_retrieved": [
+          "query term coverage 6%",
+          "high-authority evidence type",
+          "provenance attached to 1 registered source(s)",
+          "diversified against repeated source family"
+        ]
+      },
+      {
+        "evidence_id": "paranoia_like_threat_response",
+        "kind": "working_pattern",
+        "title": "suspiciousness / threat-interpretation pattern",
+        "score": 0.3774,
+        "relevance": 0.1167,
+        "authority": 0.65,
+        "diversity": 1.0,
+        "recency": 0.55,
+        "operational_value": {
+          "interaction": 0.0,
+          "assessment": 0.75,
+          "response": 0.65,
+          "prediction": 0.0,
+          "risk_management": 0.35,
+          "test_selection": 0.3333333333333333
+        },
+        "source_ids": [
+          "nimh_psychosis",
+          "apa_schizophrenia_2020",
+          "apa_cbt_psychosis"
+        ],
+        "source_organizations": [],
+        "source_types": [],
+        "claim_or_scope": "A cluster may support a threat-interpretation hypothesis worth testing. Suspiciousness is non-specific and does not establish psychosis, schizophrenia, or any other diagnosis. The factual status of the person's concern must be examined independently of the psychological-pattern hypothesis.",
+        "role": "non-diagnostic working hypothesis and response-principle reference",
+        "limitations": [
+          "do not diagnose psychosis or schizophrenia from observed signs",
+          "do not reinforce an unverified persecutory belief as established fact",
+          "do not deliberately mock, shame, or aggressively confront the person",
+          "do not let a psychological hypothesis substitute for checking real-world threats"
+        ],
+        "target_patterns": [
+          "paranoia_like_threat_response"
+        ],
+        "automation_status": "working_hypothesis_only",
+        "why_retrieved": [
+          "query term coverage 17%",
+          "provenance attached to 3 registered source(s)"
+        ]
+      },
+      {
+        "evidence_id": "ptsd_like_trauma_response",
+        "kind": "working_pattern",
+        "title": "trauma-related stress response pattern",
+        "score": 0.2874,
+        "relevance": 0.0389,
+        "authority": 0.65,
+        "diversity": 1.0,
+        "recency": 0.55,
+        "operational_value": {
+          "interaction": 0.3333333333333333,
+          "assessment": 0.75,
+          "response": 0.65,
+          "prediction": 0.0,
+          "risk_management": 0.35,
+          "test_selection": 0.3333333333333333
+        },
+        "source_ids": [
+          "nimh_ptsd",
+          "va_dod_ptsd_2023",
+          "samhsa_trauma_informed",
+          "va_ptsd_triggers",
+          "va_grounding"
+        ],
+        "source_organizations": [],
+        "source_types": [],
+        "claim_or_scope": "Multiple matching signs may support a trauma-related stress-response hypothesis. Do not convert the pattern into a PTSD diagnosis; diagnosis depends on duration, impairment, exposure history, and clinical assessment.",
+        "role": "non-diagnostic working hypothesis and response-principle reference",
+        "limitations": [
+          "do not claim or imply a PTSD diagnosis",
+          "do not deliberately force trauma disclosure",
+          "do not treat one symptom as diagnostic proof",
+          "do not use grounding mechanically when it is clearly making the person worse"
+        ],
+        "target_patterns": [
+          "ptsd_like_trauma_response"
+        ],
+        "automation_status": "working_hypothesis_only",
+        "why_retrieved": [
+          "query term coverage 6%",
+          "provenance attached to 5 registered source(s)",
+          "diversified against repeated source family"
+        ]
+      },
+      {
+        "evidence_id": "pew_american_trends_panel",
+        "kind": "population_dataset",
+        "title": "American Trends Panel",
+        "score": 0.3172,
+        "relevance": 0.0389,
+        "authority": 0.89,
+        "diversity": 1.0,
+        "recency": 0.9439,
+        "operational_value": {
+          "interaction": 0.0,
+          "assessment": 0.8,
+          "response": 0.0,
+          "prediction": 0.45,
+          "risk_management": 0.0,
+          "test_selection": 0.0
+        },
+        "source_ids": [
+          "pew_american_trends_panel"
+        ],
+        "source_organizations": [
+          "Pew Research Center"
+        ],
+        "source_types": [
+          "national_probability_panel"
+        ],
+        "claim_or_scope": "Nationally representative panel of randomly selected U.S. adults recruited using probability-based methods, with repeated surveys and weighting to population benchmarks.",
+        "role": "U.S. self-reported attitudes, experiences, behaviors and social-context baselines",
+        "limitations": [
+          "Self-report and question-wording effects remain important.",
+          "Panel attrition and recruitment coverage require weighting and interpretation.",
+          "Not a clinical diagnostic dataset."
+        ],
+        "target_patterns": [],
+        "automation_status": "reference_only",
+        "why_retrieved": [
+          "query term coverage 6%",
+          "provenance attached to 1 registered source(s)"
+        ]
+      }
+    ],
+    "alternatives": [
+      {
+        "item_id": "ders_evidence",
+        "label": "Meta-analysis of the Difficulties in Emotion Regulation Scale and short forms",
+        "rationale": "Secondary evidence path retained to prevent premature closure.",
+        "score": 0.4244,
+        "distinct_from_leader": true
+      },
+      {
+        "item_id": "ptsd_trauma_focused_cbt",
+        "label": "Trauma-focused CBT (including CPT, cognitive therapy, prolonged exposure, narrative exposure)",
+        "rationale": "Secondary ranked interpretation retained because the evidence does not justify collapsing to one answer.",
+        "score": 0.4154,
+        "distinct_from_leader": false
+      },
+      {
+        "item_id": "anxiety_like_pattern",
+        "label": "anxiety symptom-pattern hypothesis",
+        "rationale": "Secondary evidence path retained to prevent premature closure.",
+        "score": 0.4136,
+        "distinct_from_leader": true
+      },
+      {
+        "item_id": "ampd_review",
+        "label": "Evidence base for the DSM-5 Alternative Model for Personality Disorders",
+        "rationale": "Secondary evidence path retained to prevent premature closure.",
+        "score": 0.4132,
+        "distinct_from_leader": true
+      },
+      {
+        "item_id": "emotion_dysregulation_pattern",
+        "label": "emotion-regulation difficulty hypothesis",
+        "rationale": "Secondary evidence path retained to prevent premature closure.",
+        "score": 0.407,
+        "distinct_from_leader": true
+      }
+    ],
+    "uncovered_terms": [
+      "great",
+      "that's",
+      "exactly",
+      "needed",
+      "can't",
+      "believe",
+      "finally",
+      "build",
+      "just",
+      "succeeded",
+      "after",
+      "failures",
+      "user"
+    ],
+    "source_families": [
+      "clinical_guidance",
+      "other",
+      "peer_reviewed",
+      "population"
+    ],
+    "operational_value": {
+      "interaction": 1.0,
+      "assessment": 1.0,
+      "response": 1.0,
+      "prediction": 0.45,
+      "risk_management": 0.35,
+      "test_selection": 0.35
+    },
+    "warnings": [
+      "Some query terms were not represented in the selected evidence; absence from the registry is not evidence against the proposition."
+    ]
+  },
+  "operational_value": {
+    "interaction": 1.0,
+    "assessment": 1.0,
+    "response": 1.0,
+    "prediction": 0.45,
+    "risk_management": 0.35,
+    "test_selection": 0.35
+  }
+}

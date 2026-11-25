@@ -1,0 +1,1337 @@
+/* ========================================
+   PUBCAST DRESSING ROOM - VINTAGE THEATRICAL
+   Stuffy 1940s-50s Broadway/Hollywood Aesthetic
+   ======================================== */
+
+:root {
+    /* Color Palette - Warm, aged, theatrical */
+    --burgundy-deep: #5c1010;
+    --burgundy-medium: #8b1a1a;
+    --gold-brass: #b8860b;
+    --gold-bright: #daa520;
+    --wood-dark: #2d1810;
+    --wood-medium: #4a2f1f;
+    --wood-light: #6b4423;
+    --wallpaper-beige: #d4c5a9;
+    --wallpaper-pattern: #b8a582;
+    --velvet-red: #9b2226;
+    --cream: #f4f1e8;
+    --ink-black: #1a1312;
+    
+    /* Lighting */
+    --warm-glow: rgba(255, 200, 100, 0.3);
+    --dim-light: rgba(255, 220, 150, 0.15);
+    
+    /* Typography */
+    --font-script: 'Georgia', 'Times New Roman', serif;
+    --font-typewriter: 'Courier New', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-script);
+    background: #0a0a0a;
+    color: var(--cream);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ========================================
+   VIEW SWITCHING
+   ======================================== */
+
+.view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+
+.view.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.clickable::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.clickable:hover::after {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 20px var(--warm-glow);
+}
+
+.clickable:hover {
+    transform: scale(1.02);
+    filter: brightness(1.15);
+}
+
+/* ========================================
+   ROOM VIEW - MAIN DRESSING ROOM
+   ======================================== */
+
+.dressing-room {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    perspective: 1200px;
+}
+
+/* Atmosphere & Background */
+.room-atmosphere {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.vintage-wallpaper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            var(--wallpaper-beige) 0px,
+            var(--wallpaper-beige) 30px,
+            var(--wallpaper-pattern) 30px,
+            var(--wallpaper-pattern) 60px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            var(--wallpaper-beige) 0px,
+            var(--wallpaper-beige) 30px,
+            var(--wallpaper-pattern) 30px,
+            var(--wallpaper-pattern) 60px
+        );
+    opacity: 0.4;
+}
+
+.ceiling-light {
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+        circle,
+        rgba(255, 220, 150, 0.4) 0%,
+        rgba(255, 220, 150, 0.2) 30%,
+        transparent 70%
+    );
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* ========================================
+   WALLS & POSTERS
+   ======================================== */
+
+.left-wall {
+    position: absolute;
+    left: 3%;
+    top: 10%;
+    width: 200px;
+    height: 80%;
+    z-index: 1;
+}
+
+.poster {
+    width: 180px;
+    height: 250px;
+    background: linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%);
+    border: 4px solid var(--gold-brass);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        inset 0 0 40px rgba(0, 0, 0, 0.4);
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.poster-content {
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.poster-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--gold-bright);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.poster-year {
+    font-size: 16px;
+    color: var(--cream);
+    opacity: 0.8;
+}
+
+/* Right Wall - TV */
+.right-wall {
+    position: absolute;
+    right: 5%;
+    top: 15%;
+    width: 280px;
+    z-index: 1;
+}
+
+.old-tv {
+    width: 280px;
+    height: 240px;
+    background: linear-gradient(to bottom, #3a2f2a 0%, #2a1f1a 100%);
+    border-radius: 20px;
+    border: 6px solid var(--wood-dark);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    position: relative;
+    padding: 20px;
+}
+
+.tv-screen {
+    width: 100%;
+    height: 140px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.9);
+}
+
+.tv-static {
+    width: 100%;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 2px
+        );
+    animation: tvStatic 0.1s infinite;
+}
+
+@keyframes tvStatic {
+    0% { opacity: 0.5; transform: translateY(0); }
+    50% { opacity: 0.7; transform: translateY(1px); }
+    100% { opacity: 0.5; transform: translateY(0); }
+}
+
+.tv-antenna {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 40px;
+    background: #666;
+}
+
+.tv-antenna::before,
+.tv-antenna::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    height: 25px;
+    background: #666;
+}
+
+.tv-antenna::before {
+    left: -15px;
+    transform: rotate(-25deg);
+}
+
+.tv-antenna::after {
+    right: -15px;
+    transform: rotate(25deg);
+}
+
+.tv-knobs {
+    position: absolute;
+    bottom: 25px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+}
+
+.tv-knobs::before,
+.tv-knobs::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle, #888 0%, #444 100%);
+    border-radius: 50%;
+    border: 2px solid #222;
+}
+
+.tv-label {
+    position: absolute;
+    bottom: 8px;
+    left: 20px;
+    font-size: 12px;
+    color: var(--gold-brass);
+    font-style: italic;
+}
+
+/* ========================================
+   HOTSPOT STYLING
+   ======================================== */
+
+.hotspot {
+    position: absolute;
+    z-index: 10;
+}
+
+.hotspot-label {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 19, 18, 0.9);
+    border: 2px solid var(--gold-brass);
+    padding: 8px 16px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.clickable:hover .hotspot-label {
+    opacity: 1;
+}
+
+.label-icon {
+    font-size: 18px;
+    margin-right: 6px;
+}
+
+.label-text {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--gold-bright);
+    margin-right: 6px;
+}
+
+.label-hint {
+    font-size: 11px;
+    color: var(--cream);
+    opacity: 0.8;
+}
+
+/* ========================================
+   HOTSPOT 1: COSTUME STAGE
+   ======================================== */
+
+.stage-platform {
+    left: 50%;
+    top: 8%;
+    transform: translateX(-50%);
+    width: 350px;
+    height: 450px;
+}
+
+.platform-base {
+    width: 100%;
+    height: 100%;
+}
+
+.platform-risers {
+    width: 100%;
+    height: 30px;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--wood-dark) 0px,
+        var(--wood-dark) 10px,
+        var(--wood-light) 10px,
+        var(--wood-light) 11px
+    );
+    border-radius: 4px;
+}
+
+.platform-top {
+    width: 100%;
+    height: calc(100% - 30px);
+    background: linear-gradient(to bottom, var(--wood-medium) 0%, var(--wood-dark) 100%);
+    border: 4px solid var(--wood-light);
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+}
+
+.dress-form {
+    width: 100px;
+}
+
+.form-torso {
+    width: 80px;
+    height: 140px;
+    background: linear-gradient(to bottom, #d4a574 0%, #c49563 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    margin: 0 auto;
+    box-shadow: inset -5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.form-stand {
+    width: 12px;
+    height: 100px;
+    background: var(--wood-dark);
+    margin: 0 auto;
+    margin-top: -10px;
+}
+
+.full-mirror {
+    width: 140px;
+    height: 320px;
+}
+
+.mirror-frame-tall {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom right, #c0c0c0 0%, #808080 100%);
+    border: 6px solid var(--gold-brass);
+    border-radius: 8px;
+    box-shadow: 
+        inset 0 0 40px rgba(255, 255, 255, 0.3),
+        0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================
+   HOTSPOT 2: TYPEWRITER DESK
+   ======================================== */
+
+.typewriter-desk {
+    left: 8%;
+    bottom: 12%;
+    width: 320px;
+    height: 280px;
+}
+
+.desk-surface {
+    width: 100%;
+    height: 180px;
+    background: radial-gradient(ellipse, var(--wood-medium) 0%, var(--wood-dark) 100%);
+    border: 4px solid var(--wood-light);
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    position: relative;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.desk-lamp {
+    position: absolute;
+    top: -30px;
+    right: 20px;
+    width: 50px;
+    height: 80px;
+}
+
+.lamp-shade {
+    width: 50px;
+    height: 30px;
+    background: linear-gradient(to bottom, #2a4a2a 0%, #1a3a1a 100%);
+    border-radius: 50% 50% 0 0;
+    border: 2px solid var(--gold-brass);
+}
+
+.lamp-glow {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(255, 240, 200, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.typewriter-machine {
+    width: 200px;
+    height: 120px;
+    position: relative;
+}
+
+.machine-body {
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f1f35 100%);
+    border: 4px solid var(--gold-brass);
+    border-radius: 8px;
+    box-shadow: 
+        0 6px 15px rgba(0, 0, 0, 0.5),
+        inset 0 2px 8px rgba(255, 215, 0, 0.2);
+}
+
+.machine-keys {
+    position: absolute;
+    bottom: 5px;
+    left: 10%;
+    width: 80%;
+    height: 30px;
+    background: repeating-linear-gradient(
+        90deg,
+        #e8d5c0 0px,
+        #e8d5c0 6px,
+        var(--wood-dark) 6px,
+        var(--wood-dark) 8px
+    );
+    border-radius: 4px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.paper-in-machine {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 35px;
+    background: var(--cream);
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.desk-whiskey-glass {
+    position: absolute;
+    bottom: 10px;
+    left: 15px;
+    font-size: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.desk-papers {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+    width: 60px;
+    height: 40px;
+    background: repeating-linear-gradient(
+        0deg,
+        #f4f1e8 0px,
+        #f4f1e8 8px,
+        #e4e1d8 8px,
+        #e4e1d8 10px
+    );
+    transform: rotate(-5deg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.desk-chair {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.chair-back {
+    width: 80px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--wood-medium) 0%, var(--wood-dark) 100%);
+    border: 3px solid var(--wood-light);
+    border-radius: 8px 8px 0 0;
+    margin: 0 auto;
+}
+
+.chair-seat {
+    width: 90px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--velvet-red) 0%, var(--burgundy-medium) 100%);
+    border: 3px solid var(--wood-dark);
+    border-radius: 4px;
+    margin: 0 auto;
+    margin-top: -5px;
+}
+
+/* ========================================
+   HOTSPOT 3: MAKEUP VANITY
+   ======================================== */
+
+.makeup-vanity {
+    right: 8%;
+    bottom: 12%;
+    width: 300px;
+    height: 280px;
+}
+
+.vanity-table {
+    width: 100%;
+    height: 200px;
+    position: relative;
+}
+
+.vanity-mirror-set {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 150px;
+    display: flex;
+    gap: 4px;
+}
+
+.mirror-center {
+    flex: 2;
+    background: linear-gradient(to bottom right, #c0c0c0 0%, #808080 100%);
+    border: 4px solid var(--gold-brass);
+    border-radius: 6px;
+    box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.mirror-left,
+.mirror-right {
+    flex: 1;
+    background: linear-gradient(to bottom right, #c0c0c0 0%, #808080 100%);
+    border: 4px solid var(--gold-brass);
+    border-radius: 6px;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.mirror-lights {
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+}
+
+.mirror-lights::before,
+.mirror-lights::after {
+    content: '💡';
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.vanity-surface {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: radial-gradient(ellipse, var(--wood-medium) 0%, var(--wood-dark) 100%);
+    border: 4px solid var(--wood-light);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.makeup-items {
+    display: flex;
+    gap: 20px;
+    font-size: 24px;
+}
+
+.vanity-stool {
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.stool-top {
+    width: 80px;
+    height: 30px;
+    background: linear-gradient(to bottom, var(--velvet-red) 0%, var(--burgundy-medium) 100%);
+    border-radius: 50%;
+    border: 3px solid var(--wood-dark);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.stool-legs {
+    width: 60px;
+    height: 50px;
+    margin: 0 auto;
+    background: var(--wood-dark);
+    clip-path: polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%);
+}
+
+/* ========================================
+   FLOOR & ATMOSPHERIC DETAILS
+   ======================================== */
+
+.floor-rug {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 180px;
+    background: 
+        repeating-linear-gradient(
+            90deg,
+            var(--burgundy-deep) 0px,
+            var(--burgundy-deep) 30px,
+            var(--burgundy-medium) 30px,
+            var(--burgundy-medium) 60px
+        );
+    border: 8px solid var(--burgundy-deep);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    opacity: 0.7;
+    z-index: 5;
+}
+
+.coat-rack {
+    position: absolute;
+    top: 20%;
+    right: 12%;
+    width: 60px;
+    height: 200px;
+}
+
+.coat-rack::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 100%;
+    background: var(--wood-dark);
+}
+
+.hanging-coat {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 60px;
+    height: 80px;
+    background: linear-gradient(to bottom, #333 0%, #1a1a1a 100%);
+    border-radius: 8px 8px 0 0;
+}
+
+.hanging-hat {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+}
+
+/* ========================================
+   EXIT DOOR
+   ======================================== */
+
+.exit-door {
+    position: absolute;
+    left: 2%;
+    top: 12%;
+    width: 150px;
+    height: 220px;
+    z-index: 2;
+}
+
+.door-frame {
+    width: 100%;
+    height: 100%;
+    background: var(--wood-dark);
+    border: 4px solid var(--wood-light);
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    position: relative;
+}
+
+.door-panel {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--wood-medium) 0%, var(--wood-dark) 100%);
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.door-window {
+    width: 100%;
+    height: 60px;
+    background: radial-gradient(ellipse, rgba(255, 220, 150, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%);
+    border: 3px solid var(--gold-brass);
+    border-radius: 4px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.door-handle {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 12px;
+    height: 25px;
+    background: var(--gold-brass);
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.exit-label {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--gold-bright);
+    font-weight: bold;
+}
+
+/* ========================================
+   TYPEWRITER CLOSEUP VIEW
+   ======================================== */
+
+#typewriter-view {
+    background: linear-gradient(to bottom, #1a0f0a 0%, #2d1810 100%);
+}
+
+.typewriter-closeup {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.typewriter-header {
+    background: linear-gradient(to bottom, #2d1f15 0%, #1f1410 100%);
+    border-bottom: 2px solid var(--gold-brass);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.back-btn, .control-btn {
+    background: var(--wood-medium);
+    border: 2px solid var(--gold-brass);
+    color: var(--cream);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-script);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.back-btn:hover, .control-btn:hover {
+    background: var(--wood-light);
+    box-shadow: 0 0 10px var(--warm-glow);
+}
+
+.document-title {
+    font-size: 18px;
+    color: var(--gold-bright);
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* Typewriter Machine Closeup */
+.typewriter-machine-closeup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.typewriter-ornament {
+    width: 600px;
+    height: 80px;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.ornament-ring {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 80px;
+    border: 8px solid var(--gold-brass);
+    border-radius: 50% 50% 0 0;
+    background: radial-gradient(ellipse at center, rgba(218, 165, 32, 0.3) 0%, transparent 70%);
+    box-shadow: 
+        0 -4px 15px rgba(218, 165, 32, 0.4),
+        inset 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.paper-carriage {
+    width: 700px;
+    height: 500px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0a1628 100%);
+    border: 6px solid var(--gold-brass);
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.6),
+        inset 0 4px 20px rgba(255, 215, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+}
+
+.carriage-return {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    width: 40px;
+    height: 80px;
+    background: var(--gold-brass);
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.paper-holder {
+    width: 600px;
+    height: 380px;
+    background: linear-gradient(to bottom, #8b7355 0%, #6b5943 100%);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.paper-sheet {
+    width: 100%;
+    height: 100%;
+    background: var(--cream);
+    border: 1px solid #d4cfc4;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 0 60px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.paper-text {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    font-family: var(--font-typewriter);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-black);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-y: auto;
+}
+
+.paper-text:focus {
+    outline: none;
+}
+
+.paper-text::after {
+    content: '|';
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+.paper-roller {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 580px;
+    height: 30px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--gold-brass) 0px,
+        var(--gold-brass) 2px,
+        var(--gold-bright) 2px,
+        var(--gold-bright) 4px
+    );
+    border-radius: 4px;
+}
+
+.keyboard-section {
+    width: 650px;
+    margin-top: 30px;
+}
+
+.keys-visual {
+    width: 100%;
+    height: 100px;
+    background: repeating-linear-gradient(
+        90deg,
+        #e8d5c0 0px,
+        #e8d5c0 30px,
+        var(--wood-dark) 30px,
+        var(--wood-dark) 35px
+    );
+    border: 3px solid var(--gold-brass);
+    border-radius: 8px;
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.desk-whiskey-closeup {
+    position: absolute;
+    bottom: 50px;
+    right: 80px;
+}
+
+.glass-crystal {
+    font-size: 48px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
+/* ========================================
+   MENU & MODALS
+   ======================================== */
+
+#menu-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+}
+
+#menu-overlay.menu-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.menu-content {
+    background: var(--cream);
+    padding: 40px;
+    border-radius: 12px;
+    border: 4px solid var(--gold-brass);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    min-width: 400px;
+}
+
+.menu-content h2 {
+    color: var(--wood-dark);
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 28px;
+    border-bottom: 2px solid var(--gold-brass);
+    padding-bottom: 15px;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-option {
+    background: linear-gradient(to right, var(--wood-medium) 0%, var(--wood-light) 100%);
+    border: 2px solid var(--gold-brass);
+    color: var(--cream);
+    padding: 15px 25px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-script);
+    text-align: left;
+}
+
+.menu-option:hover {
+    background: linear-gradient(to right, var(--wood-light) 0%, var(--gold-brass) 100%);
+    transform: translateX(10px);
+    box-shadow: 0 4px 15px var(--warm-glow);
+}
+
+.modal-hidden {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    transition: opacity 0.3s ease;
+    z-index: 200;
+}
+
+.modal-hidden.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--cream);
+    border-radius: 12px;
+    border: 4px solid var(--gold-brass);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    background: var(--wood-dark);
+    color: var(--gold-bright);
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--gold-bright);
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.close-btn:hover {
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.document-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.document-item {
+    background: #f9f6f0;
+    border: 2px solid var(--wood-medium);
+    padding: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.document-item:hover {
+    background: #fff;
+    border-color: var(--gold-brass);
+    transform: translateX(5px);
+}
+
+.save-dialog h3 {
+    color: var(--wood-dark);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.save-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.save-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: bold;
+    color: var(--wood-dark);
+}
+
+.save-form input,
+.save-form select {
+    padding: 10px;
+    border: 2px solid var(--wood-medium);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: var(--font-typewriter);
+}
+
+.save-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.primary-btn, .secondary-btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    border: 2px solid var(--gold-brass);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.primary-btn {
+    background: linear-gradient(to right, var(--wood-medium) 0%, var(--wood-light) 100%);
+    color: var(--cream);
+}
+
+.primary-btn:hover {
+    background: var(--gold-brass);
+}
+
+.secondary-btn {
+    background: #f4f1e8;
+    color: var(--wood-dark);
+}
+
+.secondary-btn:hover {
+    background: #fff;
+}
+
+/* ========================================
+   STAGE & VANITY VIEWS (Placeholders)
+   ======================================== */
+
+.stage-interface,
+.vanity-interface {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(to bottom, #1a0f0a 0%, #2d1810 100%);
+}
+
+.stage-header,
+.vanity-header {
+    background: linear-gradient(to bottom, #2d1f15 0%, #1f1410 100%);
+    border-bottom: 2px solid var(--gold-brass);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stage-title,
+.vanity-title {
+    font-size: 20px;
+    color: var(--gold-bright);
+    font-weight: bold;
+}
+
+.stage-content,
+.vanity-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coming-soon-message {
+    text-align: center;
+    padding: 60px;
+    background: rgba(26, 19, 18, 0.6);
+    border: 3px solid var(--gold-brass);
+    border-radius: 12px;
+    max-width: 500px;
+}
+
+.message-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.coming-soon-message h2 {
+    color: var(--gold-bright);
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.coming-soon-message p {
+    color: var(--cream);
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.message-note {
+    font-size: 14px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
+.paper-text::-webkit-scrollbar {
+    width: 8px;
+}
+
+.paper-text::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.paper-text::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1400px) {
+    .stage-platform {
+        transform: translateX(-50%) scale(0.9);
+    }
+    
+    .typewriter-desk,
+    .makeup-vanity {
+        transform: scale(0.9);
+    }
+}
+
+@media (max-width: 1024px) {
+    .typewriter-machine-closeup {
+        transform: scale(0.8);
+    }
+}

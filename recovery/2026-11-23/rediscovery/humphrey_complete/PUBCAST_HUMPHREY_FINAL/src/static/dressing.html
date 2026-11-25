@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dressing Room | PubCast</title>
+    <link rel="stylesheet" href="/static/dressing.css">
+</head>
+<body>
+    <!-- ROOM VIEW - Main dressing room with three hotspots -->
+    <div id="room-view" class="view active">
+        <div class="dressing-room">
+            <!-- Background and atmosphere -->
+            <div class="room-atmosphere">
+                <div class="vintage-wallpaper"></div>
+                <div class="ceiling-light"></div>
+            </div>
+
+            <!-- Left Side: Wardrobe & Posters -->
+            <div class="left-wall">
+                <!-- Vintage Movie Posters -->
+                <div class="poster poster-1">
+                    <div class="poster-content">
+                        <div class="poster-title">CASABLANCA</div>
+                        <div class="poster-year">1942</div>
+                    </div>
+                </div>
+                <div class="poster poster-2">
+                    <div class="poster-content">
+                        <div class="poster-title">SUNSET BLVD</div>
+                        <div class="poster-year">1950</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Old TV & Mirror Setup -->
+            <div class="right-wall">
+                <!-- 1950s Television Set -->
+                <div class="old-tv">
+                    <div class="tv-screen">
+                        <div class="tv-static"></div>
+                    </div>
+                    <div class="tv-antenna"></div>
+                    <div class="tv-knobs"></div>
+                    <div class="tv-label">Zenith</div>
+                </div>
+            </div>
+
+            <!-- CENTER: Three Main Interaction Hotspots -->
+            
+            <!-- HOTSPOT 1: Costume Stage Platform (back center) -->
+            <div class="hotspot stage-platform clickable" id="stage-hotspot" title="Costume Stage - Avatar Maker">
+                <div class="platform-base">
+                    <div class="platform-risers"></div>
+                    <div class="platform-top">
+                        <div class="dress-form">
+                            <div class="form-torso"></div>
+                            <div class="form-stand"></div>
+                        </div>
+                        <div class="full-mirror">
+                            <div class="mirror-frame-tall"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hotspot-label">
+                    <span class="label-icon">👗</span>
+                    <span class="label-text">Costume Stage</span>
+                    <span class="label-hint">(Avatar Maker)</span>
+                </div>
+            </div>
+
+            <!-- HOTSPOT 2: Typewriter Desk (left foreground) -->
+            <div class="hotspot typewriter-desk clickable" id="typewriter-hotspot" title="Typewriter - Scripts & Messages">
+                <div class="desk-surface">
+                    <div class="desk-lamp">
+                        <div class="lamp-shade"></div>
+                        <div class="lamp-glow"></div>
+                    </div>
+                    <div class="typewriter-machine">
+                        <div class="machine-body"></div>
+                        <div class="machine-keys"></div>
+                        <div class="paper-in-machine"></div>
+                    </div>
+                    <div class="desk-whiskey-glass">🥃</div>
+                    <div class="desk-papers"></div>
+                </div>
+                <div class="desk-chair">
+                    <div class="chair-back"></div>
+                    <div class="chair-seat"></div>
+                </div>
+                <div class="hotspot-label">
+                    <span class="label-icon">✍️</span>
+                    <span class="label-text">Typewriter Desk</span>
+                    <span class="label-hint">(Scripts & Notes)</span>
+                </div>
+            </div>
+
+            <!-- HOTSPOT 3: Makeup Vanity (right foreground) -->
+            <div class="hotspot makeup-vanity clickable" id="vanity-hotspot" title="Makeup Vanity - Styling">
+                <div class="vanity-table">
+                    <div class="vanity-mirror-set">
+                        <div class="mirror-center"></div>
+                        <div class="mirror-left"></div>
+                        <div class="mirror-right"></div>
+                        <div class="mirror-lights"></div>
+                    </div>
+                    <div class="vanity-surface">
+                        <div class="makeup-items">
+                            <div class="lipstick">💄</div>
+                            <div class="compact">🎨</div>
+                            <div class="perfume">🌸</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vanity-stool">
+                    <div class="stool-top"></div>
+                    <div class="stool-legs"></div>
+                </div>
+                <div class="hotspot-label">
+                    <span class="label-icon">💄</span>
+                    <span class="label-text">Makeup Vanity</span>
+                    <span class="label-hint">(Hair & Styling)</span>
+                </div>
+            </div>
+
+            <!-- Floor Elements -->
+            <div class="floor-rug"></div>
+
+            <!-- EXIT DOOR (back left) -->
+            <div class="exit-door clickable" id="exit-door" title="To Green Room">
+                <div class="door-frame">
+                    <div class="door-panel">
+                        <div class="door-window"></div>
+                    </div>
+                    <div class="door-handle"></div>
+                </div>
+                <div class="exit-label">
+                    <span>→ Green Room</span>
+                </div>
+            </div>
+
+            <!-- Atmospheric Details -->
+            <div class="coat-rack">
+                <div class="hanging-coat"></div>
+                <div class="hanging-hat">🎩</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TYPEWRITER VIEW - Functional typing interface -->
+    <div id="typewriter-view" class="view">
+        <div class="typewriter-closeup">
+            <!-- Header Bar -->
+            <div class="typewriter-header">
+                <button id="back-to-room" class="back-btn">← Back to Dressing Room</button>
+                <div class="document-title" id="doc-title">Untitled Document</div>
+                <div class="typewriter-controls">
+                    <button id="menu-btn" class="control-btn">Menu</button>
+                </div>
+            </div>
+
+            <!-- Typewriter Machine Visualization -->
+            <div class="typewriter-machine-closeup">
+                <!-- Ornate top section -->
+                <div class="typewriter-ornament">
+                    <div class="ornament-ring"></div>
+                </div>
+                
+                <!-- Paper and carriage -->
+                <div class="paper-carriage">
+                    <div class="carriage-return" id="carriage"></div>
+                    <div class="paper-holder">
+                        <div class="paper-sheet" id="paper">
+                            <div id="paper-content" class="paper-text" contenteditable="true" spellcheck="false"></div>
+                        </div>
+                    </div>
+                    <div class="paper-roller"></div>
+                </div>
+
+                <!-- Keyboard -->
+                <div class="keyboard-section">
+                    <div class="keys-visual"></div>
+                </div>
+
+                <!-- Desk accessories -->
+                <div class="desk-whiskey-closeup">
+                    <div class="glass-crystal">🥃</div>
+                </div>
+            </div>
+
+            <!-- Menu Overlay -->
+            <div id="menu-overlay" class="menu-hidden">
+                <div class="menu-content">
+                    <h2>Typewriter Menu</h2>
+                    <div class="menu-options">
+                        <button class="menu-option" data-action="new">📄 New Document</button>
+                        <button class="menu-option" data-action="load">📂 Load Document</button>
+                        <button class="menu-option" data-action="save">💾 Save Document</button>
+                        <button class="menu-option" data-action="message">✉️ Send Message</button>
+                        <button class="menu-option" data-action="scripts">📜 Scripts Library</button>
+                        <button class="menu-option" data-action="close">❌ Close Menu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Dialog -->
+            <div id="save-dialog" class="modal-hidden">
+                <div class="modal-content save-dialog">
+                    <h3>Save Document</h3>
+                    <div class="save-form">
+                        <label>
+                            Document Name:
+                            <input type="text" id="save-name" placeholder="My Script" maxlength="50">
+                        </label>
+                        <label>
+                            Category:
+                            <select id="save-category">
+                                <option value="general">General</option>
+                                <option value="script">Script</option>
+                                <option value="message">Message</option>
+                                <option value="notes">Notes</option>
+                            </select>
+                        </label>
+                        <div class="save-buttons">
+                            <button id="confirm-save" class="primary-btn">Save</button>
+                            <button id="cancel-save" class="secondary-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Library Modal -->
+            <div id="library-modal" class="modal-hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modal-title">Document Library</h3>
+                        <button id="close-modal" class="close-btn">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="document-list" class="document-list">
+                            <!-- Documents will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE VIEW - Humphrey Avatar Maker -->
+    <div id="stage-view" class="view">
+        <div class="stage-interface">
+            <div class="stage-header">
+                <button id="back-from-stage" class="back-btn">← Back to Dressing Room</button>
+                <div class="stage-title">🕵️‍♂️ Detective Humphrey Avatar Maker</div>
+            </div>
+            <div class="stage-content">
+                <!-- 3D Avatar Display -->
+                <div id="humphrey-avatar-container" class="humphrey-avatar-canvas humphrey-loading">
+                    <!-- Three.js canvas will be inserted here -->
+                </div>
+                
+                <div class="stage-description">
+                    <h3>Create Your Detective Humphrey</h3>
+                    <p>Customize baby Detective Humphrey, the official PubCast AI mascot from "Too Much to Bear." 
+                    This little detective will represent you as you navigate through the virtual studio.</p>
+                    
+                    <div class="character-info">
+                        <div class="info-item">
+                            <span class="info-label">Character:</span> Detective Humphrey
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Story:</span> "Too Much to Bear" - Baby's First Noir
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role:</span> PubCast AI Mascot & Navigation Avatar
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Philosophy:</span> "Feic Mo Chroí" (See My Heart) - Rear View Foresight
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VANITY VIEW - Makeup & Hair (Placeholder) -->
+    <div id="vanity-view" class="view">
+        <div class="vanity-interface">
+            <div class="vanity-header">
+                <button id="back-from-vanity" class="back-btn">← Back to Dressing Room</button>
+                <div class="vanity-title">Makeup Vanity - Hair & Styling</div>
+            </div>
+            <div class="vanity-content">
+                <div class="coming-soon-message">
+                    <div class="message-icon">💄</div>
+                    <h2>Hair & Makeup Studio</h2>
+                    <p>Professional styling tools coming soon!</p>
+                    <p class="message-note">Perfect your look before stepping on stage.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements for typewriter sound effects -->
+    <audio id="audio-keystroke" preload="auto">
+        <source src="/assets/audio/typewriter_keystroke.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-ding" preload="auto">
+        <source src="/assets/audio/typewriter_ding.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-return" preload="auto">
+        <source src="/assets/audio/typewriter_return.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Three.js for 3D avatar maker -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script>
+        // Add OrbitControls inline since CDN might not work
+        !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("three")):"function"==typeof define&&define.amd?define(["exports","three"],t):t((e=e||self).THREE={},e.THREE)}(this,function(e,t){"use strict";var n=function(){function e(e,t){this.object=e,this.domElement=void 0!==t?t:document,this.enabled=!0,this.target=new r,this.minDistance=0,this.maxDistance=1/0,this.minZoom=0,this.maxZoom=1/0,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.minAzimuthAngle=-1/0,this.maxAzimuthAngle=1/0,this.enableDamping=!1,this.dampingFactor=.05,this.enableZoom=!0,this.zoomSpeed=1,this.enableRotate=!0,this.rotateSpeed=1,this.enablePan=!0,this.panSpeed=1,this.screenSpacePanning=!0,this.keyPanSpeed=7,this.autoRotate=!1,this.autoRotateSpeed=2,this.keys={LEFT:37,UP:38,RIGHT:39,BOTTOM:40},this.mouseButtons={LEFT:t.MOUSE.ROTATE,MIDDLE:t.MOUSE.DOLLY,RIGHT:t.MOUSE.PAN},this.touches={ONE:t.TOUCH.ROTATE,TWO:t.TOUCH.DOLLY_PAN},this.target0=this.target.clone(),this.position0=this.object.position.clone(),this.zoom0=this.object.zoom,this._domElementKeyEvents=null,this.getPolarAngle=function(){return s.phi},this.getAzimuthalAngle=function(){return s.theta},this.getDistance=function(){return this.object.position.distanceTo(this.target)},this.listenToKeyEvents=function(e){e.addEventListener("keydown",re),this._domElementKeyEvents=e},this.saveState=function(){n.target0.copy(n.target),n.position0.copy(n.object.position),n.zoom0=n.object.zoom},this.reset=function(){n.target.copy(n.target0),n.object.position.copy(n.position0),n.object.zoom=n.zoom0,n.object.updateProjectionMatrix(),n.dispatchEvent(l),n.update(),i=o.NONE},this.update=function(){var e=new r,t=(new r).setFromUnitVectors(n.object.up,new r(0,1,0)),a=t.clone().invert(),u=new r,c=new i,h=2*Math.PI;return function(){var r=n.object.position;e.copy(r).sub(n.target),e.applyQuaternion(t),s.setFromVector3(e),n.autoRotate&&i===o.NONE&&D(2*Math.PI/60/60*n.autoRotateSpeed),n.enableDamping?(s.theta+=d.theta*n.dampingFactor,s.phi+=d.phi*n.dampingFactor):(s.theta+=d.theta,s.phi+=d.phi);var l=n.minAzimuthAngle,f=n.maxAzimuthAngle;return isFinite(l)&&isFinite(f)&&(l<-Math.PI?l+=h:l>Math.PI&&(l-=h),f<-Math.PI?f+=h:f>Math.PI&&(f-=h),l<=f?s.theta=Math.max(l,Math.min(f,s.theta)):s.theta=s.theta>(l+f)/2?Math.max(l,s.theta):Math.min(f,s.theta)),s.phi=Math.max(n.minPolarAngle,Math.min(n.maxPolarAngle,s.phi)),s.makeSafe(),s.radius*=p,s.radius=Math.max(n.minDistance,Math.min(n.maxDistance,s.radius)),!0===n.enableDamping?n.target.addScaledVector(m,n.dampingFactor):n.target.add(m),e.setFromSpherical(s),e.applyQuaternion(a),r.copy(n.target).add(e),n.object.lookAt(n.target),!0===n.enableDamping?(d.theta*=1-n.dampingFactor,d.phi*=1-n.dampingFactor,m.multiplyScalar(1-n.dampingFactor)):(d.set(0,0,0),m.set(0,0,0)),p=1,!!(g||u.distanceToSquared(n.object.position)>a||8*(1-c.dot(n.object.quaternion))>a)&&(n.dispatchEvent(l),u.copy(n.object.position),c.copy(n.object.quaternion),g=!1,!0)}}(),this.dispose=function(){n.domElement.removeEventListener("contextmenu",ue),n.domElement.removeEventListener("pointerdown",ne),n.domElement.removeEventListener("pointercancel",oe),n.domElement.removeEventListener("wheel",le),n.domElement.removeEventListener("pointermove",ae),n.domElement.removeEventListener("pointerup",oe),null!==n._domElementKeyEvents&&(n._domElementKeyEvents.removeEventListener("keydown",re),n._domElementKeyEvents=null)};var n=this,l={type:"change"},c={type:"start"},f={type:"end"},o={NONE:-1,ROTATE:0,DOLLY:1,PAN:2,TOUCH_ROTATE:3,TOUCH_PAN:4,TOUCH_DOLLY_PAN:5,TOUCH_DOLLY_ROTATE:6},i=o.NONE,s=new t.Spherical,d=new t.Spherical,p=1,m=new r,g=!1,u=new r,v=new t.Vector2,y=new t.Vector2,h=new t.Vector2,b=new t.Vector2,E=new t.Vector2,x=new t.Vector2,T=new t.Vector2,w=new t.Vector2,S=new t.Vector2,A=[],M={};function _(e){return null!==e?2*Math.PI/60*n.autoRotateSpeed*e:2*Math.PI/60/60*n.autoRotateSpeed}function D(e){d.theta-=e}function P(e){d.phi-=e}var R=function(){var e=new r;return function(t,o){e.setFromMatrixColumn(o,0),e.multiplyScalar(-t),m.add(e)}}(),L=function(){var e=new r;return function(t,o){!0===n.screenSpacePanning?e.setFromMatrixColumn(o,1):(e.setFromMatrixColumn(o,0),e.crossVectors(n.object.up,e)),e.multiplyScalar(t),m.add(e)}}(),O=function(){var e=new r;return function(t,o){var a=n.domElement;if(n.object.isPerspectiveCamera){var l=n.object.position;e.copy(l).sub(n.target);var c=e.length();c*=Math.tan(n.object.fov/2*Math.PI/180),R(2*t*c/a.clientHeight,n.object.matrix),L(2*o*c/a.clientHeight,n.object.matrix)}else n.object.isOrthographicCamera?(R(t*(n.object.right-n.object.left)/n.object.zoom/a.clientWidth,n.object.matrix),L(o*(n.object.top-n.object.bottom)/n.object.zoom/a.clientHeight,n.object.matrix)):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - pan disabled."),n.enablePan=!1)}}();function I(e){n.object.isPerspectiveCamera?p/=e:n.object.isOrthographicCamera?(n.object.zoom=Math.max(n.minZoom,Math.min(n.maxZoom,n.object.zoom*e)),n.object.updateProjectionMatrix(),g=!0):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."),n.enableZoom=!1)}function U(e){n.object.isPerspectiveCamera?p*=e:n.object.isOrthographicCamera?(n.object.zoom=Math.max(n.minZoom,Math.min(n.maxZoom,n.object.zoom/e)),n.object.updateProjectionMatrix(),g=!0):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."),n.enableZoom=!1)}function k(e){v.set(e.clientX,e.clientY)}function N(e){T.set(e.clientX,e.clientY)}function C(e){b.set(e.clientX,e.clientY)}function z(e){y.set(e.clientX,e.clientY),h.subVectors(y,v).multiplyScalar(n.rotateSpeed);var t=n.domElement;D(2*Math.PI*h.x/t.clientHeight),P(2*Math.PI*h.y/t.clientHeight),v.copy(y),n.update()}function V(e){w.set(e.clientX,e.clientY),S.subVectors(w,T),S.y>0?I(.9):S.y<0&&U(.9),T.copy(w),n.update()}function B(e){E.set(e.clientX,e.clientY),x.subVectors(E,b).multiplyScalar(n.panSpeed),O(x.x,x.y),b.copy(E),n.update()}function F(e){if(1==e.pointers.length)k(e.pointers[0]);else{var t=.5*(e.pointers[0].clientX+e.pointers[1].clientX),o=.5*(e.pointers[0].clientY+e.pointers[1].clientY);k({clientX:t,clientY:o})}}function H(e){if(1==e.pointers.length)C(e.pointers[0]);else{var t=.5*(e.pointers[0].clientX+e.pointers[1].clientX),o=.5*(e.pointers[0].clientY+e.pointers[1].clientY);C({clientX:t,clientY:o})}}function j(e){var t=e.pointers[0],o=e.pointers[1],r=t.clientX-o.clientX,a=t.clientY-o.clientY;return Math.sqrt(r*r+a*a)}function W(e){if(1==e.pointers.length)N(e.pointers[0]);else{var t=j(e);T.set(0,t)}}function G(e){if(1===e.pointers.length)z(e);else{var t=j(e);w.set(0,t),S.subVectors(w,T),S.y>0?I(.9):S.y<0&&U(.9),T.copy(w),n.update()}}function K(e){1===e.pointers.length?B(e):H(e)}function q(e){switch(ie(e),e.pointers.length){case 1:switch(n.touches.ONE){case t.TOUCH.ROTATE:if(!1===n.enableRotate)return;F(e),i=o.TOUCH_ROTATE;break;case t.TOUCH.PAN:if(!1===n.enablePan)return;H(e),i=o.TOUCH_PAN;break;default:i=o.NONE}break;case 2:switch(n.touches.TWO){case t.TOUCH.DOLLY_PAN:if(!1===n.enableZoom&&!1===n.enablePan)return;!function(e){n.enableZoom&&W(e),n.enablePan&&H(e)}(e),i=o.TOUCH_DOLLY_PAN;break;case t.TOUCH.DOLLY_ROTATE:if(!1===n.enableZoom&&!1===n.enableRotate)return;!function(e){n.enableZoom&&W(e),n.enableRotate&&F(e)}(e),i=o.TOUCH_DOLLY_ROTATE;break;default:i=o.NONE}break;default:i=o.NONE}i!==o.NONE&&n.dispatchEvent(c)}function X(e){switch(ie(e),i){case o.TOUCH_ROTATE:if(!1===n.enableRotate)return;G(e),n.update();break;case o.TOUCH_PAN:if(!1===n.enablePan)return;K(e);break;case o.TOUCH_DOLLY_PAN:if(!1===n.enableZoom&&!1===n.enablePan)return;!function(e){n.enableZoom&&G(e),n.enablePan&&K(e)}(e);break;case o.TOUCH_DOLLY_ROTATE:if(!1===n.enableZoom&&!1===n.enableRotate)return;!function(e){n.enableZoom&&G(e),n.enableRotate&&z(e)}(e)}}function Y(e){!1!==n.enabled&&e.preventDefault()}function J(e){A.push(e)}function Q(e){delete M[e.pointerId];for(var t=0;t<A.length;t++)if(A[t].pointerId==e.pointerId){A.splice(t,1);break}}function Z(){for(var e=0;e<A.length;e++)M[A[e].pointerId]=A[e]}function $(e){var t=M[e.pointerId];return void 0===t&&(t=new t.Vector2,M[e.pointerId]=t),t.set(e.pageX,e.pageY),t}function ee(e){var t=e.pointerId===A[0].pointerId?A[1]:A[0];return $(t)}function te(e){if(e.pointers.length<2)return;var t=$(e),o=ee(e);h.subVectors(t,o).multiplyScalar(.5),b.addVectors(t,o).multiplyScalar(.5)}function oe(e){if(J(e),1===A.length)switch(e.button){case 0:switch(n.mouseButtons.LEFT){case t.MOUSE.ROTATE:if(e.ctrlKey||e.metaKey||e.shiftKey){if(!1===n.enablePan)return;C(e),i=o.PAN}else{if(!1===n.enableRotate)return;k(e),i=o.ROTATE}break;case t.MOUSE.PAN:if(e.ctrlKey||e.metaKey||e.shiftKey){if(!1===n.enableRotate)return;k(e),i=o.ROTATE}else{if(!1===n.enablePan)return;C(e),i=o.PAN}break;default:i=o.NONE}break;case 1:switch(n.mouseButtons.MIDDLE){case t.MOUSE.DOLLY:if(!1===n.enableZoom)return;N(e),i=o.DOLLY;break;default:i=o.NONE}break;case 2:switch(n.mouseButtons.RIGHT){case t.MOUSE.PAN:if(!1===n.enablePan)return;C(e),i=o.PAN;break;case t.MOUSE.ROTATE:if(!1===n.enableRotate)return;k(e),i=o.ROTATE;break;default:i=o.NONE}}else if(2===A.length)switch(i=o.TOUCH_DOLLY_PAN,n.touches.TWO){case t.TOUCH.DOLLY_PAN:if(!1===n.enableZoom&&!1===n.enablePan)return;te(e);break;case t.TOUCH.DOLLY_ROTATE:if(!1===n.enableZoom&&!1===n.enableRotate)return;te(e)}i!==o.NONE&&n.dispatchEvent(c)}function re(e){switch(e.code){case n.keys.UP:!1!==n.enablePan&&(O(0,n.keyPanSpeed),n.update());break;case n.keys.BOTTOM:!1!==n.enablePan&&(O(0,-n.keyPanSpeed),n.update());break;case n.keys.LEFT:!1!==n.enablePan&&(O(n.keyPanSpeed,0),n.update());break;case n.keys.RIGHT:!1!==n.enablePan&&(O(-n.keyPanSpeed,0),n.update())}}function ae(e){if(!1!==n.enabled)switch(e.pointerType){case"mouse":case"pen":!function(e){switch(i){case o.ROTATE:if(!1===n.enableRotate)return;z(e);break;case o.DOLLY:if(!1===n.enableZoom)return;V(e);break;case o.PAN:if(!1===n.enablePan)return;B(e)}}(e);break;default:X(e)}}function le(e){!1===n.enabled||!1===n.enableZoom||i!==o.NONE||(e.preventDefault(),n.dispatchEvent(c),function(e){e.deltaY<0?U(.9):e.deltaY>0&&I(.9)}(e),n.dispatchEvent(f))}function ce(e){!1!==n.enabled&&e.preventDefault()}function fe(e){Q(e),0===A.length?(n.domElement.releasePointerCapture(e.pointerId),n.domElement.removeEventListener("pointermove",ae),n.domElement.removeEventListener("pointerup",fe),i=o.NONE):Z()}function ue(e){e.preventDefault()}function he(e){Q(e)}function de(e){J(e)}this.domElement.addEventListener("contextmenu",ue),this.domElement.addEventListener("pointerdown",de),this.domElement.addEventListener("pointercancel",he),this.domElement.addEventListener("wheel",le,{passive:!1}),this.update()}return(e.prototype=Object.create(t.EventDispatcher.prototype)).constructor=e,e}(),r=t.Vector3,i=t.Quaternion;e.MapControls=function(e,t){return console.warn("THREE.MapControls has been renamed to THREE.OrbitControls."),new n(e,t)},e.OrbitControls=n,Object.defineProperty(e,"__esModule",{value:!0})});
+    </script>
+    
+    <!-- Humphrey Avatar Maker -->
+    <link rel="stylesheet" href="/static/humphrey_avatar_maker.css">
+    <script src="/static/humphrey_avatar_maker.js"></script>
+    <script src="/static/dressing.js"></script>
+</body>
+</html>

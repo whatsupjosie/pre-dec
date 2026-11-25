@@ -1,0 +1,9 @@
+{
+  "provider": "mock",
+  "model": "mock-v1",
+  "fixes": [
+    "trim_boilerplate"
+  ],
+  "created_at": 1783660665.7988744,
+  "updated_at": 1783837283.6554863
+}

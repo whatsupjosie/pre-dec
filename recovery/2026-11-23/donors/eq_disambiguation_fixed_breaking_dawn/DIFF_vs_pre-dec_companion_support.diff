@@ -1,0 +1,218 @@
+--- companion_support/eq_disambiguation_engine.py	2026-11-23 14:06:51.859624285 -0800
++++ recovery/2026-11-23/donors/eq_disambiguation_fixed_breaking_dawn/eq_disambiguation_engine.py	2026-11-23 14:38:29.156744531 -0800
+@@ -109,6 +109,11 @@
+     # Trajectory
+     is_improving: Optional[bool]  # Direction of change
+     
++    # Named emotion(s) — what the user is actually likely feeling
++    primary_emotion: str  # e.g. "pride", "grief", "fear", "anger" — "neutral" if none matched
++    secondary_emotions: List[str]  # other emotions with meaningful signal strength
++    emotion_scores: Dict[str, float]  # raw match-strength per emotion label, for callers that want more than top-1
++
+     # Confidence & reasoning
+     confidence: float  # 0.0-1.0, how sure we are
+     reasoning: List[str]  # Why we think this
+@@ -184,14 +189,25 @@
+         }
+         
+         # EMOTIONAL STATE MARKERS
++        # Each list is checked as whole-word/phrase matches against the message.
++        # Order doesn't matter for scoring — analyze() scores every label and ranks them.
+         self.emotional_markers = {
+-            "pride": ["proud", "proud of", "achievement", "accomplished", "made it"],
+-            "grief": ["lost someone", "mourning", "funeral", "death", "passed away"],
+-            "guilt": ["my fault", "I'm sorry", "shouldn't have", "regret", "I messed up"],
+-            "fear": ["scared", "afraid", "terrified", "anxious", "worried"],
+-            "anger": ["angry", "mad", "furious", "rage", "infuriated"],
+-            "shame": ["ashamed", "embarrassed", "humiliated", "mortified"],
+-            "hopelessness": ["can't do", "impossible", "never", "give up", "worthless"],
++            "pride": ["proud", "proud of", "accomplished", "made it", "nailed it", "crushed it"],
++            "joy": ["happy", "excited", "thrilled", "delighted", "overjoyed", "elated", "love this", "so glad"],
++            "grief": ["lost someone", "mourning", "funeral", "death", "passed away", "miss them", "grieving"],
++            "guilt": ["my fault", "shouldn't have", "regret", "i messed up", "i screwed up", "i let"],
++            "fear": ["scared", "afraid", "terrified", "anxious", "nervous", "panicking", "dread"],
++            "worry": ["worried", "concerned", "on edge", "uneasy", "what if"],
++            "anger": ["angry", "mad", "furious", "rage", "infuriated", "pissed", "seething"],
++            "frustration": ["frustrated", "annoyed", "irritated", "fed up", "sick of"],
++            "shame": ["ashamed", "embarrassed", "humiliated", "mortified", "cringe"],
++            "hopelessness": ["hopeless", "pointless", "no point", "give up", "worthless", "can't go on"],
++            "loneliness": ["lonely", "alone", "isolated", "nobody understands", "no one cares"],
++            "betrayal_hurt": ["betrayed", "lied to", "cheated on", "stabbed in the back", "used me"],
++            "relief": ["relieved", "finally over", "weight off", "off my chest", "thank god"],
++            "gratitude": ["grateful", "thankful", "appreciate", "means a lot"],
++            "confusion": ["confused", "don't understand", "not sure what", "makes no sense", "lost track"],
++            "overwhelm": ["overwhelmed", "too much", "can't keep up", "drowning", "burned out", "exhausted"],
+         }
+         
+         # RELATIONSHIP INDICATORS
+@@ -261,7 +277,9 @@
+         actor = self._identify_actor(message)
+         subject = self._identify_subject(message)
+         context = self._identify_context(message)
+-        intensity = self._estimate_intensity(message)
++        emotion_scores = self._detect_emotions(message)
++        primary_emotion, secondary_emotions = self._rank_emotions(emotion_scores)
++        intensity = self._estimate_intensity(message, emotion_scores)
+         valence = self._estimate_valence(message)
+         trajectory = self._estimate_trajectory(message, conv_ctx)
+         
+@@ -300,6 +318,9 @@
+             subject_role=subject,
+             primary_context=context[0],
+             secondary_context=context[1] if len(context) > 1 else None,
++            primary_emotion=primary_emotion,
++            secondary_emotions=secondary_emotions,
++            emotion_scores=emotion_scores,
+             intensity=intensity,
+             valence=valence,
+             is_improving=trajectory,
+@@ -401,8 +422,15 @@
+             r'\b(shot|hit|beaten|attacked|assault|violence|rape|abuse|harm)\b',
+             msg_lower
+         ):
+-            # Distinguish between "I shot a goal" vs "I was shot"
+-            if not re.search(r'\b(shot (?:a goal|the winning|it|the target))\b', msg_lower):
++            # Distinguish achievement phrasing ("shot/hit a goal") from actual harm.
++            # FIX: "hit" previously had no such exclusion, so "I hit my goal at
++            # work" was tagged VIOLENCE alongside ACHIEVEMENT, which contaminated
++            # sensitive_areas with "avoid victim-blaming language" on good news.
++            is_achievement_phrasing = re.search(
++                r'\b(shot|hit) (?:a goal|the winning|it out of the park|the target|my goal|my target)\b',
++                msg_lower
++            )
++            if not is_achievement_phrasing:
+                 contexts.append(EmotionContext.VIOLENCE)
+         
+         # Check loss/grief contexts
+@@ -450,53 +478,108 @@
+         return contexts
+     
+     # ========================================================================
++    # NAMED EMOTION DETECTION ("What is the user likely feeling?")
++    # ========================================================================
++
++    def _detect_emotions(self, message: str) -> Dict[str, float]:
++        """
++        Score every emotion label in ContextPatterns.emotional_markers against
++        the message. Score = fraction of that label's phrases found, weighted
++        slightly by phrase length (longer/more specific phrases count for more,
++        so "shouldn't have" outweighs a single ambiguous word).
++
++        Returns a dict of {emotion_label: score}, score in [0.0, 1.0].
++        Empty/all-zero dict means nothing matched — caller treats as "neutral".
++        """
++        msg_lower = message.lower()
++        scores: Dict[str, float] = {}
++
++        for emotion, phrases in self.patterns.emotional_markers.items():
++            hit_weight = 0.0
++            max_weight = 0.0
++            for phrase in phrases:
++                weight = 1.0 + 0.15 * (phrase.count(" "))  # multi-word phrases score higher
++                max_weight += weight
++                pattern = rf"\b{re.escape(phrase)}\b"
++                if re.search(pattern, msg_lower):
++                    hit_weight += weight
++            if hit_weight > 0:
++                scores[emotion] = round(hit_weight / max_weight, 3) if max_weight else 0.0
++
++        return scores
++
++    def _rank_emotions(self, scores: Dict[str, float]) -> Tuple[str, List[str]]:
++        """Pick the top emotion and any close runners-up (within 0.25 of the top score)."""
++        if not scores:
++            return "neutral", []
++
++        ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
++        top_label, top_score = ranked[0]
++        secondary = [label for label, score in ranked[1:] if top_score - score <= 0.25]
++        return top_label, secondary
++
++    # ========================================================================
+     # INTENSITY ESTIMATION
+     # ========================================================================
+     
+-    def _estimate_intensity(self, message: str) -> float:
++    def _estimate_intensity(self, message: str, emotion_scores: Optional[Dict[str, float]] = None) -> float:
+         """
+         Estimate emotional intensity on 0.0-1.0 scale.
+-        0.0 = neutral, 1.0 = crisis level
++        0.0 = neutral/no signal, 1.0 = crisis level.
++
++        FIX: previously defaulted unmatched/neutral text to 0.5 ("moderate"),
++        which made "Hi there" score as emotionally loaded as "I'm frustrated."
++        Now neutral text with no keyword or emotion-label evidence returns 0.05.
++
++        Also now folds in emotion_scores (from _detect_emotions) so intensity
++        isn't decided by a second, disconnected keyword list — "hopelessness"
++        or "anger" detected there raises the floor even if this function's own
++        regex bucket doesn't separately catch the exact phrasing.
+         """
+         msg_lower = message.lower()
+-        
+-        # Crisis markers (0.9-1.0)
++
++        # Crisis markers (explicit self-harm / danger language only —
++        # "give up" removed: too broad, false-positives on "I give up trying
++        # to parallel park")
+         if re.search(
+-            r'\b(suicide|kill myself|end it|give up|hopeless|dying|can\'t go on)\b',
++            r'\b(suicide|kill myself|end it all|end my life|can\'t go on|no reason to live)\b',
+             msg_lower
+         ):
+-            return 1.0
+-        
++            base = 1.0
+         # High intensity (0.7-0.9)
+-        if re.search(
+-            r'\b(devastated|horrified|terrified|rage|can\'t breathe)\b',
++        elif re.search(
++            r'\b(devastated|horrified|terrified|rage|can\'t breathe|hopeless|worthless)\b',
+             msg_lower
+         ):
+-            return 0.85
+-        
++            base = 0.85
+         # Moderate-high (0.5-0.7)
+-        if re.search(
++        elif re.search(
+             r'\b(upset|angry|sad|scared|anxious|hurting)\b',
+             msg_lower
+         ):
+-            return 0.65
+-        
++            base = 0.65
+         # Moderate (0.3-0.5)
+-        if re.search(
++        elif re.search(
+             r'\b(frustrated|concerned|worried|bothered|bothers me)\b',
+             msg_lower
+         ):
+-            return 0.45
+-        
+-        # Low (0.1-0.3)
+-        if re.search(
++            base = 0.45
++        # Low but present (0.15-0.3) — includes mild positive affect
++        elif re.search(
+             r'\b(fine|okay|alright|good|nice|happy|proud)\b',
+             msg_lower
+         ):
+-            return 0.25
+-        
+-        # Neutral/baseline
+-        return 0.5
++            base = 0.2
++        else:
++            base = 0.05  # no keyword signal at all — treat as neutral, not "moderate"
++
++        # Let strong named-emotion evidence raise (never lower) the floor.
++        if emotion_scores:
++            top_score = max(emotion_scores.values())
++            emotion_floor = 0.3 + 0.5 * top_score  # up to 0.8 from emotion-marker evidence alone
++            base = max(base, emotion_floor)
++
++        return min(1.0, round(base, 3))
+     
+     # ========================================================================
+     # VALENCE ESTIMATION (negative vs positive)

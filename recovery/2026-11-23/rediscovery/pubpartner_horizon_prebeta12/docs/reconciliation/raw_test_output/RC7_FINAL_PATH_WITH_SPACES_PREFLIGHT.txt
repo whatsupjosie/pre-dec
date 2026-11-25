@@ -1,0 +1,45 @@
+PubPartner Activation Preflight
+================================
+Overall: OK
+App root: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7
+Data dir: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data
+
+[OK] python_version: 3.13.5
+[OK] platform: Linux 4.4.0 / x86_64
+[OK] data_dir_writable: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data
+[OK] pubpartner_data_writable: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data/pubpartner
+[OK] receipt_dir_writable: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data/pubpartner/receipts
+[OK] verbatim_dir_writable: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data/pubpartner/verbatim
+[OK] module:fastapi: fastapi
+[OK] module:pydantic: pydantic
+[OK] module:uvicorn: uvicorn
+[OK] optional_module:httpx: httpx
+[OK] optional_module:pytest: pytest
+[WARN] optional_module:openai: openai
+      Fix: Install optional support with: python -m pip install openai
+[OK] disk_space: virtual filesystem capacity; writable probe passed
+[OK] file:pubpartner_app.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/pubpartner_app.py
+[OK] file:main.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/main.py
+[OK] file:static/pubpartner.html: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/static/pubpartner.html
+[OK] file:static/pubpartner.css: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/static/pubpartner.css
+[OK] file:static/pubpartner.js: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/static/pubpartner.js
+[OK] file:modules/pubpartner_core.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/pubpartner_core.py
+[OK] file:modules/pubpartner_routes.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/pubpartner_routes.py
+[OK] file:modules/pubpartner_provider.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/pubpartner_provider.py
+[OK] file:modules/provider_neutralizer.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/provider_neutralizer.py
+[OK] file:modules/provider_capabilities.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/provider_capabilities.py
+[OK] file:modules/openai_compatible_provider.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/openai_compatible_provider.py
+[OK] file:modules/pubpartner_relationship.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/pubpartner_relationship.py
+[OK] file:modules/pub_manager_authority.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/pub_manager_authority.py
+[OK] file:modules/auth.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/auth.py
+[OK] file:modules/auth_routes.py: /tmp/PubPartner Final Path With Spaces 1oPI/PubPartner RC7/modules/auth_routes.py
+[OK] port_available: 127.0.0.1:8965
+[WARN] openai_key_optional: OPENAI_API_KEY
+      Fix: Only needed for provider=openai. Local mock/offline/Ollama can run without it.
+[OK] ollama_host_configured: http://localhost:11434
+[OK] local_runtime_secret: configured
+[OK] auth_enforced: 1
+[OK] cors_not_wildcard: http://127.0.0.1:8965
+
+Report: /tmp/PubPartner Final Path With Spaces 1oPI/runtime data/pubpartner/preflight_latest.json
+Security: AUTHENTICATED LOCAL OWNER MODE

@@ -1,0 +1,1227 @@
+[
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/facial_performance_1.py",
+  "sha256": "361cc7d768d12b53b3c932562dbaaf35bd424d12453a71f46c299a715a12dffa",
+  "bytes": 24680,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/blackbox_4.py",
+  "sha256": "8ba2396a1cc783f01477d52dd7e26068ac7b38ab8237e267a96bdf2cf225ed57",
+  "bytes": 19098,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/evo_integration.py",
+  "sha256": "7e8cb335c780e4b5a1eefb296b30d87f52f5f5cea5ccbca40603d09f939210e8",
+  "bytes": 22781,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/voice_characters.py",
+  "sha256": "b9a949c81b5d083db65ccfd3d7cb99f763c90b58694562d8eb34f5ab6420bd6d",
+  "bytes": 12484,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/switchblade_governor_2.py",
+  "sha256": "bc0bebe7d9fabdd705f693beddb8e838d1a063d2c3ce88cfa68987bea72cc388",
+  "bytes": 19982,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/vdi_engine.py",
+  "sha256": "a1328dad491ec47f6948e361aed05439fb41f94ffa302020838060e882bf882a",
+  "bytes": 15729,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/epete_2.py",
+  "sha256": "ed450c11fb24e02d50fe396dced0ffc8a358cbf4b875b59ed09fd4325f22fa41",
+  "bytes": 35502,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/distributed_engine.py",
+  "sha256": "8da0eab1993e78c5b8ace986dcc4d01b34fb8b80a5992b3f8b65639ed33cb27d",
+  "bytes": 27829,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/pete.py",
+  "sha256": "8a3edaa2a194a93bb4c8a3539e5c68a432ccdd47c9c689d0d36473d701cecd90",
+  "bytes": 16154,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/evo___init___3.py",
+  "sha256": "ea8a416a547d13e29304b206b51b0a81c935020996f174f1ade98b7aefe70151",
+  "bytes": 2267,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/prosody_engine.py",
+  "sha256": "da256f71feab9013d0420af7d9e5772c1afc2f58fa53958b2d0dcf81933e2257",
+  "bytes": 25842,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/uploaded_pubcast_sources/camera_manager_1.py",
+  "sha256": "75fd0bab1dee44c57e97e62964fedf876e0dcf8cf815e325797fb0daf4be593a",
+  "bytes": 38083,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/identity_filter/identity_filter.py",
+  "sha256": "bfbd312d94947e819ad3f467206a2b6a7af505fb4db5cef5d3e2f6556d1c674f",
+  "bytes": 12967,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/profiles/curtsey_private_profile.example.json",
+  "sha256": "44de9c669f04cee7dc6b7a6949242ccb2164f5e7fb410230e25516b5d51e45d2",
+  "bytes": 1027,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/debrief.py",
+  "sha256": "b0a15a8fae426fb6a7879b2c25ccf27ed8b6786bd6e73360a779135fa7c5d449",
+  "bytes": 1123,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/memory_adapter.py",
+  "sha256": "d926d4feeaf84b4d916405ce66e0a805c595de62527a1005b188ad5b66856822",
+  "bytes": 1256,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/__init__.py",
+  "sha256": "38867c2121509855e44a2ed40c688a0b8a3d2e6fe0b446a64399bb417a425bf5",
+  "bytes": 975,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/care_model.py",
+  "sha256": "aba763e3b0bb28b60f8090a0dd1551e665d8ff599a342de68e4c10c22868473b",
+  "bytes": 5134,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/protocol_manager.py",
+  "sha256": "56cdd996f1349cb4266ce5a60ac29e60605bbeeaf737eae166c544facf4477bf",
+  "bytes": 4094,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/orchestrator.py",
+  "sha256": "dd549965a8bfb8eef7320e4ceea92aab40e89b9a8261c9de646a9f1031f90e4a",
+  "bytes": 3124,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/models.py",
+  "sha256": "aa5773e3854ef2768025d6587d67d919ada921020adb7cab068b2c94ef3064f9",
+  "bytes": 2863,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/alex_core/state_detector.py",
+  "sha256": "18fe42e8c47f2bb91c59c3d0de18368c28abfd7df8d0a59785ca02589301f9b3",
+  "bytes": 2661,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/README.md",
+  "sha256": "9da030a549ae922fb83069778e6a169addd10ddedfa1ca668bade5223364b4d0",
+  "bytes": 1399,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/source_locked/alex_core_adaptive_companion/tests/test_alex_core.py",
+  "sha256": "d157348be89887a79c01a053722989cd3ef5da6d0c5b5c2166ebd60e0ee824f4",
+  "bytes": 1271,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/requirements.txt",
+  "sha256": "dae9f799ea84b929aab462a2301fdf8559643fe896ddc8d71b0e5d8aac97f196",
+  "bytes": 37,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/config/command_registry_seed.json",
+  "sha256": "cb67f7bc11a4774763f55a498718c9a8cafeea8ca4b4161ddbcceabed4e67e52",
+  "bytes": 4418,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/config/role_contracts.json",
+  "sha256": "cf3520c8336c5eaa48f1d16e34ff5f0e3a27e5f8befad12a5c1962d1d9ea5675",
+  "bytes": 4611,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/training/scenarios/first_scenarios.jsonl",
+  "sha256": "6a9fa8729cf432296fcb394d4ff990def29076e72a89244be3948f01d367e9cc",
+  "bytes": 1317,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/README.md",
+  "sha256": "2e2461ede87b614a8547f905b0294619d23c5e9830ea656d38d1b50a364d525e",
+  "bytes": 872,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/persistent_memory.py",
+  "sha256": "18c4b4eea41d289a4084e79feca86304e6ef8419fa6432ca6674555cc43bc75c",
+  "bytes": 22914,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/presence.py",
+  "sha256": "7fc16bdb4e5cb3df2aecc0e2ff6136aa143ba552738f657339a0d5b5730c4b0c",
+  "bytes": 4395,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/config.py",
+  "sha256": "fed687fcc5c4c5f5c6f1f43c9804c5c16fb05277401003e5b800e5f5a3bc263f",
+  "bytes": 431,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/evidence.py",
+  "sha256": "3ecf9a3f682c362d2a7e5ae85b3fba16e9181425d64a1433736b33ef1c0490d4",
+  "bytes": 10286,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/release_quality.py",
+  "sha256": "05f065f2eb18507c39be0cb3dafa8adbd8138def2a9dd30df46fa56ad82d5190",
+  "bytes": 3913,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/__init__.py",
+  "sha256": "4262e1eb98bf0f11009ef36d71f4a139a405898903a947da82ad432c1033cb87",
+  "bytes": 4415,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/production_bridge.py",
+  "sha256": "757b53d6125cf7764133dd51bcabe4537be4a07bee7523959bb03f051d1ddb49",
+  "bytes": 17299,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/runtime.py",
+  "sha256": "9ac929cfb8ad9caad68d97cdc76e6b33b98af0c787420553eef8155827838410",
+  "bytes": 13539,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/commands.py",
+  "sha256": "f0d6ee65649440e2c06051468d119bf7a10aa3db2be78d2ff1d813d7fc90badf",
+  "bytes": 5680,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/detectors.py",
+  "sha256": "e91eb56118c8f1404bd5efcc54f09fda2654b4161ae1db8fbaaa03230b6509bd",
+  "bytes": 15761,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/serialization.py",
+  "sha256": "3583529b3bd47530c773e0a2afd0ad123542587d03b59c68cb4ac14cf4b7f63c",
+  "bytes": 758,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/adaptive_companion_bridge.py",
+  "sha256": "d0e4ae52d8104010ebdc1b4718a4fc710f04454a0331467944dc011cfa3abce0",
+  "bytes": 3563,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/source_contracts.py",
+  "sha256": "6b10685cc4f6b9a973852b6ba74268f38472ec92fa770ccef02a809f1e81d06e",
+  "bytes": 8276,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/context_health.py",
+  "sha256": "38d2182f874e0bc86ca5e0a3b7e4e258977c86505758bdfb4192bddcda2c4dc1",
+  "bytes": 4919,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/policy.py",
+  "sha256": "8263b3175c07c689a6c810c0e2a6b62d86ecf691fa6b0aebe506282055cc20fb",
+  "bytes": 6039,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/memory.py",
+  "sha256": "f40eb684f6bdcde91c2c70d6009d4d8994af449acdffd3a06d3114c0d4f513c5",
+  "bytes": 3515,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/identity_filter_bridge.py",
+  "sha256": "4d775befba5f4bfd638e15ea21b10bf199ae835ea1fdaf360f9b4b283292673a",
+  "bytes": 17303,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/personal_support.py",
+  "sha256": "fd3b5a2c174ea9b4a537d4bf36089534f8f27d9cd13384c7c6025cd164cd1161",
+  "bytes": 11573,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/models.py",
+  "sha256": "ab5a6449f2fd9455a061b217b7e43c06e7592c0a2008304215d5e6409632a57a",
+  "bytes": 11643,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/colab.py",
+  "sha256": "f1b0e62d796a4759c63573806af7eb9863f1cd8b4829419fc66d66417f12e3f0",
+  "bytes": 3856,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/roles.py",
+  "sha256": "4ec100982bb782106d232cc30a42a1ed44c44d5a9d25687f581a71b0cd48c3cc",
+  "bytes": 4631,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/source_intake.py",
+  "sha256": "67ecaafae78a84570ef9b52bea90545b2e4a14a86c49ca6995b73be89d15aba7",
+  "bytes": 6083,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/alex_prime/continuity.py",
+  "sha256": "dd1cc8a95a3bbb35eba9cb2b284aff9c3332dc7bf65012a2de00890195d8dd89",
+  "bytes": 18281,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_source_contracts.py",
+  "sha256": "649ec1665ceacefce032192f8da686b2a5e7b15d24584b492dd236e1d12b1fbd",
+  "bytes": 407,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_evidence_bridge.py",
+  "sha256": "cb64c1097785d92f29c68814212af8f1b5250811787184de5ceceac158d25128",
+  "bytes": 1730,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_continuity.py",
+  "sha256": "1dabfbfba257de0232f5d7aecc219d246b6e0770ac2a87124fd5c01d2eaea367",
+  "bytes": 784,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_source_intake.py",
+  "sha256": "99c49f985d0adbb4477e3464a3e2bda6e9ea8057dbb06fd4014c981b870eab6a",
+  "bytes": 494,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_adaptive_companion_source.py",
+  "sha256": "dc966b6e3fad394fe110d6b1a6a9730af5b3bd195f42781744c3c2ad18ba367b",
+  "bytes": 529,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_pubcast_session.py",
+  "sha256": "4d6e652018638861380941a8066e3981f139ea832ca8bd2192c0110468d7a53c",
+  "bytes": 2313,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_personal_support.py",
+  "sha256": "bfd966a5c6ee89046491d1b15bfb18c751ab253971ad31248f5f78f67849781b",
+  "bytes": 444,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_presence_effect.py",
+  "sha256": "2a99ae665bcb43ab350ab74db235bbd61bd783a9dfc628baae42a3158d45716d",
+  "bytes": 896,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_production_bridge.py",
+  "sha256": "253eaf029082ac011b7e1db2f14f05722a36bd4f9f03f13bce0dd2a401011529",
+  "bytes": 1841,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_colab_brief.py",
+  "sha256": "a5cfcb73b2ba63ac46a78745ba81875fbece88818713c7609cb4b772cbf59618",
+  "bytes": 1415,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_persistent_memory.py",
+  "sha256": "fd8f7a3a2482bee4aef08dcef7f14774f9b1180c708879c1dad48bbbe5cf71b8",
+  "bytes": 1684,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/examples/demo_identity_filter.py",
+  "sha256": "da984341c90d8b6e80b39355c07f649e1e0a2cceac26e8e449820f33905d114e",
+  "bytes": 855,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/tests/test_alex_core.py",
+  "sha256": "927960b81cb894da17b79cbe766bf5f2eca5fb4c1ce91a2bb9c80660d7f43c44",
+  "bytes": 37596,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/pyproject.toml",
+  "sha256": "5a73092d9777402676b1f0664052b645be9d3077532751f5b68fe6056a359006",
+  "bytes": 488,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CONTINUITY_LAYER_v0_7.md",
+  "sha256": "d635184ca21351e23d868f20d692c0a10555ec97af3ce53576691fb2578147e4",
+  "bytes": 948,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_4.md",
+  "sha256": "ae9e3fb304eba93fb31907193ccbb850ca545d3fd6db2c2b4033b505b7fbf411",
+  "bytes": 863,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CODEX_HANDOFF_v0_4.md",
+  "sha256": "d41b9a7e9ca0d97614ebc1d2b70cc79035bee0f82e1922c3635b45b47e9a56fa",
+  "bytes": 1678,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CODEX_HANDOFF_v0_5.md",
+  "sha256": "a421e201595a40bea23fe940213ef30d5c753b384211f8b481228ae20ab0d56f",
+  "bytes": 1407,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/UPLOADED_PRODUCTION_LAYER_INTEGRATION_NOTES.md",
+  "sha256": "0fea66db7b5159b3739e9a572675d1e5b9b7ff900239783ea9746279ec5c1b84",
+  "bytes": 2487,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_9.md",
+  "sha256": "38bd8becaa508f011f898549c0759744720fefb904172d8cb9044a77e771ab24",
+  "bytes": 648,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_5.md",
+  "sha256": "dd646d19b171b204426a1ae2eb3233fc1829671fbd727a03facca7ec4897beab",
+  "bytes": 1737,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_8.md",
+  "sha256": "cb86c22bd5fdfe551cbcfbba233800b973c799170ce4365cd077773285ba96ed",
+  "bytes": 1906,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/UPLOADED_FILE_INTEGRATION_NOTES.md",
+  "sha256": "b1e37b10d539552e37be24b8d39575fafa9fd034186f50b09f48a384d2c2b40c",
+  "bytes": 1391,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/ENGINEERING_REVIEW_v0_4.md",
+  "sha256": "ded847a95a8c2e519a55f2b89899d855b39e44e7c2fe78011e983a24dd22d59c",
+  "bytes": 1410,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/OWNED_FAILURE_LEDGER_v0_10.md",
+  "sha256": "f94f2c52434b4efca2c5eeed4d484b19ffdc68c68187c04ea534d261d9938d13",
+  "bytes": 2257,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_7.md",
+  "sha256": "8c3d47b5090a84f0c611033f6ab5211b9afdca6655b2f04cee6a6b6214745b57",
+  "bytes": 500,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/PERSISTENT_MEMORY_v0_6.md",
+  "sha256": "8c25b1b0e8594178d98a0da4fcac3c578cc1a66673f6eaf9d86414e95086d5cb",
+  "bytes": 2169,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/ALEX_PRIME_DOCTRINE.md",
+  "sha256": "38c48e060d95f9a297c736699662a35f1f76f5218ce4c9a21f60f68999f88392",
+  "bytes": 1522,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/CHANGELOG_v0_6.md",
+  "sha256": "c559da3365c226d4021638e874c74d21bf0b71af8d56c0425c9c8903f8bcdee0",
+  "bytes": 995,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/SOURCE_BOUNDARY_CONTRACTS_v0_8.md",
+  "sha256": "bc5de2b82a62ab4a840559388e154d3b33df63b4002bd28587ae8d1ad0819a51",
+  "bytes": 2994,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "alex_prime_core_v0_10",
+  "path": "recovery/2026-11-23/donors/alex_prime_core_v0_10/docs/IDENTITY_FILTER_INTEGRATION_v0_9.md",
+  "sha256": "abc61774a5a3751efeb2eedad07fad1c6d1af0074152728478e110a1f77a3777",
+  "bytes": 2055,
+  "source": "6.0- @bb20a0c alex_prime_core_handoff_package.zip (zip sha256 27ee8251c139db2c)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/pytest.ini",
+  "sha256": "16e060d3d620d904dff32eecfb5600287912b56196b74a06fc86937e420f209e",
+  "bytes": 37,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/cre_eq/models.py",
+  "sha256": "a9f8e40c5d8e48c48077c48b4d8d8df1c4008739c71372e7709ae2c0ef96cecc",
+  "bytes": 3969,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/cre_eq/engine.py",
+  "sha256": "4e0411ab32ae58839c2f4954986710a9ed5cab9b0ee4d4410fc201b6229860cc",
+  "bytes": 29350,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/cre_eq/__init__.py",
+  "sha256": "49c784710d629ced7ffc3d5cfb4c6cb6afb7a834b6174c7831cf901ca4884b74",
+  "bytes": 666,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/demo_peq.py",
+  "sha256": "5a875a88750b61ff916ef46bb80d3972721c79e34b30fa7d0c8bb47444cf2a60",
+  "bytes": 2052,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/tests/test_peq.py",
+  "sha256": "5c13d8ae348b07f270bad174fbf502039795d2f6e958a4b22567b7d57bc0a9d6",
+  "bytes": 18782,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/tests/test_cre_eq.py",
+  "sha256": "51ae07a92af06a6e14a606908dd4bf06bc4c26bfd143dffa6499f396245f4468",
+  "bytes": 7450,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/demo.py",
+  "sha256": "7eb551cb36558186fc88e51db117da0b59590dc49018a62655665b5d11b44f52",
+  "bytes": 2323,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/models.py",
+  "sha256": "45f0e0cba3c730088962ecfcaffd663cda9a7482e7f55498631b9e7db042d894",
+  "bytes": 3529,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/response.py",
+  "sha256": "f317c37ce08633204ee469bee10072f4baf37e0a34a7bcd1538751ae7012c048",
+  "bytes": 9440,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/clinical_evidence.py",
+  "sha256": "7192ff28b077c9f15e0c6d665f0f4afa0442e169d3332403ca4b0c155f840c5e",
+  "bytes": 50634,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/state.py",
+  "sha256": "91722faf9671a254e732e16cf62ef8a10f4349dc6e67403b4e34c6dcded3764c",
+  "bytes": 30419,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/system.py",
+  "sha256": "f7cb6c249a5f1f46f0df9be3b4baf9aae4fa388393ddd40c2451b530034aa7c8",
+  "bytes": 7378,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/__init__.py",
+  "sha256": "7ea93af9de61feee25dbb17969537cb3726e1893f7a41c2646b4e31b220ac868",
+  "bytes": 1480,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/peq/retrieval.py",
+  "sha256": "087f49cf05f1e4325d3e69b58203c588c24c8ba285e24d504a69115da7240f7c",
+  "bytes": 28793,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/HARDENING_2026-08-14.md",
+  "sha256": "9f81f29b49f32b16a463b7969a516541dfcf71dc12e1b53f3be5782b08cd1643",
+  "bytes": 1743,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/README.md",
+  "sha256": "cd37706cea926c5ea82f41bb46ad6b952e2ac9b1642c455dd979f1e572ea984a",
+  "bytes": 2273,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/RETRIEVAL_HARDENING.md",
+  "sha256": "33df1c4d9ed5f131ef4216d4702389858303d5e05289d5613755da2e558504f0",
+  "bytes": 1703,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/CLINICAL_EVIDENCE_ALIGNMENT.md",
+  "sha256": "8b43bb1aef7b0127443803f9c6bac106037455faa066bf8a39e02701f4bfce0c",
+  "bytes": 2931,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/README_PEQ.md",
+  "sha256": "8000afbfbc9b8f2bd7a2e00814fc7b92ad7bb54bc11065b8e60d057dcdcff028",
+  "bytes": 5318,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/PEQ_ARCHITECTURE.md",
+  "sha256": "621fb39bff9f40442b84ed5be3803be0bf863e72e012c55033ffb6035aa58259",
+  "bytes": 5055,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/AUDIT_NOTES.md",
+  "sha256": "b88fd6efe837e3e088efda0c482e90067ca33e3d3644f0fce6d156710c7870e1",
+  "bytes": 3005,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/MANIFEST.md",
+  "sha256": "ca9dd7b819d3fa2504e4b8fd58cb0be47b753f50aa9eb6ae115b82954ef32834",
+  "bytes": 510,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/HANDOFF_CRE-EQ_v0.1.md",
+  "sha256": "eb44c5cda3cf66a6a6866bce39e02ec9fe284bcab6df979c99f2cfeb98f0bce2",
+  "bytes": 6032,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/PEQ_DEMO_OUTPUT_FINAL.txt",
+  "sha256": "dd4611305aa0ad666a48cd42561f0229401ae220ab78748a5ab0bb4af103a2c2",
+  "bytes": 30986,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/SCIENTIFIC_EVIDENCE_EXPANSION.md",
+  "sha256": "3a068459514a2a66fb3cc60b3e16041bced79a05dba6b8c6f23187943f967a9a",
+  "bytes": 7641,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/RESEARCH_SOURCES.md",
+  "sha256": "d3004a5174e95ae8fa93852d1dd65b4d360cbafed1b8b72d1a4389a336fd4fa8",
+  "bytes": 4155,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/REVIEW_PATCH_NOTES.md",
+  "sha256": "99213f8c55fe3e412d082918aea20a83c05da298f1f290d49a99198f1231258f",
+  "bytes": 1656,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/VERIFICATION.txt",
+  "sha256": "81afd32b39d40f5bb36dde85927aa32e445b8fd0df58d88985b8940ca2d836c0",
+  "bytes": 233,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_hardened_two_passes",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_hardened_two_passes/PEQ_HANDOFF.md",
+  "sha256": "82e011b4562f5a6512f48844aca71aceaf40201b6e1b2b87737ee7599f6987a3",
+  "bytes": 2974,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_hardened_two_passes.zip (zip sha256 6fd914a9fd2e3b0a)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/pytest.ini",
+  "sha256": "16e060d3d620d904dff32eecfb5600287912b56196b74a06fc86937e420f209e",
+  "bytes": 37,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/cre_eq/models.py",
+  "sha256": "a9f8e40c5d8e48c48077c48b4d8d8df1c4008739c71372e7709ae2c0ef96cecc",
+  "bytes": 3969,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/cre_eq/engine.py",
+  "sha256": "4e0411ab32ae58839c2f4954986710a9ed5cab9b0ee4d4410fc201b6229860cc",
+  "bytes": 29350,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/cre_eq/__init__.py",
+  "sha256": "49c784710d629ced7ffc3d5cfb4c6cb6afb7a834b6174c7831cf901ca4884b74",
+  "bytes": 666,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/demo_peq.py",
+  "sha256": "5a875a88750b61ff916ef46bb80d3972721c79e34b30fa7d0c8bb47444cf2a60",
+  "bytes": 2052,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_backbreaker.py",
+  "sha256": "48cd113703bbd1d74a6505d2946be67785566978847dcccb32e946aad439a6ab",
+  "bytes": 12671,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_peq.py",
+  "sha256": "5c13d8ae348b07f270bad174fbf502039795d2f6e958a4b22567b7d57bc0a9d6",
+  "bytes": 18782,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_scientific_bridge.py",
+  "sha256": "558f5b9a555c6474e735d1321c996f5c4794711996c00b75741899651b76f8a0",
+  "bytes": 2374,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_scientific_system.py",
+  "sha256": "b28ae79f3da28177ae0fe503f1331d23c6b29fb29f653a84d33c08f779c0945a",
+  "bytes": 787,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_cre_eq.py",
+  "sha256": "51ae07a92af06a6e14a606908dd4bf06bc4c26bfd143dffa6499f396245f4468",
+  "bytes": 7450,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/tests/test_scientific_claims.py",
+  "sha256": "da89236feb453032dd6050f86d59e046b41793002fb9df5eea7c3e04403270d2",
+  "bytes": 5364,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/demo.py",
+  "sha256": "7eb551cb36558186fc88e51db117da0b59590dc49018a62655665b5d11b44f52",
+  "bytes": 2323,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/models.py",
+  "sha256": "2ee05f04404062a24ec2c96de5822e56ce7e48839d5cf10e0106557892243549",
+  "bytes": 3561,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/response.py",
+  "sha256": "bfb5feeb936547f28cbeed68dc5020607d94acd8970c6387b6157a51c39f9448",
+  "bytes": 10021,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/clinical_evidence.py",
+  "sha256": "7192ff28b077c9f15e0c6d665f0f4afa0442e169d3332403ca4b0c155f840c5e",
+  "bytes": 50634,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/scientific_bridge.py",
+  "sha256": "631cb1b5c1d501317175848b2e0e175a072fed4e0dad1c681a5589130ef4aca2",
+  "bytes": 3089,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/scientific_claims.py",
+  "sha256": "81c11fe0b7889640eae6bccab2b9caf085de7d18a4e481cdae0c5419418e3197",
+  "bytes": 11597,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/state.py",
+  "sha256": "a6625cdaf33d681a8aa3d78d55a4fcf3a319c9b9aeca4afc776b904f955c515e",
+  "bytes": 33981,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/system.py",
+  "sha256": "091b4773d6675226dd7fe5283b08b5b98b9d732c158cf586d9d96395169618a1",
+  "bytes": 9496,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/__init__.py",
+  "sha256": "88d5e0614e6fcbc77ef3eb44e2109d92ceb0a86c28cf2d57081d1a6d9e7edc1b",
+  "bytes": 1882,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/peq/retrieval.py",
+  "sha256": "087f49cf05f1e4325d3e69b58203c588c24c8ba285e24d504a69115da7240f7c",
+  "bytes": 28793,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/HARDENING_2026-08-14.md",
+  "sha256": "9f81f29b49f32b16a463b7969a516541dfcf71dc12e1b53f3be5782b08cd1643",
+  "bytes": 1743,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/VERIFICATION_NEW.txt",
+  "sha256": "3a3ed778ecbb161232a9a064caf28fab082c2fe632ff7439eec160feb5317278",
+  "bytes": 80,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/DEMO_OUTPUT_CLAIM_LAYER.txt",
+  "sha256": "dc8565ec8f397175cfd30d598987ae71cbb5ce2525eff52145a52a41adc96072",
+  "bytes": 9918,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/README.md",
+  "sha256": "cd37706cea926c5ea82f41bb46ad6b952e2ac9b1642c455dd979f1e572ea984a",
+  "bytes": 2273,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/RETRIEVAL_HARDENING.md",
+  "sha256": "33df1c4d9ed5f131ef4216d4702389858303d5e05289d5613755da2e558504f0",
+  "bytes": 1703,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/CLINICAL_EVIDENCE_ALIGNMENT.md",
+  "sha256": "8b43bb1aef7b0127443803f9c6bac106037455faa066bf8a39e02701f4bfce0c",
+  "bytes": 2931,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/README_PEQ.md",
+  "sha256": "8000afbfbc9b8f2bd7a2e00814fc7b92ad7bb54bc11065b8e60d057dcdcff028",
+  "bytes": 5318,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/SCIENTIFIC_CLAIM_EVIDENCE.md",
+  "sha256": "e08df60693dd35a4be846118a009a76f610599e5f578aba94ad8014cf284bad8",
+  "bytes": 1570,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/SCIENTIFIC_BRIDGE_HARDENING.md",
+  "sha256": "521a6b779a6dccb18ff0a762c39ed11cfbb03cc6dd985b441e62a126f0b1ebe5",
+  "bytes": 454,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/PEQ_ARCHITECTURE.md",
+  "sha256": "621fb39bff9f40442b84ed5be3803be0bf863e72e012c55033ffb6035aa58259",
+  "bytes": 5055,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/AUDIT_NOTES.md",
+  "sha256": "b88fd6efe837e3e088efda0c482e90067ca33e3d3644f0fce6d156710c7870e1",
+  "bytes": 3005,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/MANIFEST.md",
+  "sha256": "ca9dd7b819d3fa2504e4b8fd58cb0be47b753f50aa9eb6ae115b82954ef32834",
+  "bytes": 510,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/HANDOFF_CRE-EQ_v0.1.md",
+  "sha256": "eb44c5cda3cf66a6a6866bce39e02ec9fe284bcab6df979c99f2cfeb98f0bce2",
+  "bytes": 6032,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/PEQ_DEMO_OUTPUT_CLAIM_LAYER.txt",
+  "sha256": "88e3c4b3dd0c2362c121e81a14b1d2c7a42a138d98b4bc975d9a021e56d59c20",
+  "bytes": 30986,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/PEQ_DEMO_OUTPUT_FINAL.txt",
+  "sha256": "dd4611305aa0ad666a48cd42561f0229401ae220ab78748a5ab0bb4af103a2c2",
+  "bytes": 30986,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/SCIENTIFIC_EVIDENCE_EXPANSION.md",
+  "sha256": "3a068459514a2a66fb3cc60b3e16041bced79a05dba6b8c6f23187943f967a9a",
+  "bytes": 7641,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/RESEARCH_SOURCES.md",
+  "sha256": "d3004a5174e95ae8fa93852d1dd65b4d360cbafed1b8b72d1a4389a336fd4fa8",
+  "bytes": 4155,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/REVIEW_PATCH_NOTES.md",
+  "sha256": "99213f8c55fe3e412d082918aea20a83c05da298f1f290d49a99198f1231258f",
+  "bytes": 1656,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/CLAIM_LAYER_SHA256.txt",
+  "sha256": "d1445b0dac8a01733b7a195c3f53b1da300e0e277b9ec32c23b8b3d03b5c6e1d",
+  "bytes": 269,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/BREAKBREAKER_2026-08-14.md",
+  "sha256": "16d90e25f65e82f8067ce27cca54bad7160940f4abcf1b0a10514e11802107ff",
+  "bytes": 3077,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/VERIFICATION.txt",
+  "sha256": "81afd32b39d40f5bb36dde85927aa32e445b8fd0df58d88985b8940ca2d836c0",
+  "bytes": 233,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "peq_v0_1_backbreaker_hardened",
+  "path": "recovery/2026-11-23/donors/peq_v0_1_backbreaker_hardened/peq_claim_work/PEQ_HANDOFF.md",
+  "sha256": "82e011b4562f5a6512f48844aca71aceaf40201b6e1b2b87737ee7599f6987a3",
+  "bytes": 2974,
+  "source": "The-Prime @ecf01ba PEQ_v0.1_backbreaker_hardened.zip (zip sha256 c69275fe721bc41f)"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/safety_governor.py",
+  "sha256": "efcf942c040032fe66b53b8e32906ecf4936172a7e7846226c3e2ff382827b68",
+  "bytes": 9522,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/memory_processor.py",
+  "sha256": "ea940a9244a673b24f2607ef3ecefdfd453b97110d855aab37098244910685e8",
+  "bytes": 10906,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/sanctuary_vault.py",
+  "sha256": "37def6a9b52b192c3b19fd33aa8aaec0642364d373422ca0b8fbc6edb986284b",
+  "bytes": 12914,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/JEREMY_CRICKET_HARDENED_BETA_HANDOFF.md",
+  "sha256": "62088f9490b1c6d21958c1bcf5e70e3f55f27dc3d66411f3775a0644f67f0476",
+  "bytes": 8350,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/config.yaml",
+  "sha256": "ac055338e91538fa02e734795e24fdd4d2051bb2c96f4542cd21c85213e6e418",
+  "bytes": 3804,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/input_scorer.py",
+  "sha256": "a2b7cc7ac87d458c11ad6fbeb6704e9878e49c1d1d246a721c3d51e75696b197",
+  "bytes": 10028,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/test_hardening.py",
+  "sha256": "4b7a7edae65c00e84470ac3cc3fa39dfeb62e8d8fb10119e7a2cb7f7846dd966",
+  "bytes": 13068,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/jc_hardened/character_engine.py",
+  "sha256": "27ce78e8481a1a17f531ab8d2c2fa7fb638e80820b9de4a3ec78b3f910cc969a",
+  "bytes": 10826,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/JEREMY_CRICKET_HARDENED_BETA (1).zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06/docs",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/docs/JEREMY_CRICKET_INDEX.md",
+  "sha256": "87597ee7d98933e541d3116d9cabfd62267fdcdec2130e6c5039765d64b50043",
+  "bytes": 7486,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/Jcrkdocs2.zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06/docs",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/docs/JEREMY_CRICKET_QUICK_START.md",
+  "sha256": "ffd4d5bb88eb47dc60ac0a94ca0d79af0cb98e1098393d27914eb9a2ed6d0145",
+  "bytes": 6326,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/Jcrkdocs2.zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06/docs",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/docs/JEREMY_CRICKET_HANDOFF_2026-04-06.md",
+  "sha256": "b88616f2628d769562587984bf61f0d62931ddf67cf6a23857769bed2d957798",
+  "bytes": 35546,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/Jcrkdocs2.zip"
+ },
+ {
+  "donor": "jeremy_cricket_hardened_beta_2026-04-06/docs",
+  "path": "recovery/2026-11-23/donors/jeremy_cricket_hardened_beta_2026-04-06/docs/JEREMY_CRICKET_DELIVERABLES_SUMMARY.md",
+  "sha256": "7568a3c497935911adf90f65101dec1dd2409b407cf98a80a9c8e1b1910afece",
+  "bytes": 11419,
+  "source": "DREAMS @2f2fe57 dreams_repo_import_package_2026-04-06.zip > archives/source-zips/jeremy_cricket_separate_bundle_2026-04-06.zip (outer zip sha256 0bcd170f3c3f1229) > source_files/Jcrkdocs2.zip"
+ },
+ {
+  "donor": "eq_disambiguation_fixed_breaking_dawn",
+  "path": "recovery/2026-11-23/donors/eq_disambiguation_fixed_breaking_dawn/eq_disambiguation_engine.py",
+  "sha256": "1cc70d696f24262883c35553ffdc50fb092d69b9a89356b07ea10d5072405103",
+  "bytes": 35224,
+  "source": "Pubcaast-Breaking-Dawn @302e348 files (71).zip (zip sha256 eff8a69db1478255)"
+ },
+ {
+  "donor": "eq_disambiguation_fixed_breaking_dawn",
+  "path": "recovery/2026-11-23/donors/eq_disambiguation_fixed_breaking_dawn/HANDOFF_eq_disambiguation_fix.md",
+  "sha256": "269659914b4be7c630d61081887d955155cf85749312e65eb2e65a8f2bd307e9",
+  "bytes": 2817,
+  "source": "Pubcaast-Breaking-Dawn @302e348 files (71).zip (zip sha256 eff8a69db1478255)"
+ },
+ {
+  "donor": "design_docs",
+  "path": "recovery/2026-11-23/donors/design_docs/CARTRIDGE_ARCHITECTURE_AUDIT.md",
+  "sha256": "b78fb5530414164a85639403dc16528c0de263404951890b75a64146ff08b511",
+  "bytes": 14908,
+  "source": "The-Prime @ecf01ba CARTRIDGE_ARCHITECTURE_AUDIT.md"
+ },
+ {
+  "donor": "design_docs",
+  "path": "recovery/2026-11-23/donors/design_docs/MEMORY_VERIFICATION_PASS_2026-07-07.md",
+  "sha256": "57ea530dcdd063b2072acffa00d725f0d704b5a9ee9f5b30774b679f6b924b4f",
+  "bytes": 5443,
+  "source": "The-Prime @ecf01ba MEMORY_VERIFICATION_PASS_2026-07-07.md"
+ },
+ {
+  "donor": "design_docs/pubcast_pubpartner_collab_handoff",
+  "path": "recovery/2026-11-23/donors/design_docs/pubcast_pubpartner_collab_handoff/PubCast_PubPartner_Handoff.md",
+  "sha256": "0402e44f4d485df99f8c2ae5460c9dbba51782c4d39b96cfd9ea488c06f4dd0e",
+  "bytes": 12431,
+  "source": "The-Prime @ecf01ba alex_core_adaptive_companion.zip > pubcast_pubpartner_handoff (1).zip (outer zip sha256 fdf2865f3f151868)"
+ },
+ {
+  "donor": "design_docs/pubcast_pubpartner_collab_handoff",
+  "path": "recovery/2026-11-23/donors/design_docs/pubcast_pubpartner_collab_handoff/collaborative_mode_prototype.html",
+  "sha256": "f9f641026ddd89976d99fc42d7dc1bf1059eba4e4ac28e1c0fa1297f2762ff91",
+  "bytes": 21349,
+  "source": "The-Prime @ecf01ba alex_core_adaptive_companion.zip > pubcast_pubpartner_handoff (1).zip (outer zip sha256 fdf2865f3f151868)"
+ },
+ {
+  "donor": "design_docs/pubcast_pubpartner_collab_handoff",
+  "path": "recovery/2026-11-23/donors/design_docs/pubcast_pubpartner_collab_handoff/Collaborative_Mode_Implementation_Sketch.md",
+  "sha256": "c6eca546f980c4cf854ec0ca8ee7914fb793f234f7ab4c8a73f00ce374ee9ad6",
+  "bytes": 5142,
+  "source": "The-Prime @ecf01ba alex_core_adaptive_companion.zip > pubcast_pubpartner_handoff (1).zip (outer zip sha256 fdf2865f3f151868)"
+ }
+]

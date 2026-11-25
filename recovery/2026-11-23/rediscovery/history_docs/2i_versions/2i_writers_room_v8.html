@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pubcast 2i — Writer's Room</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  /* Ivory, backlit by lantern glow, with gold + silver sheen accents */
+  --ivory:#f9f4e6; --ivory-deep:#efe4cc; --ivory-glow:#fffbf0;
+  --gold:#cda349; --gold-bright:#eecf83; --gold-deep:#93701f; --gold-glow:rgba(238,207,131,0.45);
+  --silver:#cfd6da; --silver-bright:#f4f7f8; --silver-deep:#96a0a6; --silver-glow:rgba(228,236,239,0.55);
+  --brass:var(--gold); --brass-deep:var(--gold-deep); --brass-glow:var(--gold-glow);
+  --marble-edge:#ddd0ac;
+  --ink:#231f18; --pencil:#4a4032; --pencil-soft:#7c7160;
+  --paper-line:#c9cdd1; --manuscript-bg:#fffcf3; --gray-strip:#d9d2c0;
+  --graybox:rgba(90,88,80,0.09); --graybox-edge:rgba(90,88,80,0.18);
+  --danger:#a24a3a; --glass-border:rgba(205,163,73,0.32);
+  --lantern:radial-gradient(ellipse at 50% -10%, rgba(238,207,131,0.30), rgba(238,207,131,0) 62%);
+
+  /* Room materials — mahogany desk, oxblood/oak leather, deep green velvet */
+  --mahogany:#3a2013; --mahogany-mid:#2a1610; --mahogany-deep:#1b0f09; --walnut:#241209;
+  --oxblood:#5c2a24; --leather-seam:rgba(0,0,0,0.28);
+  --velvet:#1f4a3a; --velvet-deep:#123024; --velvet-bright:#2e6b52; --velvet-glow:rgba(46,107,82,0.38);
+  --parchment:#ecdfc3; --parchment-soft:#c3b391;
+
+  /* Tortoiseshell — amber with dark mottling, used on dividers and frame edges */
+  --tortoise-amber:#8a5a22; --tortoise-light:#c98f3f; --tortoise-dark:#2c1608;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse 55% 32% at 50% 0%, rgba(238,207,131,0.14), transparent 62%),
+    radial-gradient(ellipse 45% 30% at 12% 105%, rgba(46,107,82,0.10), transparent 60%),
+    linear-gradient(165deg, #2c190f 0%, #1d1009 55%, #130a05 100%);
+  font-family:'Cormorant Garamond', serif; color:var(--parchment); overflow:hidden;
+}
+.shell{
+  display:grid; grid-template-columns: 0.78fr 36px 2.6fr; height:100vh; gap:8px; padding:10px;
+}
+.glass{
+  border:3px solid transparent;
+  background:
+    linear-gradient(160deg, rgba(72,44,27,0.88), var(--mahogany-deep) 88%) padding-box,
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><defs><filter id="tortoise"><feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="4" result="noise" seed="99" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="6" /></filter></defs><rect width="60" height="60" fill="%238a5a22" /><g filter="url(%23tortoise)"><circle cx="12" cy="10" r="4" fill="%232c1608" opacity="0.8" /><circle cx="35" cy="15" r="3.5" fill="%232c1608" opacity="0.7" /><circle cx="52" cy="8" r="3" fill="%232c1608" opacity="0.6" /><circle cx="20" cy="28" r="2.5" fill="%232c1608" opacity="0.75" /><circle cx="45" cy="30" r="4" fill="%232c1608" opacity="0.8" /><circle cx="8" cy="45" r="3" fill="%232c1608" opacity="0.7" /><circle cx="30" cy="50" r="2.5" fill="%232c1608" opacity="0.65" /><circle cx="55" cy="48" r="3.5" fill="%232c1608" opacity="0.75" /><circle cx="25" cy="15" r="2" fill="%23c98f3f" opacity="0.5" /><circle cx="42" cy="22" r="2.2" fill="%23c98f3f" opacity="0.45" /><circle cx="15" cy="35" r="1.8" fill="%23c98f3f" opacity="0.5" /></g><g opacity="0.3"><line x1="0" y1="0" x2="60" y2="4" stroke="%23fff" stroke-width="0.4" /><line x1="0" y1="15" x2="60" y2="18" stroke="%23fff" stroke-width="0.3" /><line x1="0" y1="30" x2="60" y2="32" stroke="%23fff" stroke-width="0.25" /><line x1="0" y1="45" x2="60" y2="48" stroke="%23fff" stroke-width="0.3" /></g></svg>') border-box;
+  border-radius:14px;
+  box-shadow:
+    0 16px 36px -16px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(238,207,131,0.14),
+    inset 0 0 44px rgba(46,107,82,0.05),
+    inset -3px 0 6px rgba(0,0,0,0.55),
+    inset 3px 0 6px rgba(0,0,0,0.55),
+    inset 0 -3px 5px rgba(0,0,0,0.5),
+    inset 0 3px 4px rgba(44,22,8,0.4);
+  backdrop-filter:blur(6px);
+  position:relative; color:var(--parchment);
+}
+.glass::before{
+  content:''; position:absolute; inset:0; border-radius:11px; pointer-events:none;
+  background:linear-gradient(115deg, rgba(238,207,131,0.08) 0%, transparent 30%, transparent 70%, rgba(46,107,82,0.08) 100%);
+}
+/* a tortoiseshell divider bar, for the seams between sections of a panel */
+.tortoise-seam{
+  height:9px; flex-shrink:0;
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="9"><defs><filter id="seam"><feTurbulence type="fractalNoise" baseFrequency="0.3" numOctaves="3" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" /></filter></defs><rect width="120" height="9" fill="%238a5a22" /><g filter="url(%23seam)" opacity="0.8"><circle cx="8" cy="4.5" r="1.8" fill="%232c1608" /><circle cx="25" cy="3" r="1.5" fill="%232c1608" /><circle cx="42" cy="5" r="1.6" fill="%232c1608" /><circle cx="60" cy="4" r="1.7" fill="%232c1608" /><circle cx="78" cy="5" r="1.5" fill="%232c1608" /><circle cx="95" cy="3.5" r="1.8" fill="%232c1608" /><circle cx="112" cy="4.8" r="1.6" fill="%232c1608" /></g><g opacity="0.6" stroke="%23c98f3f" stroke-width="0.3"><line x1="5" y1="0" x2="115" y2="1" /><line x1="5" y1="9" x2="115" y2="8" /></g></svg>');
+  background-repeat:repeat-x;
+  background-size:auto 100%;
+  box-shadow:
+    inset 0 2.5px 2px rgba(255,255,255,0.5),
+    inset 0 -2.5px 3px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.6),
+    inset 0 0 2px rgba(44,22,8,0.35);
+}
+
+/* ===== LEFT THIRD: chat (top) + reference (bottom) ===== */
+.left-col{ display:flex; flex-direction:column; gap:10px; min-height:0; }
+.chat-pane{ flex:1.15; display:flex; flex-direction:column; min-height:0; padding:12px; }
+.ref-pane{ flex:0.85; display:flex; flex-direction:column; min-height:0; padding:12px; }
+.pane-label{
+  font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--brass); margin-bottom:8px; display:flex; align-items:center; gap:6px;
+}
+.pane-label::before{ content:''; width:5px; height:5px; border-radius:50%; background:var(--brass); box-shadow:0 0 6px var(--brass-glow); }
+.chat-log{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:2px; }
+.chat-msg{ font-size:14.5px; line-height:1.45; padding:8px 11px; border-radius:9px; max-width:92%; color:var(--parchment); }
+.chat-msg.pp{ background:rgba(0,0,0,0.24); border:1px solid var(--leather-seam); align-self:flex-start; }
+.chat-msg.you{ background:rgba(46,107,82,0.22); border:1px solid var(--velvet-glow); align-self:flex-end; }
+.chat-msg .who{ font-family:'IBM Plex Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:var(--parchment-soft); display:block; margin-bottom:2px; }
+.chat-input-row{ display:flex; gap:6px; margin-top:8px; }
+.chat-input-row input{
+  flex:1; font-family:'Cormorant Garamond',serif; font-size:14.5px; padding:8px 10px; color:var(--parchment);
+  border:1px solid var(--leather-seam); border-radius:8px; background:rgba(0,0,0,0.22); outline:none;
+}
+.chat-input-row input::placeholder{ color:var(--parchment-soft); opacity:.75; }
+.chat-input-row input:focus{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass-glow); }
+.chat-input-row button{ padding:8px 12px; }
+.ref-list{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+.ref-item{
+  font-size:13px; padding:7px 9px; border-radius:7px; background:rgba(0,0,0,0.20); color:var(--parchment);
+  border:1px solid var(--leather-seam); cursor:pointer; display:flex; justify-content:space-between; gap:8px;
+}
+.ref-item:hover{ background:rgba(46,107,82,0.18); border-color:var(--velvet-glow); }
+.ref-item small{ color:var(--parchment-soft); font-family:'IBM Plex Mono',monospace; font-size:9.5px; white-space:nowrap; }
+.ref-open{ margin-top:8px; }
+.ref-view-back{ margin-bottom:8px; }
+.ref-view-title{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--parchment-soft); margin-bottom:6px; }
+.ref-view-text{ font-family:'Cormorant Garamond',serif; font-size:14.5px; line-height:1.55; white-space:pre-wrap; color:var(--parchment); }
+
+/* ===== CENTER RAIL — thin, oval, pale marble buttons that light from within ===== */
+.rail{ display:flex; flex-direction:column; align-items:center; padding:10px 0; }
+.rail-menu{
+  width:38px; height:38px; border-radius:50%;
+  border:1.5px solid rgba(100,70,35,0.8);
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><defs><filter id="menunoise"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" result="noise" seed="88" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="0.7" /></filter></defs><circle cx="36" cy="36" r="36" fill="%23fdfcf9" /><g opacity="0.03" filter="url(%23menunoise)"><circle cx="18" cy="18" r="3" fill="%23000" /><circle cx="54" cy="18" r="2.5" fill="%23000" /><circle cx="18" cy="54" r="2.8" fill="%23000" /><circle cx="54" cy="54" r="3" fill="%23000" /><circle cx="36" cy="36" r="2.5" fill="%23000" /></g></svg>'),
+    linear-gradient(160deg, #fdfcf9 0%, #f4eadb 50%, #e8dac8 100%);
+  background-size:100% 100%, 100% 100%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; color:var(--gold-deep);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.58),
+    inset 0 1.5px 2px rgba(255,255,255,0.98),
+    inset 0 -1px 2px rgba(0,0,0,0.35),
+    inset -1.5px 0 2px rgba(0,0,0,0.2),
+    inset 1.5px 0 2px rgba(255,255,255,0.45),
+    inset 0 0 7px rgba(0,0,0,0.1);
+  transition:all .12s ease;
+}
+.rail-menu:hover{
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><defs><filter id="menunoise2"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" result="noise" seed="88" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="0.7" /></filter></defs><circle cx="36" cy="36" r="36" fill="%23fffff5" /><g opacity="0.03" filter="url(%23menunoise2)"><circle cx="18" cy="18" r="3" fill="%23000" /><circle cx="54" cy="18" r="2.5" fill="%23000" /><circle cx="18" cy="54" r="2.8" fill="%23000" /><circle cx="54" cy="54" r="3" fill="%23000" /><circle cx="36" cy="36" r="2.5" fill="%23000" /></g></svg>'),
+    linear-gradient(160deg, #fffff5 0%, #f9f0e0 50%, #efe1cc 100%);
+  background-size:100% 100%, 100% 100%;
+  box-shadow:
+    0 5px 16px rgba(0,0,0,0.62),
+    inset 0 1.5px 2px rgba(255,255,255,1),
+    inset 0 -1px 2.5px rgba(0,0,0,0.4),
+    inset -1.5px 0 2px rgba(0,0,0,0.22),
+    inset 1.5px 0 2px rgba(255,255,255,0.5),
+    inset 0 0 9px rgba(0,0,0,0.12);
+  transform:translateY(-1px);
+}
+.rail-menu:active{ transform:translateY(1px); }
+.rail-spacer{
+  flex:1; width:11px; margin:12px 0; border-radius:6px;
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="11" height="150"><defs><filter id="spacer"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" /></filter></defs><rect width="11" height="150" fill="%238a5a22" /><g filter="url(%23spacer)" opacity="0.75"><circle cx="2" cy="15" r="1.2" fill="%232c1608" /><circle cx="8" cy="25" r="1.4" fill="%232c1608" /><circle cx="3" cy="40" r="1.3" fill="%232c1608" /><circle cx="7" cy="55" r="1.2" fill="%232c1608" /><circle cx="2" cy="70" r="1.4" fill="%232c1608" /><circle cx="8" cy="85" r="1.2" fill="%232c1608" /><circle cx="3" cy="100" r="1.3" fill="%232c1608" /><circle cx="7" cy="115" r="1.4" fill="%232c1608" /><circle cx="2" cy="130" r="1.2" fill="%232c1608" /></g><g opacity="0.5" stroke="%23c98f3f" stroke-width="0.3"><line x1="0" y1="0" x2="11" y2="1" /><line x1="0" y1="40" x2="11" y2="41" /><line x1="0" y1="80" x2="11" y2="81" /><line x1="0" y1="120" x2="11" y2="121" /></g></svg>');
+  background-repeat:repeat-y;
+  background-size:100% auto;
+  box-shadow:
+    inset 0 1px 1.5px rgba(255,255,255,0.45),
+    inset 0 -1px 1.5px rgba(0,0,0,0.5),
+    0 1px 1px rgba(0,0,0,0.5);
+}
+.rail-stack{ display:flex; flex-direction:column-reverse; gap:7px; align-items:center; }
+.rail-btn{
+  width:38px; height:26px; padding:0; border-radius:999px;
+  border:1.5px solid rgba(100,70,35,0.8);
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="76" height="52"><defs><filter id="btnoise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise" seed="77" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" /></filter></defs><rect width="76" height="52" fill="%23fdfcf9" /><g opacity="0.04" filter="url(%23btnoise)"><line x1="0" y1="5" x2="76" y2="5" stroke="%23000" stroke-width="0.3" /><line x1="0" y1="15" x2="76" y2="15" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="25" x2="76" y2="25" stroke="%23000" stroke-width="0.25" /><line x1="0" y1="35" x2="76" y2="35" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="45" x2="76" y2="45" stroke="%23000" stroke-width="0.3" /></g></svg>'),
+    linear-gradient(160deg, #fdfcf9 0%, #f4eadb 45%, #e8dac8 100%);
+  background-size:100% 100%, 100% 100%;
+  color:var(--gold-deep);
+  display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.55),
+    inset 0 1.5px 2px rgba(255,255,255,0.98),
+    inset 0 -1px 2px rgba(0,0,0,0.35),
+    inset -1.5px 0 2px rgba(0,0,0,0.2),
+    inset 1.5px 0 2px rgba(255,255,255,0.45),
+    inset 0 0 6px rgba(0,0,0,0.08);
+  position:relative;
+  transition:all .12s ease;
+}
+.rail-btn::after{
+  content:''; position:absolute; inset:-4px; border-radius:999px; z-index:-1; opacity:0;
+  background:radial-gradient(circle, rgba(238,207,131,0.5), transparent 68%); transition:opacity .25s;
+}
+.rail-btn:hover::after{ opacity:.9; }
+.rail-btn:hover{
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="76" height="52"><defs><filter id="btnoise2"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise" seed="77" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" /></filter></defs><rect width="76" height="52" fill="%23fffff5" /><g opacity="0.04" filter="url(%23btnoise2)"><line x1="0" y1="5" x2="76" y2="5" stroke="%23000" stroke-width="0.3" /><line x1="0" y1="15" x2="76" y2="15" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="25" x2="76" y2="25" stroke="%23000" stroke-width="0.25" /><line x1="0" y1="35" x2="76" y2="35" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="45" x2="76" y2="45" stroke="%23000" stroke-width="0.3" /></g></svg>'),
+    linear-gradient(160deg, #fffff5 0%, #f9f0e0 45%, #efe1cc 100%);
+  background-size:100% 100%, 100% 100%;
+  box-shadow:
+    0 5px 14px rgba(0,0,0,0.6),
+    inset 0 1.5px 2px rgba(255,255,255,1),
+    inset 0 -1px 2.5px rgba(0,0,0,0.4),
+    inset -1.5px 0 2px rgba(0,0,0,0.22),
+    inset 1.5px 0 2px rgba(255,255,255,0.5),
+    inset 0 0 8px rgba(0,0,0,0.1);
+  transform:translateY(-1px);
+}
+.rail-btn.active{
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="76" height="52"><defs><filter id="btgold"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise" seed="77" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" /></filter></defs><rect width="76" height="52" fill="%23eecf83" /><g opacity="0.06" filter="url(%23btgold)"><line x1="0" y1="5" x2="76" y2="5" stroke="%23000" stroke-width="0.3" /><line x1="0" y1="15" x2="76" y2="15" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="25" x2="76" y2="25" stroke="%23000" stroke-width="0.25" /><line x1="0" y1="35" x2="76" y2="35" stroke="%23000" stroke-width="0.2" /><line x1="0" y1="45" x2="76" y2="45" stroke="%23000" stroke-width="0.3" /></g></svg>'),
+    linear-gradient(160deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+  background-size:100% 100%, 100% 100%;
+  color:#1a0f07;
+  box-shadow:
+    0 0 18px rgba(238,207,131,0.65),
+    inset 0 1.5px 2px rgba(255,255,255,0.7),
+    inset 0 -2px 3px rgba(90,50,5,0.6),
+    inset -1.5px 0 2.5px rgba(0,0,0,0.4),
+    inset 1.5px 0 2px rgba(255,255,255,0.35),
+    inset 0 0 8px rgba(0,0,0,0.12);
+}
+.rail-btn.active::after{ opacity:1; }
+.rail-btn:active:not(.active){ transform:translateY(1px); }
+.rail-btn[disabled]{ opacity:.3; cursor:default; }
+.rail-speed{ writing-mode:vertical-lr; transform:rotate(180deg); height:60px; margin:2px 0; accent-color:var(--gold); }
+
+/* ===== RIGHT ~TWO-THIRDS: work area — a mahogany desk holding one wide, left-bound notebook ===== */
+.work{
+  display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;
+  background:
+    var(--lantern),
+    linear-gradient(180deg, rgba(46,107,82,0.05), transparent 40%);
+  position:relative;
+  perspective:1200px;
+}
+.work::before{
+  content:''; position:absolute; inset:0;
+  background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="800"><defs><filter id="wg"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="5" result="noise" seed="42" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G" /></filter><pattern id="wood" patternUnits="userSpaceOnUse" width="240" height="800"><rect width="240" height="800" fill="%231b0f09" /><rect width="240" height="800" fill="%23241209" opacity="0.25" filter="url(%23wg)" /><g opacity="0.35" filter="url(%23wg)" stroke="%23000"><line x1="0" y1="40" x2="240" y2="42" stroke-width="0.8" /><line x1="0" y1="80" x2="240" y2="83" stroke-width="0.4" /><line x1="0" y1="120" x2="240" y2="118" stroke-width="0.6" /><line x1="0" y1="160" x2="240" y2="163" stroke-width="0.3" /><line x1="0" y1="200" x2="240" y2="198" stroke-width="0.7" /><line x1="0" y1="240" x2="240" y2="243" stroke-width="0.5" /><line x1="0" y1="280" x2="240" y2="278" stroke-width="0.4" /><line x1="0" y1="320" x2="240" y2="323" stroke-width="0.6" /><line x1="0" y1="360" x2="240" y2="358" stroke-width="0.35" /><line x1="0" y1="400" x2="240" y2="403" stroke-width="0.7" /><line x1="0" y1="440" x2="240" y2="438" stroke-width="0.5" /><line x1="0" y1="480" x2="240" y2="483" stroke-width="0.4" /><line x1="0" y1="520" x2="240" y2="518" stroke-width="0.65" /><line x1="0" y1="560" x2="240" y2="563" stroke-width="0.3" /><line x1="0" y1="600" x2="240" y2="598" stroke-width="0.6" /><line x1="0" y1="640" x2="240" y2="643" stroke-width="0.45" /><line x1="0" y1="680" x2="240" y2="678" stroke-width="0.5" /><line x1="0" y1="720" x2="240" y2="723" stroke-width="0.7" /><line x1="0" y1="760" x2="240" y2="758" stroke-width="0.35" /></g><g opacity="0.15" filter="url(%23wg)"><circle cx="80" cy="150" r="12" fill="%23341f10" /><circle cx="160" cy="320" r="9" fill="%23341f10" /><circle cx="200" cy="500" r="14" fill="%23341f10" /><circle cx="60" cy="680" r="11" fill="%23341f10" /></g></pattern></defs><rect width="240" height="800" fill="url(%23wood)" /></svg>');
+  background-repeat:repeat;
+  pointer-events:none;
+  opacity:1;
+  z-index:0;
+}
+.work > *{ position:relative; z-index:1; }
+.docbar{
+  display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--leather-seam);
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--parchment-soft);
+}
+.doc-title{
+  flex:1; font-family:'Cormorant Garamond',serif; font-size:15px; border:none; background:transparent; outline:none; color:var(--parchment);
+}
+.save-status{ color:var(--parchment-soft); }
+.docbar button{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:5px 12px; }
+
+/* the notebook: bound on the LEFT like a real notebook, not across the top like a steno pad */
+.page{ flex:1; min-height:0; display:flex; flex-direction:row; width:min(99%, 1600px); margin:2px auto 0; transform:rotateX(5deg); transform-origin:center center; box-shadow:0 28px 48px -24px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.08); }
+.spiral-spine{
+  flex:0 0 52px; align-self:stretch; position:relative; background:#0d0705;
+}
+.spiral-spine canvas{
+  width:100%; height:100%; display:block;
+}
+.page-sheets{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
+
+.manuscript-tail{
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120"><defs><filter id="parch"><feTurbulence type="fractalNoise" baseFrequency="0.3" numOctaves="4" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" /></filter></defs><rect width="180" height="120" fill="%23fffbf0" /><g opacity="0.05" filter="url(%23parch)"><circle cx="20" cy="15" r="8" fill="%23000" /><circle cx="60" cy="40" r="6" fill="%23000" /><circle cx="100" cy="25" r="7" fill="%23000" /><circle cx="140" cy="50" r="5" fill="%23000" /><circle cx="30" cy="80" r="6" fill="%23000" /><circle cx="90" cy="100" r="7" fill="%23000" /><circle cx="150" cy="85" r="6" fill="%23000" /></g></svg>'),
+    var(--ivory-glow);
+  padding:8px 30px 6px; border-top:1px solid rgba(255,255,255,0.9);
+  font-family:'Cormorant Garamond',serif; font-size:15.5px; line-height:1.5; max-height:64px; overflow:hidden;
+  position:relative; color:var(--ink);
+}
+.manuscript-tail::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:16px;
+  background:linear-gradient(transparent, var(--ivory-glow));
+}
+.manuscript-tail .zlabel{ position:absolute; top:3px; right:14px; font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--gold-deep); text-transform:uppercase; }
+
+.transition-strip{
+  background:linear-gradient(180deg, var(--ivory-glow), var(--gray-strip));
+  padding:6px 30px; border-top:1px solid rgba(255,255,255,0.5);
+  font-family:'Kalam',cursive; font-size:13px; color:#57503f; opacity:.78; min-height:18px;
+  transition:opacity .3s ease;
+}
+.transition-strip .zlabel{ display:block; font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--gold-deep); text-transform:uppercase; margin-bottom:2px; opacity:1; }
+
+.buffer-crawl{
+  flex:1; min-height:0; overflow-y:auto; position:relative;
+  background:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="140"><defs><filter id="parch2"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="4" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" /></filter></defs><rect width="220" height="140" fill="%23faf3e1" /><g opacity="0.06" filter="url(%23parch2)"><circle cx="25" cy="20" r="9" fill="%23000" /><circle cx="75" cy="50" r="7" fill="%23000" /><circle cx="130" cy="30" r="8" fill="%23000" /><circle cx="170" cy="60" r="6" fill="%23000" /><circle cx="40" cy="100" r="7" fill="%23000" /><circle cx="110" cy="120" r="8" fill="%23000" /><circle cx="180" cy="105" r="6" fill="%23000" /></g></svg>'),
+    repeating-linear-gradient(0deg, transparent, transparent 27px, var(--paper-line) 28px),
+    linear-gradient(180deg, #faf3e1, #f4ead9 60%, #efe3cd);
+  padding:8px 30px 36px;
+  border-radius:0 0 10px 10px;
+  box-shadow:0 18px 30px -20px rgba(60,45,10,0.35);
+}
+.crawl-inner{ display:flex; flex-direction:column-reverse; gap:3px; }
+.line{
+  font-family:'Kalam',cursive; font-size:16.5px; line-height:1.4; color:var(--pencil);
+  padding:4px 34px 4px 10px; border-radius:5px; cursor:pointer; position:relative;
+  display:flex; align-items:center;
+}
+.line:hover{ background:rgba(205,163,73,0.10); }
+/* buffered = still in the draft pool: a thin graybox, pencil text stays fully legible on top */
+.line.buffered{
+  background:var(--graybox); border:1px solid var(--graybox-edge);
+}
+.line.reading{ background:rgba(205,163,73,0.16); border-color:var(--gold-glow); }
+.line.reading .sweep{
+  position:absolute; inset:0; border-radius:5px; background:var(--brass-glow);
+  background-size:0% 100%; background-repeat:no-repeat; background-image:linear-gradient(to right, var(--gold-glow), var(--silver-glow));
+  animation-name:sweep; animation-timing-function:linear; animation-fill-mode:forwards; z-index:-1;
+}
+@keyframes sweep{ from{background-size:0% 100%;} to{background-size:100% 100%;} }
+.line.reaction{ outline:1px dashed var(--gold); }
+.reaction-ring{
+  display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:8px;
+  border:2px solid var(--gold); border-top-color:transparent; animation:spin 1s linear infinite; vertical-align:middle;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+/* pin sits top-right of the box so it never drifts into wrapped text */
+.line-pin{ position:absolute; right:8px; top:5px; font-size:11px; color:var(--pencil-soft); cursor:pointer; opacity:.55; transition:opacity .2s; }
+.line-pin:hover{ opacity:1; }
+.line.pinned{ border-color:var(--gold); box-shadow:inset 0 0 0 1px var(--gold-glow); }
+.line.pinned .line-pin{ color:var(--gold-deep); opacity:1; }
+.line textarea{ width:100%; font:inherit; font-size:16.5px; line-height:1.4; border:none; background:transparent; resize:vertical; outline:none; }
+.line-controls{ display:flex; gap:6px; margin:2px 6px 6px; }
+.line-controls button{ font-size:10.5px; padding:3px 9px; }
+.crawl-empty{ font-family:'Kalam',cursive; color:var(--pencil-soft); font-size:15px; padding:8px; }
+.regen-flag{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--danger); margin:0 6px 4px; }
+.regen-flag.ok{ color:#3d7a4a; }
+
+button{
+  font-family:'IBM Plex Mono',monospace; border:1px solid var(--tortoise-dark);
+  background:radial-gradient(ellipse at 32% 22%, #fffdf6, var(--ivory-deep) 78%); color:var(--gold-deep);
+  border-radius:999px; cursor:pointer; letter-spacing:.02em; padding:6px 14px;
+  box-shadow:0 3px 6px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.95), inset 0 -2px 3px rgba(120,100,60,0.3);
+  transition:box-shadow .2s, filter .2s;
+}
+button:hover:not(:disabled){ box-shadow:0 3px 6px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.95), inset 0 -2px 3px rgba(120,100,60,0.3), 0 0 14px var(--gold-glow); }
+button.secondary{ background:transparent; color:var(--parchment); border-color:var(--leather-seam); box-shadow:none; }
+button.secondary:hover:not(:disabled){ border-color:var(--velvet-glow); box-shadow:0 0 10px var(--velvet-glow); }
+button:disabled{ opacity:.35; cursor:default; }
+button:active:not(:disabled){ transform:translateY(1px); }
+
+.status-strip{
+  display:flex; align-items:center; gap:10px; padding:6px 12px; border-top:1px solid var(--leather-seam);
+  font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--parchment-soft);
+}
+.status-dot{ width:6px;height:6px;border-radius:50%; background:var(--parchment-soft); }
+.status-dot.playing{ background:var(--velvet-bright); }
+.status-dot.paused{ background:var(--brass); }
+
+.menu-panel{
+  position:absolute; left:64px; top:12px; z-index:30; min-width:230px; padding:8px;
+  background:linear-gradient(160deg,#3a2013,var(--mahogany-deep)); border:1px solid var(--glass-border); border-radius:8px;
+  box-shadow:0 12px 28px rgba(0,0,0,.5); display:none; color:var(--parchment);
+}
+.menu-panel.open{ display:block; }
+.menu-panel button{ display:block; width:100%; text-align:left; margin:3px 0; border-radius:8px; }
+.menu-note{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--parchment-soft); padding:4px 6px 8px; line-height:1.4; }
+
+.llm-status{ font-family:'IBM Plex Mono',monospace; font-size:10px; padding:2px 8px; border-radius:999px; border:1px solid var(--glass-border); cursor:pointer; color:var(--parchment-soft); }
+.llm-status.ok{ color:#bff2c8; border-color:#4c9a63; }
+.llm-status.err{ color:#f2c0bf; border-color:#9a4c4c; }
+
+.modal-backdrop{ position:fixed; inset:0; background:rgba(10,6,3,.6); z-index:80; display:none; align-items:center; justify-content:center; }
+.modal-backdrop.open{ display:flex; }
+.modal{ width:min(440px,92vw); max-height:86vh; overflow:auto; padding:16px; border-radius:12px; color:var(--parchment); }
+.modal-body{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.modal-body label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--parchment-soft); margin-top:6px; }
+.modal-body select, .modal-body input[type=text], .modal-body input[type=password]{
+  width:100%; padding:7px 9px; border-radius:6px; border:1px solid var(--glass-border);
+  background:rgba(0,0,0,.25); color:var(--parchment); font-family:'IBM Plex Mono',monospace; font-size:12px;
+}
+.llm-fields{ display:none; flex-direction:column; gap:4px; }
+.llm-fields.active{ display:flex; }
+.modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+.llm-test-result{ margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; min-height:14px; }
+.llm-test-result.ok{ color:#bff2c8; }
+.llm-test-result.err{ color:#f2c0bf; }
+
+.chat-input-row{ position:relative; }
+.voice-btn{ position:absolute; }
+#chatMicBtn{ width:30px; flex:0 0 30px; padding:0; font-size:14px; }
+#chatMicBtn.listening{ background:linear-gradient(160deg,#c94747,#8a2c2c); color:#fff; animation:micPulse 1s ease-in-out infinite; }
+@keyframes micPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(201,71,71,.5);} 50%{ box-shadow:0 0 0 6px rgba(201,71,71,0);} }
+
+.chat-msg.thinking{ opacity:.6; font-style:italic; }
+
+/* smoother crawl: new lines fade+slide in instead of popping */
+.crawl-inner .line{ animation:lineIn .28s ease-out; }
+@keyframes lineIn{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+.buffer-crawl{ scroll-behavior:smooth; }
+
+.write-row{ display:flex; gap:8px; padding:8px 10px; align-items:flex-end; border-top:1px solid var(--glass-border); background:rgba(0,0,0,.15); }
+.write-row textarea{
+  flex:1; resize:vertical; min-height:38px; max-height:140px; padding:8px 10px; border-radius:6px;
+  border:1px solid var(--glass-border); background:rgba(0,0,0,.25); color:var(--parchment);
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.4;
+}
+.write-row button{ flex:0 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="left-col">
+    <div class="chat-pane glass">
+      <div class="pane-label">PubPartner — Chat</div>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" placeholder="Talk with PubPartner about this scene…" />
+        <button class="secondary" id="chatMicBtn" title="Dictate (voice input)">🎤</button>
+        <button id="chatSendBtn">Send</button>
+      </div>
+    </div>
+    <div class="ref-pane glass">
+      <div class="pane-label">Reference / Continuity</div>
+      <div class="ref-list" id="refList"></div>
+      <button class="secondary ref-open" id="refOpenBtn">Open another document…</button>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="rail-menu" id="menuBtn" title="Menu">☰</div>
+    <div class="menu-panel" id="menuPanel">
+      <div class="menu-note">Finalized manuscript text is locked. Select a line, then unlock it deliberately.</div>
+      <button id="openDocBtn" class="secondary">Open document…</button>
+      <button class="secondary" id="unlockBtn">Unlock selected / line…</button>
+      <button class="secondary" id="lockAllBtn">Lock all finalized text</button>
+      <button class="secondary" id="newChapterBtn">Start new chapter</button>
+      <button class="secondary" id="llmSettingsBtn">⚙ LLM provider…</button>
+    </div>
+    <div class="rail-spacer"></div>
+    <div class="rail-stack">
+      <button class="rail-btn" id="stopBtn" title="Stop">■</button>
+      <button class="rail-btn" id="approveBtn" title="Approve buffer now — commit early">✓</button>
+      <button class="rail-btn" id="skipBtn" title="Skip ahead">⏭</button>
+      <button class="rail-btn" id="playBtn" title="Play / Pause">▶</button>
+      <input class="rail-speed" id="speed" type="range" min="1" max="5" value="3" title="Read speed" />
+      <button class="rail-btn" id="genBtn" title="Generate next page">✎</button>
+    </div>
+  </div>
+
+  <div class="work glass">
+    <div class="docbar">
+      <input id="docTitle" class="doc-title" type="text" value="Untitled Pubcast 2i Document" />
+      <button id="saveBtn">Save</button>
+      <button class="secondary" id="saveAsBtn">Save As…</button>
+      <span id="saveStatus" class="save-status">unsaved</span>
+    </div>
+
+    <div class="page">
+      <div class="spiral-spine" aria-hidden="true"><canvas id="spineCanvas"></canvas></div>
+      <div class="page-sheets">
+        <div class="manuscript-tail" id="manuscriptTail"><span class="zlabel">Manuscript — locked</span></div>
+        <div class="tortoise-seam" aria-hidden="true"></div>
+        <div class="transition-strip" id="transitionStrip"><span class="zlabel">Nearing commit</span></div>
+        <div class="tortoise-seam" aria-hidden="true"></div>
+        <div class="buffer-crawl" id="bufferCrawl">
+          <div class="crawl-inner" id="crawlInner"></div>
+        </div>
+        <div class="write-row" id="writeRow">
+          <textarea id="writeInput" rows="2" placeholder="Type your own line(s) here — works fully offline, no AI required. Enter for a new line, Ctrl/Cmd+Enter (or the button) to add it to your draft."></textarea>
+          <button id="writeAddBtn" title="Add this as the next line(s) of your draft">Add to draft</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-strip">
+      <span class="status-dot" id="statusDot"></span><span id="statusText">idle</span>
+      <span id="branchLabel">branch: original</span>
+      <span id="llmStatus" class="llm-status" title="Click to configure">no LLM configured</span>
+      <span id="wordMeta" style="margin-left:auto;">0 words drafted</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="llmModalBackdrop">
+  <div class="modal glass" id="llmModal">
+    <div class="pane-label">LLM Provider</div>
+    <div class="modal-body">
+      <label>Provider</label>
+      <select id="llmProvider">
+        <option value="claude">Claude (Anthropic API)</option>
+        <option value="openai">OpenAI / OpenAI-compatible cloud</option>
+        <option value="local">Local LLM (Ollama, LM Studio, etc.)</option>
+      </select>
+
+      <div id="llmFieldsClaude" class="llm-fields">
+        <label>API key</label>
+        <input id="llmClaudeKey" type="password" placeholder="sk-ant-…" autocomplete="off" />
+        <label>Model</label>
+        <input id="llmClaudeModel" type="text" placeholder="claude-sonnet-4-6" />
+      </div>
+
+      <div id="llmFieldsOpenai" class="llm-fields">
+        <label>API key</label>
+        <input id="llmOpenaiKey" type="password" placeholder="sk-…" autocomplete="off" />
+        <label>Base URL (OpenAI-compatible)</label>
+        <input id="llmOpenaiEndpoint" type="text" placeholder="https://api.openai.com/v1" />
+        <label>Model</label>
+        <input id="llmOpenaiModel" type="text" placeholder="gpt-4o-mini" />
+      </div>
+
+      <div id="llmFieldsLocal" class="llm-fields">
+        <label>Endpoint (OpenAI-compatible chat/completions URL)</label>
+        <input id="llmLocalEndpoint" type="text" placeholder="http://localhost:11434/v1/chat/completions" />
+        <label>Model</label>
+        <input id="llmLocalModel" type="text" placeholder="llama3" />
+        <div class="menu-note" style="padding-left:0;">Works with Ollama (OpenAI-compat endpoint), LM Studio, or any local server exposing an OpenAI-style /chat/completions route. No key needed for most local servers.</div>
+      </div>
+
+      <div class="menu-note" style="padding-left:0;">Stored only in this browser (localStorage), never sent anywhere except the provider you pick above. Nothing here touches Anthropic's servers unless you choose Claude.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" id="llmTestBtn">Test connection</button>
+      <button class="secondary" id="llmCancelBtn">Cancel</button>
+      <button id="llmSaveBtn">Save</button>
+    </div>
+    <div id="llmTestResult" class="llm-test-result"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   HANDOFF NOTE (read this before editing):
+   Engine (state model, structural-edit detection, save/load,
+   speech, branches) is carried over from Pubcast-2i-Prototype.html
+   almost unchanged. What's NEW in this file:
+   - Buffer is sized in WORDS (page-based), not fixed line count.
+   - REACTION_MS pause after each line finishes reading, before
+     auto-advancing — gives a beat to interrupt.
+   - approveBtn-equivalent (genBtn is repurposed as "Generate";
+     TODO: a dedicated Approve action to force-commit early is
+     not yet wired — see TODO list at bottom of this comment block).
+   - Chat pane and Reference pane are visual + basic local echo
+     only. Not connected to a real PubPartner backend yet.
+   TODO for next session:
+   1. Wire chat input to an actual generation call (currently
+      chatSendBtn just echoes into chatLog).
+   2. Add explicit "Approve" control to force-flush buffer into
+      committed before it reaches PAGE word threshold.
+   3. Reference pane ("Open another document…") is a static list;
+      wire to real file open / chapter-scroll-back.
+   4. Verify Star Wars crawl scroll direction reads correctly at
+      long buffer lengths (currently relies on column-reverse flex
+      + scrollTop, not a true perspective transform).
+   5. Replace SCENE/ALT_DOCKS/ALT_GENERIC demo arrays with real
+      generation once PubPartner API is wired in.
+   ============================================================ */
+
+// ============================================================
+// LLM PROVIDER ADAPTER LAYER
+// Pluggable: Claude (Anthropic), OpenAI/OpenAI-compatible cloud,
+// or a local model server (Ollama / LM Studio / any OpenAI-style
+// /chat/completions endpoint). Swap providers without touching
+// any of the editor engine below.
+// ============================================================
+const LLM_CONFIG_KEY = 'pubcast2i_llm_config_v1';
+function defaultLLMConfig(){
+  return {
+    provider: 'claude',
+    claude: { apiKey:'', model:'claude-sonnet-4-6' },
+    openai: { apiKey:'', endpoint:'https://api.openai.com/v1', model:'gpt-4o-mini' },
+    local:  { endpoint:'http://localhost:11434/v1/chat/completions', model:'llama3' }
+  };
+}
+function loadLLMConfig(){
+  try{
+    const raw = localStorage.getItem(LLM_CONFIG_KEY);
+    if(!raw) return defaultLLMConfig();
+    const parsed = JSON.parse(raw);
+    const defaults = defaultLLMConfig();
+    // Object.assign here would be a shallow merge: a saved config missing a
+    // field inside e.g. `local` (say, an old save with only `model` set)
+    // would wipe out defaults.local.endpoint entirely rather than filling
+    // just the missing field — and endpoint has no fallback at call time,
+    // so that surfaces later as a crash on `c.endpoint.trim()`, not here.
+    const merged = Object.assign({}, defaults, parsed);
+    for(const provider of ['claude','openai','local']){
+      merged[provider] = Object.assign({}, defaults[provider], parsed && parsed[provider]);
+    }
+    return merged;
+  }catch(e){ return defaultLLMConfig(); }
+}
+function saveLLMConfigToStorage(cfg){
+  try{ localStorage.setItem(LLM_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){ /* storage unavailable */ }
+}
+let llmConfig = loadLLMConfig();
+
+const RETRY_DELAY_MS = 700;         // pause before the one automatic retry
+const ERROR_BODY_PREVIEW_CHARS = 300; // how much of a raw error body we surface to the user
+const JSON_PARSE_ERR_PREVIEW_CHARS = 150;
+const CLAUDE_MAX_TOKENS = 700;      // cap on a single "continue the manuscript" generation
+
+// Attach an HTTP status to thrown errors so callers (like withRetry) can
+// tell "worth retrying" (network blip / 429 / 5xx) apart from "will never
+// succeed" (4xx auth/bad-request) without re-parsing the message string.
+function httpError(label, status, bodyText){
+  const err = new Error(label+' '+status+': '+redactSecrets(bodyText).slice(0,ERROR_BODY_PREVIEW_CHARS));
+  err.status = status;
+  return err;
+}
+// Best-effort scrub of anything that looks like a bearer token / API key
+// before it ever reaches the visible chat log (issue: raw error bodies could
+// echo back request headers from a misconfigured proxy).
+function redactSecrets(text){
+  return String(text)
+    .replace(/sk-[a-zA-Z0-9_-]{10,}/g, '[redacted-key]')
+    .replace(/Bearer\s+[a-zA-Z0-9._-]{10,}/gi, 'Bearer [redacted]')
+    .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_-]{10,}/gi, 'x-api-key: [redacted]');
+}
+async function withRetry(fn){
+  try{ return await fn(); }
+  catch(err){
+    // Only retry things that are plausibly transient: a network-level
+    // failure (no status — fetch itself threw), a rate limit (429), or a
+    // server-side error (5xx). A 4xx like a bad API key or malformed
+    // request will fail identically on retry, so don't waste the call.
+    const retryable = err.status===undefined || err.status===429 || err.status>=500;
+    if(!retryable) throw err;
+    await new Promise(r=>setTimeout(r,RETRY_DELAY_MS));
+    return await fn();
+  }
+}
+async function safeJson(res, label){
+  const raw = await res.text();
+  try{ return JSON.parse(raw); }
+  catch(e){ throw new Error(label+' returned a non-JSON response ('+res.status+'): '+redactSecrets(raw).slice(0,JSON_PARSE_ERR_PREVIEW_CHARS)); }
+}
+
+const LLM_ADAPTERS = {
+  claude: {
+    label:'Claude',
+    configured(cfg){ return !!(cfg.claude.apiKey && cfg.claude.apiKey.trim()); },
+    async send(messages, cfg){
+      const c = cfg.claude;
+      return withRetry(async ()=>{
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'x-api-key': c.apiKey.trim(),
+            'anthropic-version':'2023-06-01',
+            'anthropic-dangerous-direct-browser-access':'true'
+          },
+          body: JSON.stringify({
+            model: (c.model||'claude-sonnet-4-6').trim(),
+            max_tokens: CLAUDE_MAX_TOKENS,
+            messages
+          })
+        });
+        if(!res.ok){ throw httpError('Claude API', res.status, await res.text()); }
+        const data = await safeJson(res,'Claude API');
+        return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+      });
+    }
+  },
+  openai: {
+    label:'OpenAI',
+    configured(cfg){ return !!(cfg.openai.apiKey && cfg.openai.apiKey.trim()); },
+    async send(messages, cfg){
+      const c = cfg.openai;
+      const base = (c.endpoint||'https://api.openai.com/v1').replace(/\/+$/,'');
+      return withRetry(async ()=>{
+        const res = await fetch(base+'/chat/completions', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+c.apiKey.trim() },
+          body: JSON.stringify({ model:(c.model||'gpt-4o-mini').trim(), messages })
+        });
+        if(!res.ok){ throw httpError('OpenAI API', res.status, await res.text()); }
+        const data = await safeJson(res,'OpenAI API');
+        return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+      });
+    }
+  },
+  local: {
+    label:'Local LLM',
+    configured(cfg){ return !!(cfg.local.endpoint && cfg.local.endpoint.trim()); },
+    async send(messages, cfg){
+      const c = cfg.local;
+      return withRetry(async ()=>{
+        const res = await fetch(c.endpoint.trim(), {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ model:(c.model||'local-model').trim(), messages, stream:false })
+        });
+        if(!res.ok){ throw httpError('Local LLM', res.status, await res.text()); }
+        const data = await safeJson(res,'Local LLM server');
+        // Documented as OpenAI-compatible, but many local servers (e.g. Ollama's
+        // native /api/chat) don't speak that shape. Rather than silently trusting
+        // whichever shape happens to parse, check explicitly and warn once so a
+        // dev debugging a "wrong" response can see why the fallback fired.
+        if(data.choices && data.choices[0]){
+          return (data.choices[0].message?.content || data.choices[0].text || '').trim();
+        }
+        if(data.message && typeof data.message.content === 'string'){
+          console.warn('[2i] Local LLM endpoint returned Ollama-native /api/chat shape, not the documented OpenAI-compatible shape. Response was still used, but consider pointing the endpoint at an OpenAI-compatible route (e.g. Ollama\'s /v1/chat/completions) for a guaranteed contract.');
+          return data.message.content.trim();
+        }
+        return JSON.stringify(data).slice(0,500);
+      });
+    }
+  }
+};
+
+function llmIsConfigured(){
+  const a = LLM_ADAPTERS[llmConfig.provider];
+  return a ? a.configured(llmConfig) : false;
+}
+async function callLLM(messages){
+  const adapter = LLM_ADAPTERS[llmConfig.provider];
+  if(!adapter) throw new Error('Unknown provider "'+llmConfig.provider+'"');
+  if(!adapter.configured(llmConfig)) throw new Error(adapter.label+' is not configured yet — open ⚙ LLM provider… in the menu.');
+  return adapter.send(messages, llmConfig);
+}
+function updateLLMStatusPill(){
+  const pill = document.getElementById('llmStatus');
+  if(!pill) return;
+  const a = LLM_ADAPTERS[llmConfig.provider];
+  if(a && a.configured(llmConfig)){
+    pill.textContent = a.label+' connected';
+    pill.className = 'llm-status ok';
+  } else {
+    pill.textContent = 'no LLM configured';
+    pill.className = 'llm-status';
+  }
+}
+
+const SCENE = [
+  "The rain kept tapping the window in that slow, deliberate rhythm.",
+  "Sahira slid the envelope across the table without looking up.",
+  "\"You don't have to open it here,\" she said.",
+  "Repeat turned it over once, feeling the weight of whatever was inside.",
+  "\"I know,\" he said. \"I'm going to anyway.\"",
+  "He peeled back the flap slowly, like it might still change its mind.",
+  "The paper inside was thinner than he expected.",
+  "For a second neither of them said anything at all.",
+  "Then he folded it back along its original crease.",
+  "\"Okay,\" he said. \"Okay. I believe you.\"",
+  "He tucked the envelope into his jacket pocket, close to his chest.",
+  "The diner's fluorescent lights buzzed faintly overhead.",
+  "Sahira watched him with an expression he couldn't quite name.",
+  "\"You're not going to say anything else?\" she asked.",
+  "\"Not yet,\" he said. \"Not until I know it's real.\"",
+  "The waitress refilled coffee neither of them had asked for.",
+  "Outside, the rain hadn't let up, and neither had the quiet between them."
+];
+const ALT_DOCKS = [
+  "He pushed the chair back and stood before she could answer.",
+  "\"I'm not waiting on this one,\" he said, already reaching for his coat.",
+  "The docks weren't far, and the envelope wasn't getting lighter in his pocket.",
+  "Sahira called after him but the door had already swung shut.",
+  "Rain hit him the second he stepped outside, cold and immediate.",
+  "He didn't look back at the diner window."
+];
+const ALT_GENERIC = [
+  "\"Say something else, then,\" she said, quieter now.",
+  "He turned the salt shaker over in his fingers instead of answering.",
+  "\"You always do this,\" she said. \"Go quiet right when it matters.\"",
+  "He looked up at her, finally, and there wasn't anything guarded left in it.",
+  "\"I'm not going quiet,\" he said. \"I'm just done guessing what you need me to say.\"",
+  "The rain outside had eased into something softer, almost polite about it."
+];
+const BRANCHES = { docks: ALT_DOCKS, generic: ALT_GENERIC, original: SCENE };
+let currentBranch = 'original';
+let pool = SCENE.slice();
+let pointer = 0;
+let committed = [];
+let buffer = [];
+// NOTE: this one concept ("don't regenerate this line") currently goes by three
+// names in the codebase: `bufferedProtected` here, `.pinned` in CSS, and "pin"
+// in the UI/title text. Left as-is this pass to avoid a wide, easy-to-botch
+// rename; worth unifying (probably on "pin") next time this file is touched.
+let bufferedProtected = new Set(); // indices of buffer lines that are pinned/protected from regen
+let reading = null;
+let playing = false;
+let editingTarget = null;
+let selectedLineIndex = null;
+let committedChapters = [];
+let currentChapter = 1;
+let speaking = false;
+let reactionTimer = null;
+
+// --- NEW: page-based buffer sizing ---
+const WORDS_PER_PAGE = 300;
+const BUFFER_PAGES = 1.5;
+const BUFFER_WORD_CAP = Math.round(WORDS_PER_PAGE * BUFFER_PAGES);
+const REACTION_MS = 12000; // 10-15s reaction window after each line reads
+
+const SPEED_MS = {1:2600, 2:2000, 3:1500, 4:1000, 5:650};
+
+const manuscriptTail = document.getElementById('manuscriptTail');
+const transitionStrip = document.getElementById('transitionStrip');
+const crawlInner = document.getElementById('crawlInner');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const approveBtn = document.getElementById('approveBtn');
+const skipBtn = document.getElementById('skipBtn');
+const genBtn = document.getElementById('genBtn');
+const speedInput = document.getElementById('speed');
+const docTitleInput = document.getElementById('docTitle');
+const saveBtn = document.getElementById('saveBtn');
+const saveAsBtn = document.getElementById('saveAsBtn');
+const saveStatus = document.getElementById('saveStatus');
+const menuBtn = document.getElementById('menuBtn');
+const menuPanel = document.getElementById('menuPanel');
+const openDocBtn = document.getElementById('openDocBtn');
+const unlockBtn = document.getElementById('unlockBtn');
+const lockAllBtn = document.getElementById('lockAllBtn');
+const newChapterBtn = document.getElementById('newChapterBtn');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const branchLabelEl = document.getElementById('branchLabel');
+const wordMetaEl = document.getElementById('wordMeta');
+const chatLog = document.getElementById('chatLog');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+const refList = document.getElementById('refList');
+const refOpenBtn = document.getElementById('refOpenBtn');
+
+let documentHandle = null;
+let documentDirty = true;
+let documentTitle = 'Untitled Pubcast 2i Document';
+
+function setDirty(dirty=true){ documentDirty = dirty; saveStatus.textContent = dirty ? 'unsaved changes' : 'saved'; }
+function safeTitle(){ return (docTitleInput.value||'').trim() || 'Untitled Pubcast 2i Document'; }
+function fileNameFromTitle(t){ return (t.replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,' ').trim()||'Untitled Pubcast 2i Document') + '.2i'; }
+function markDocumentChanged(){ setDirty(true); }
+
+function documentPayload(){
+  documentTitle = safeTitle();
+  return { format:'2i-document', version:2, title:documentTitle, savedAt:new Date().toISOString(),
+    state:{ committed:committed.slice(), committedChapters:committedChapters.slice(), currentChapter,
+      buffer:buffer.slice(), bufferedProtected:Array.from(bufferedProtected), reading: reading?{text:reading.text}:null, branch:currentBranch, pointer,
+      speed:Number(speedInput.value) } };
+}
+function downloadDocument(payload,fileName){
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=fileName; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function saveAsDocument(){
+  const payload=documentPayload(); const suggestedName=fileNameFromTitle(payload.title);
+  if('showSaveFilePicker' in window){
+    try{
+      const handle=await window.showSaveFilePicker({suggestedName,types:[{description:'2i Document',accept:{'application/json':['.2i']}}]});
+      const w=await handle.createWritable(); await w.write(JSON.stringify(payload,null,2)); await w.close();
+      documentHandle=handle; setDirty(false); return;
+    }catch(err){ if(err&&err.name==='AbortError')return; }
+  }
+  downloadDocument(payload,suggestedName); documentHandle=null; setDirty(false);
+}
+async function saveDocument(){
+  const payload=documentPayload();
+  if(documentHandle){
+    try{ const w=await documentHandle.createWritable(); await w.write(JSON.stringify(payload,null,2)); await w.close(); setDirty(false); return; }
+    catch(err){ documentHandle=null; }
+  }
+  await saveAsDocument();
+}
+saveBtn.onclick=saveDocument; saveAsBtn.onclick=saveAsDocument;
+
+async function openDocumentForEditing(){
+  let file = null;
+  if('showOpenFilePicker' in window){
+    try{
+      const [handle] = await window.showOpenFilePicker({ types:[{ description:'2i Document', accept:{'application/json':['.2i']} }] });
+      file = await handle.getFile();
+    }catch(err){ if(err && err.name==='AbortError') return; }
+  }
+  if(!file){
+    file = await new Promise(resolve=>{
+      const input=document.createElement('input');
+      input.type='file'; input.accept='.2i,application/json';
+      input.onchange=()=>resolve(input.files[0]||null);
+      input.click();
+    });
+  }
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(data.format!=='2i-document' || !data.state) throw new Error('not a 2i document');
+    // Load the document into the working area
+    documentTitle = data.title || file.name;
+    docTitleInput.value = documentTitle;
+    committed = Array.isArray(data.state.committed) ? data.state.committed : [];
+    committedChapters = Array.isArray(data.state.committedChapters) ? data.state.committedChapters : [];
+    currentChapter = data.state.currentChapter || 1;
+    buffer = Array.isArray(data.state.buffer) ? data.state.buffer : [];
+    bufferedProtected = new Set(Array.isArray(data.state.bufferedProtected) ? data.state.bufferedProtected : []);
+    reading = data.state.reading ? {text:data.state.reading.text} : null;
+    currentBranch = data.state.branch || 'original';
+    pointer = data.state.pointer || 0;
+    speedInput.value = data.state.speed || 3;
+    documentHandle = null;
+    setDirty(false);
+    updateBranchLabel();
+    renderRefPane();
+    render();
+    document.title = documentTitle + ' — 2i';
+    menuPanel.classList.remove('open');
+  }catch(err){
+    alert('Could not open that file. Make sure it\'s a valid 2i document (.2i file).');
+  }
+}
+openDocBtn.onclick = openDocumentForEditing;
+
+docTitleInput.addEventListener('input',()=>{ documentTitle=safeTitle(); markDocumentChanged(); document.title=documentTitle+' — 2i'; });
+document.title=safeTitle()+' — 2i';
+
+menuBtn.onclick=(e)=>{ e.stopPropagation(); menuPanel.classList.toggle('open'); };
+document.addEventListener('click',(e)=>{ if(!menuPanel.contains(e.target)&&e.target!==menuBtn) menuPanel.classList.remove('open'); });
+unlockBtn.onclick=()=>{
+  menuPanel.classList.remove('open');
+  if(!committed.length){ alert('There are no finalized lines to unlock yet.'); return; }
+  let index = Number.isInteger(selectedLineIndex) ? selectedLineIndex : committed.length-1;
+  const answer = prompt('Unlock which finalized line? Enter its line number.', String(index+1));
+  if(answer===null) return;
+  const n=Number(answer); if(!Number.isInteger(n)||n<1||n>committed.length){ alert('Invalid line number.'); return; }
+  const ta = prompt('Edit line '+n+':', committed[n-1]);
+  if(ta===null) return;
+  committed[n-1]=ta; markDocumentChanged(); render();
+};
+lockAllBtn.onclick=()=>{ menuPanel.classList.remove('open'); selectedLineIndex=null; render(); };
+newChapterBtn.onclick=()=>{ menuPanel.classList.remove('open'); currentChapter+=1; markDocumentChanged(); render(); alert('Chapter '+currentChapter+' is now active.'); };
+
+// --- LLM settings modal ---
+const llmModalBackdrop = document.getElementById('llmModalBackdrop');
+const llmProviderSel = document.getElementById('llmProvider');
+const llmFieldEls = {
+  claude: document.getElementById('llmFieldsClaude'),
+  openai: document.getElementById('llmFieldsOpenai'),
+  local: document.getElementById('llmFieldsLocal')
+};
+function populateLLMForm(){
+  llmProviderSel.value = llmConfig.provider;
+  document.getElementById('llmClaudeKey').value = llmConfig.claude.apiKey;
+  document.getElementById('llmClaudeModel').value = llmConfig.claude.model;
+  document.getElementById('llmOpenaiKey').value = llmConfig.openai.apiKey;
+  document.getElementById('llmOpenaiEndpoint').value = llmConfig.openai.endpoint;
+  document.getElementById('llmOpenaiModel').value = llmConfig.openai.model;
+  document.getElementById('llmLocalEndpoint').value = llmConfig.local.endpoint;
+  document.getElementById('llmLocalModel').value = llmConfig.local.model;
+  showLLMFieldsFor(llmConfig.provider);
+}
+function showLLMFieldsFor(provider){
+  Object.keys(llmFieldEls).forEach(k=> llmFieldEls[k].classList.toggle('active', k===provider));
+}
+llmProviderSel.addEventListener('change', ()=> showLLMFieldsFor(llmProviderSel.value));
+document.getElementById('llmSettingsBtn').onclick = ()=>{
+  menuPanel.classList.remove('open');
+  populateLLMForm();
+  document.getElementById('llmTestResult').textContent='';
+  document.getElementById('llmTestResult').className='llm-test-result';
+  llmModalBackdrop.classList.add('open');
+};
+document.getElementById('llmCancelBtn').onclick = ()=> llmModalBackdrop.classList.remove('open');
+llmModalBackdrop.addEventListener('click', (e)=>{ if(e.target===llmModalBackdrop) llmModalBackdrop.classList.remove('open'); });
+document.getElementById('llmStatus').onclick = ()=> document.getElementById('llmSettingsBtn').onclick();
+
+function readLLMFormIntoConfig(){
+  return {
+    provider: llmProviderSel.value,
+    claude: { apiKey: document.getElementById('llmClaudeKey').value, model: document.getElementById('llmClaudeModel').value || 'claude-sonnet-4-6' },
+    openai: { apiKey: document.getElementById('llmOpenaiKey').value, endpoint: document.getElementById('llmOpenaiEndpoint').value || 'https://api.openai.com/v1', model: document.getElementById('llmOpenaiModel').value || 'gpt-4o-mini' },
+    local:  { endpoint: document.getElementById('llmLocalEndpoint').value || 'http://localhost:11434/v1/chat/completions', model: document.getElementById('llmLocalModel').value || 'llama3' }
+  };
+}
+document.getElementById('llmSaveBtn').onclick = ()=>{
+  llmConfig = readLLMFormIntoConfig();
+  saveLLMConfigToStorage(llmConfig);
+  updateLLMStatusPill();
+  llmModalBackdrop.classList.remove('open');
+};
+document.getElementById('llmTestBtn').onclick = async ()=>{
+  const testCfg = readLLMFormIntoConfig();
+  const resultEl = document.getElementById('llmTestResult');
+  resultEl.className='llm-test-result'; resultEl.textContent='Testing…';
+  const adapter = LLM_ADAPTERS[testCfg.provider];
+  try{
+    if(!adapter.configured(testCfg)) throw new Error('Fill in the required fields above first.');
+    const reply = await adapter.send([{role:'user', content:'Reply with exactly: OK'}], testCfg);
+    resultEl.className='llm-test-result ok';
+    resultEl.textContent = '✓ Connected. Response: '+(reply||'(empty)').slice(0,120);
+  }catch(err){
+    resultEl.className='llm-test-result err';
+    resultEl.textContent = '✗ '+err.message;
+  }
+};
+updateLLMStatusPill();
+
+// --- Voice input (dictation) for chat, via Web Speech API ---
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+const chatMicBtn = document.getElementById('chatMicBtn');
+if(SpeechRecognitionAPI){
+  const recognizer = new SpeechRecognitionAPI();
+  recognizer.continuous = false;
+  recognizer.interimResults = true;
+  recognizer.lang = 'en-US';
+  let listening = false;
+  let baseText = '';
+  recognizer.onresult = (e)=>{
+    let interim='', final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) final+=t; else interim+=t;
+    }
+    chatInput.value = (baseText + ' ' + final + interim).trim();
+  };
+  recognizer.onend = ()=>{ listening=false; chatMicBtn.classList.remove('listening'); };
+  recognizer.onerror = ()=>{ listening=false; chatMicBtn.classList.remove('listening'); };
+  chatMicBtn.onclick = ()=>{
+    if(listening){ recognizer.stop(); return; }
+    baseText = chatInput.value.trim();
+    try{ recognizer.start(); listening=true; chatMicBtn.classList.add('listening'); }
+    catch(e){ /* already started */ }
+  };
+} else {
+  chatMicBtn.title = 'Voice input not supported in this browser (try Chrome/Edge)';
+  chatMicBtn.onclick = ()=> alert('This browser doesn\'t support speech recognition. Try Chrome or Edge, or type instead.');
+}
+
+function isStructuralEdit(oldText,newText){
+  if(oldText.trim()===newText.trim()) return false;
+  if(/dock|leav|stand|walk out|coat|actually|instead|wait[,.]|no[,.] |not\b/i.test(newText)) return true;
+  const norm=s=>s.toLowerCase().replace(/[^a-z0-9' ]/g,'').split(/\s+/).filter(Boolean);
+  const oldWords=norm(oldText), newWords=norm(newText); const oldSet=new Set(oldWords);
+  const shared=newWords.filter(w=>oldSet.has(w)).length;
+  const overlap=shared/Math.max(newWords.length,1);
+  const lenDelta=Math.abs(oldWords.length-newWords.length)/Math.max(oldWords.length,newWords.length,1);
+  return overlap<0.55 || lenDelta>0.4;
+}
+function rerouteIfTriggered(text){
+  let target;
+  if(/dock|leav|stand|walk out|coat/i.test(text)) target='docks';
+  else if(currentBranch==='original') target='generic';
+  else target = currentBranch==='docks' ? 'generic' : 'docks';
+  currentBranch=target; pool=BRANCHES[target].slice(); pointer=0; updateBranchLabel();
+}
+function updateBranchLabel(){ branchLabelEl.textContent='branch: '+currentBranch; }
+
+function bufferWordCount(){ return buffer.join(' ').trim().split(/\s+/).filter(Boolean).length; }
+
+function commitBufferEdit(i,newText){
+  const oldText=buffer[i]; const structural=isStructuralEdit(oldText,newText);
+  buffer[i]=newText; markDocumentChanged();
+  if(structural){
+    // Normal behavior: everything after the edited line gets dropped so it
+    // can regenerate around the new direction. Pinned lines are the
+    // exception — they survive the cut and keep their place relative to
+    // the edit, instead of being wiped along with everything else.
+    const keptAfter = [];
+    for(let j=i+1;j<buffer.length;j++){
+      if(bufferedProtected.has(j)) keptAfter.push(buffer[j]);
+    }
+    buffer = buffer.slice(0,i+1).concat(keptAfter);
+    const rebuiltProtected = new Set();
+    for(let j=0;j<=i;j++){ if(bufferedProtected.has(j)) rebuiltProtected.add(j); }
+    for(let k=0;k<keptAfter.length;k++){ rebuiltProtected.add(i+1+k); }
+    bufferedProtected = rebuiltProtected;
+    reading=null; rerouteIfTriggered(newText); flashRegen();
+  } else { flashOk(); }
+  editingTarget=null; render();
+}
+function commitReadingEdit(newText){
+  const oldText=reading?reading.text:''; const structural=isStructuralEdit(oldText,newText);
+  reading={text:newText}; markDocumentChanged();
+  if(structural){ rerouteIfTriggered(newText); flashRegen(); } else { flashOk(); }
+  editingTarget=null; render();
+}
+function flashRegen(){ showFlag({ok:false,text:'↻ regenerating forward from your edit…'}, 900); }
+function flashOk(){ showFlag({ok:true,text:'✓ minor edit — nothing downstream touched'}, 1400); }
+let pendingFlag=null;
+let pendingFlagTimer=null;
+// Both flash helpers share one timer slot. Without this, a quick
+// flashRegen() (900ms) followed by a flashOk() (1400ms) before the first
+// timer fires would let the *first* timer's callback null out the *second*
+// flag partway through its own display window — the message would vanish
+// early or the wrong one would show. Clearing the previous timer before
+// arming a new one keeps only the most recent flag's timer live.
+function showFlag(flag, ms){
+  if(pendingFlagTimer){ clearTimeout(pendingFlagTimer); }
+  pendingFlag = flag;
+  pendingFlagTimer = setTimeout(()=>{ pendingFlag=null; pendingFlagTimer=null; render(); }, ms);
+  render();
+}
+
+function toggleBufferLinePinned(i){
+  if(bufferedProtected.has(i)){
+    bufferedProtected.delete(i);
+  } else {
+    bufferedProtected.add(i);
+  }
+  markDocumentChanged();
+  render();
+}
+
+function focusEditor(){ const ta=document.querySelector('textarea'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); } }
+function pauseForEdit(){ if(playing) stopPlaying(); }
+
+function render(){
+  // manuscript tail — last 2 lines only
+  const tail = committed.slice(-2);
+  manuscriptTail.innerHTML = '<span class="zlabel">Manuscript — locked</span>' +
+    (tail.length ? tail.map(t=>'<div>'+escapeHtml(t)+'</div>').join('') : '<div style="color:var(--pencil-soft);font-style:italic;">Nothing finalized yet.</div>');
+
+  // transition strip — oldest buffer line, about to commit
+  const strip = buffer.length ? buffer[0] : '';
+  transitionStrip.innerHTML = '<span class="zlabel">Nearing commit</span>' + (strip ? escapeHtml(strip) : '<span style="opacity:.5;">— nothing aging toward commit yet —</span>');
+
+  // crawl: buffer (oldest near top of this container) + reading + upcoming draft pool preview
+  crawlInner.innerHTML = '';
+  if(pendingFlag){ const f=document.createElement('div'); f.className='regen-flag'+(pendingFlag.ok?' ok':''); f.textContent=pendingFlag.text; crawlInner.appendChild(f); }
+
+  if(!buffer.length && !reading){
+    const e=document.createElement('div'); e.className='crawl-empty'; e.textContent='— nothing drafted yet. Hit Generate or Play. —';
+    crawlInner.appendChild(e);
+  }
+
+  buffer.forEach((text,i)=>{
+    const isEditing = editingTarget && editingTarget.type==='buffer' && editingTarget.index===i;
+    const div=document.createElement('div'); div.className='line buffered'+(isEditing?' editing':'')+(bufferedProtected.has(i)?' pinned':'');
+    if(isEditing){
+      div.innerHTML = '<textarea rows="2">'+escapeHtml(text)+'</textarea><div class="line-controls"><button data-save-buf="'+i+'">Save &amp; regenerate forward</button><button data-cancel-buf="'+i+'" class="secondary">Cancel</button></div>';
+    } else {
+      div.textContent = text;
+      div.style.position='relative';
+      const pin=document.createElement('span'); pin.className='line-pin'; pin.textContent='📌'; pin.title=bufferedProtected.has(i)?'Pinned — won\'t regenerate if edits change flow':'Click to pin this line so it won\'t regenerate';
+      pin.onclick=(e)=>{ e.stopPropagation(); toggleBufferLinePinned(i); };
+      div.appendChild(pin);
+      div.onclick = ()=>{ pauseForEdit(); editingTarget={type:'buffer',index:i}; render(); focusEditor(); };
+    }
+    crawlInner.appendChild(div);
+  });
+
+  if(reading){
+    const isEditingReading = editingTarget && editingTarget.type==='reading';
+    const div=document.createElement('div');
+    if(isEditingReading){
+      div.className='line editing';
+      div.innerHTML = '<textarea rows="2">'+escapeHtml(reading.text)+'</textarea><div class="line-controls"><button data-save-reading="1">Save &amp; regenerate forward</button><button data-cancel-reading="1" class="secondary">Cancel</button></div>';
+    } else {
+      div.className = 'line reading' + (inReaction ? ' reaction' : '');
+      const sweep=document.createElement('span'); sweep.className='sweep';
+      if(playing && !inReaction){ sweep.style.animationDuration = SPEED_MS[speedInput.value]+'ms'; }
+      div.appendChild(sweep);
+      div.appendChild(document.createTextNode(reading.text));
+      if(inReaction){ const ring=document.createElement('span'); ring.className='reaction-ring'; ring.title='Reaction window — click to interrupt'; div.appendChild(ring); }
+      div.onclick = ()=>{ pauseForEdit(); clearReaction(); editingTarget={type:'reading'}; render(); focusEditor(); };
+    }
+    crawlInner.appendChild(div);
+  }
+
+  crawlInner.querySelectorAll('[data-save-buf]').forEach(btn=>{ btn.onclick=()=>{ const i=parseInt(btn.getAttribute('data-save-buf')); const ta=btn.closest('.line').querySelector('textarea'); commitBufferEdit(i,ta.value); }; });
+  crawlInner.querySelectorAll('[data-cancel-buf]').forEach(btn=>{ btn.onclick=()=>{ editingTarget=null; render(); }; });
+  const saveReadingBtn = crawlInner.querySelector('[data-save-reading]');
+  if(saveReadingBtn) saveReadingBtn.onclick=()=>{ const ta=crawlInner.querySelector('textarea'); commitReadingEdit(ta.value); };
+  const cancelReadingBtn = crawlInner.querySelector('[data-cancel-reading]');
+  if(cancelReadingBtn) cancelReadingBtn.onclick=()=>{ editingTarget=null; render(); };
+
+  document.getElementById('bufferCrawl').scrollTop = 0; // newest (bottom of doc) stays anchored near visual bottom via column-reverse
+
+  transitionStrip.style.opacity = buffer.length ? '1' : '.4';
+  statusDot.className='status-dot '+(playing?'playing':((buffer.length||committed.length||reading)?'paused':''));
+  statusText.textContent = playing ? (speaking?'reading aloud…':'reading…') : (inReaction ? 'reaction window…' : ((buffer.length||committed.length||reading)?'paused':'idle'));
+  wordMetaEl.textContent = bufferWordCount()+' / '+BUFFER_WORD_CAP+' words in buffer';
+  playBtn.textContent = playing ? '⏸' : '▶';
+  if(typeof renderRefPane==='function' && refMode==='list') renderRefPane();
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let inReaction = false;
+function clearReaction(){ inReaction=false; if(reactionTimer){ clearTimeout(reactionTimer); reactionTimer=null; } }
+
+let speechToken = 0;
+function speechText(text,done){
+  if(!('speechSynthesis' in window)){ if(done) done(); return false; }
+  // Calling cancel() below fires the *previous* utterance's onerror (not
+  // onend) if one was still speaking. That handler used to call whatever
+  // `done` callback closure was live at that moment — which, by the time
+  // it fires, is racing against `reading` already having moved on to the
+  // next line — so it would fire the wrong tick's "finished reading"
+  // logic (reaction window opening early, while the new line is still
+  // being spoken). A per-call token makes onstart/onend/onerror no-ops
+  // for any utterance that isn't the current one.
+  const myToken = ++speechToken;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate = 0.75 + (Number(speedInput.value)-1)*0.12; u.pitch=1;
+  u.onstart=()=>{ if(myToken!==speechToken) return; speaking=true; render(); };
+  u.onend=()=>{ if(myToken!==speechToken) return; speaking=false; render(); if(done) done(); };
+  u.onerror=()=>{ if(myToken!==speechToken) return; speaking=false; render(); if(done) done(); };
+  window.speechSynthesis.speak(u); return true;
+}
+function stopSpeech(){ if('speechSynthesis' in window) window.speechSynthesis.cancel(); speechToken++; speaking=false; }
+
+function graduateIfOverCap(){
+  while(bufferWordCount() > BUFFER_WORD_CAP && buffer.length){
+    committed.push(buffer.shift());
+    committedChapters.push(currentChapter);
+    // every remaining buffer index just shifted down by one — carry pins with them
+    const shifted = new Set();
+    bufferedProtected.forEach(idx => { if(idx > 0) shifted.add(idx-1); });
+    bufferedProtected = shifted;
+  }
+}
+
+// Approve: force the whole current buffer into the locked manuscript now,
+// without waiting for it to hit the page-word cap. Same "you can still
+// unlock it later" rule applies — this isn't more permanent than the
+// normal auto-graduate.
+function approveBuffer(){
+  if(!buffer.length) return;
+  committed.push(...buffer);
+  committedChapters.push(...buffer.map(()=>currentChapter));
+  buffer = [];
+  bufferedProtected = new Set();
+  markDocumentChanged();
+  renderRefPane();
+  render();
+}
+approveBtn.onclick = approveBuffer;
+
+// --- Manual writing (works with zero AI — this is the word-processor core).
+// Typed lines go straight into the same `buffer` array the AI-generated
+// lines use, so pinning, editing, save/load, and (once an LLM is
+// connected) chat/generation context all just see it as part of the draft.
+const writeInput = document.getElementById('writeInput');
+const writeAddBtn = document.getElementById('writeAddBtn');
+function addManualLines(){
+  const raw = writeInput.value;
+  if(!raw.trim()) return;
+  if(playing) stopPlaying();
+  const lines = raw.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+  buffer.push(...lines);
+  graduateIfOverCap();
+  markDocumentChanged();
+  writeInput.value='';
+  render();
+}
+writeAddBtn.onclick = addManualLines;
+writeInput.addEventListener('keydown', (e)=>{
+  // Enter = normal newline (like any word processor). Ctrl/Cmd+Enter = add to draft.
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); addManualLines(); }
+});
+
+let generating = false;
+
+// Ask the configured LLM for the next 1-3 lines of prose continuing the
+// manuscript, and push them onto `pool` so the existing playback/buffer
+// engine (unchanged) just keeps consuming from `pool` as before.
+async function generateMoreIntoPool(){
+  if(generating) return false;
+  if(!llmIsConfigured()) return false;
+  generating = true;
+  genBtn.disabled = true;
+  statusText.textContent = 'generating…';
+  try{
+    const prompt = 'Continue this manuscript with the next 2-4 sentences of prose, matching tone and voice. '+
+      'Return ONLY the new prose, no preamble, no quotes around it, no meta-commentary. '+
+      'Each sentence should be its own line.\n\n'+manuscriptContextForLLM();
+    const reply = await callLLM([{role:'user', content: prompt}]);
+    const newLines = reply.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+    if(newLines.length){ pool = pool.concat(newLines); }
+    return newLines.length>0;
+  }catch(err){
+    reportError('Generation failed', err);
+    return false;
+  }finally{
+    generating = false;
+    genBtn.disabled = false;
+    render();
+  }
+}
+
+async function tick(){
+  if(reading){
+    buffer.push(reading.text); markDocumentChanged(); reading=null;
+    graduateIfOverCap();
+  }
+  if(pointer >= pool.length && llmIsConfigured() && !generating){
+    const got = await generateMoreIntoPool();
+    if(!got && pointer>=pool.length){ stopPlaying(); render(); return; }
+  }
+  if(pointer < pool.length){
+    reading={ text: pool[pointer] }; pointer++; markDocumentChanged(); render();
+    if(playing){
+      speechText(reading.text, ()=>{
+        if(!playing || !reading) return;
+        inReaction = true; render();
+        reactionTimer = setTimeout(()=>{ inReaction=false; if(playing && reading) tick(); }, REACTION_MS);
+      });
+    }
+  } else { stopPlaying(); }
+  render();
+}
+function startPlaying(){
+  if(playing) return; playing=true; clearReaction();
+  if(!reading && (pointer<pool.length || llmIsConfigured())) tick();
+  else if(reading) speechText(reading.text, ()=>{ if(!playing||!reading) return; inReaction=true; render(); reactionTimer=setTimeout(()=>{ inReaction=false; if(playing&&reading) tick(); }, REACTION_MS); });
+  render();
+}
+function stopPlaying(){ stopSpeech(); clearReaction(); playing=false; render(); }
+function skipReaction(){ if(inReaction){ clearReaction(); if(playing && reading) tick(); } }
+
+playBtn.onclick=()=> playing ? stopPlaying() : startPlaying();
+stopBtn.onclick=()=>{ stopPlaying(); };
+skipBtn.onclick=()=>{ if(inReaction) skipReaction(); else if(!playing && (pointer<pool.length || llmIsConfigured())){ tick(); } };
+genBtn.onclick=()=>{ if(!playing && !generating) tick(); }; // manual "generate next line" — real LLM call if a provider is configured, else falls back to demo pool
+speedInput.onchange=markDocumentChanged;
+
+// --- Chat: wired to whichever LLM provider is configured (see LLM_ADAPTERS) ---
+function addChatMsg(who,text,thinking){
+  const div=document.createElement('div'); div.className='chat-msg '+(who==='you'?'you':'pp')+(thinking?' thinking':'');
+  div.innerHTML='<span class="who">'+(who==='you'?'You':'PubPartner')+'</span>'+escapeHtml(text);
+  chatLog.appendChild(div); chatLog.scrollTop=chatLog.scrollHeight;
+  return div;
+}
+// Single, consistent channel for surfacing failures to the writer, so
+// business-logic functions (chat send, generation) don't each reach into
+// the DOM/chat panel directly and don't each decide their own message format.
+function reportError(context, err){
+  console.error('[2i]', context, err);
+  addChatMsg('pp', '⚠ '+(context?context+': ':'')+err.message);
+}
+addChatMsg('pp',"Welcome back. Say the word and I'll draft the next page — we'll go over it together before anything locks in.");
+
+function manuscriptContextForLLM(){
+  const recentCommitted = committed.slice(-6).join('\n');
+  const bufferText = buffer.join('\n');
+  const readingText = reading ? reading.text : '';
+  return [
+    recentCommitted ? 'RECENT LOCKED MANUSCRIPT:\n'+recentCommitted : 'RECENT LOCKED MANUSCRIPT: (nothing finalized yet)',
+    bufferText ? '\nCURRENT DRAFT BUFFER (not yet locked):\n'+bufferText : '',
+    readingText ? '\nMOST RECENT LINE:\n'+readingText : ''
+  ].join('\n');
+}
+
+const CHAT_HISTORY_CAP = 16; // max {role, content} pairs kept as context sent to the model
+let chatHistory = []; // running {role, content} pairs sent to the model for context
+
+async function sendChat(){
+  const v=chatInput.value.trim(); if(!v) return;
+  addChatMsg('you',v); chatInput.value='';
+  chatHistory.push({role:'user', content:v});
+  chatSendBtn.disabled = true; chatSendBtn.textContent='…';
+  const thinkingEl = addChatMsg('pp','…thinking…', true);
+  try{
+    const systemContext = 'You are PubPartner, a collaborative fiction-writing assistant embedded in the Pubcast 2i manuscript editor. '+
+      'Be concise, specific, and useful — a writing partner in the room, not a generic chatbot. Here is the manuscript context:\n\n'+
+      manuscriptContextForLLM();
+    const messages = [{role:'user', content: systemContext}, ...chatHistory];
+    const reply = await callLLM(messages);
+    thinkingEl.remove();
+    addChatMsg('pp', reply || '(empty response)');
+    chatHistory.push({role:'assistant', content: reply||''});
+    if(chatHistory.length>CHAT_HISTORY_CAP) chatHistory = chatHistory.slice(-CHAT_HISTORY_CAP);
+  }catch(err){
+    thinkingEl.remove();
+    reportError('', err);
+  }finally{
+    chatSendBtn.disabled = false; chatSendBtn.textContent='Send';
+  }
+}
+chatSendBtn.onclick=sendChat;
+chatInput.addEventListener('keydown',e=>{ if(e.key==='Enter') sendChat(); });
+
+// --- Reference pane: real chapter scroll-back (this document) + real
+// "open another document" (reads any .2i file, read-only, does NOT touch
+// the active working document's state). ---
+let refMode = 'list'; // 'list' | 'view'
+let refViewTitle = '';
+let refViewText = '';
+
+function currentDocChapterList(){
+  const chapters = [...new Set(committedChapters)];
+  return chapters.map(ch => ({
+    label: 'Chapter '+ch+' — this document',
+    getText: () => committed.filter((_,i)=>committedChapters[i]===ch).join('\n\n')
+  }));
+}
+
+function renderRefPane(){
+  if(refMode==='view'){
+    refOpenBtn.style.display='none';
+    refList.innerHTML =
+      '<button class="secondary ref-view-back" id="refBackBtn">← Back to list</button>'+
+      '<div class="ref-view-title">'+escapeHtml(refViewTitle)+'</div>'+
+      '<div class="ref-view-text">'+escapeHtml(refViewText || '— nothing finalized in this chapter yet —')+'</div>';
+    document.getElementById('refBackBtn').onclick = ()=>{ refMode='list'; renderRefPane(); };
+    return;
+  }
+  refOpenBtn.style.display='';
+  refList.innerHTML='';
+  const chapters = currentDocChapterList();
+  if(!chapters.length){
+    const e=document.createElement('div'); e.className='ref-item'; e.style.cursor='default';
+    e.innerHTML='<span style="color:var(--pencil-soft);font-style:italic;">No finalized chapters yet — nothing to scroll back to.</span>';
+    refList.appendChild(e);
+    return;
+  }
+  chapters.forEach(ch=>{
+    const el=document.createElement('div'); el.className='ref-item';
+    el.innerHTML='<span>'+escapeHtml(ch.label)+'</span><small>scroll back</small>';
+    el.onclick=()=>{ refViewTitle=ch.label; refViewText=ch.getText(); refMode='view'; renderRefPane(); };
+    refList.appendChild(el);
+  });
+}
+
+async function openReferenceDocument(){
+  let file = null;
+  if('showOpenFilePicker' in window){
+    try{
+      const [handle] = await window.showOpenFilePicker({ types:[{ description:'2i Document', accept:{'application/json':['.2i']} }] });
+      file = await handle.getFile();
+    }catch(err){ if(err && err.name==='AbortError') return; }
+  }
+  if(!file){
+    file = await new Promise(resolve=>{
+      const input=document.createElement('input');
+      input.type='file'; input.accept='.2i,application/json';
+      input.onchange=()=>resolve(input.files[0]||null);
+      input.click();
+    });
+  }
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(data.format!=='2i-document' || !data.state) throw new Error('not a 2i document');
+    const chapters = Array.isArray(data.state.committed) ? data.state.committed : [];
+    refViewTitle = (data.title || file.name) + ' — external reference (read-only)';
+    refViewText = chapters.join('\n\n');
+    refMode='view'; renderRefPane();
+  }catch(err){
+    alert('Could not read that as a 2i document.');
+  }
+}
+refOpenBtn.onclick = openReferenceDocument;
+renderRefPane();
+
+updateBranchLabel();
+render();
+
+// ===== SPIRAL SPINE: Real metallic coils, not gradients =====
+function drawSpiralSpine(){
+  const canvas=document.getElementById('spineCanvas');
+  if(!canvas) return;
+  const w=canvas.parentElement.offsetWidth, h=canvas.parentElement.offsetHeight;
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  const coilX=w/2, ringHeight=18, ringCount=Math.ceil(h/ringHeight)+2;
+  
+  // Draw rings with layered metallic shading
+  for(let i=0;i<ringCount;i++){
+    const y=i*ringHeight;
+    const r=w/2.3;
+    const ry=r/3;
+    
+    // Deep shadow below ring
+    const bottomShadow=ctx.createLinearGradient(0,y+ry,0,y+ry+3);
+    bottomShadow.addColorStop(0,'rgba(0,0,0,0.7)');
+    bottomShadow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=bottomShadow;
+    ctx.beginPath(); ctx.ellipse(coilX,y+ry+1.5,r+1,ry+1.5,0,0,Math.PI*2);
+    ctx.fill();
+    
+    // Main ring body with radial metallic gradient
+    const ringGrad=ctx.createRadialGradient(coilX-w/8,y-ry/2,0,coilX,y,r);
+    ringGrad.addColorStop(0,'#fbfcfd');
+    ringGrad.addColorStop(0.15,'#e8eef3');
+    ringGrad.addColorStop(0.4,'#c4d0dc');
+    ringGrad.addColorStop(0.65,'#8fa3b5');
+    ringGrad.addColorStop(0.85,'#5a6b7f');
+    ringGrad.addColorStop(1,'#3a4855');
+    ctx.fillStyle=ringGrad;
+    ctx.beginPath(); ctx.ellipse(coilX,y,r,ry,0,0,Math.PI*2);
+    ctx.fill();
+    
+    // Bright specular highlight on top
+    const spec=ctx.createLinearGradient(0,y-ry,0,y-ry/2);
+    spec.addColorStop(0,'rgba(255,255,255,0.8)');
+    spec.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=spec;
+    ctx.beginPath(); ctx.ellipse(coilX,y-ry/1.8,r*0.8,ry/2.5,0,0,Math.PI*2);
+    ctx.fill();
+    
+    // Ring outline
+    ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.ellipse(coilX,y,r,ry,0,0,Math.PI*2);
+    ctx.stroke();
+  }
+  
+  // Vertical metallic sheen across entire spine
+  const sheen=ctx.createLinearGradient(-w/8,0,w/3,0);
+  sheen.addColorStop(0,'rgba(255,255,255,0.55)');
+  sheen.addColorStop(0.25,'rgba(255,255,255,0.15)');
+  sheen.addColorStop(0.75,'rgba(255,255,255,0)');
+  sheen.addColorStop(1,'rgba(255,255,255,0.08)');
+  ctx.fillStyle=sheen;
+  ctx.fillRect(0,0,w,h);
+}
+window.addEventListener('load',drawSpiralSpine); drawSpiralSpine();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+{
+  "fpr_summary": {
+    "status": "Partial",
+    "confidence": "Low",
+    "primary_issue": "Auto-generated draft; core claims need verification.",
+    "recommended_action": "Review the draft, replace placeholders, and validate with real behavior."
+  },
+  "feature_system": "FPR Toolchain",
+  "date": "2026-03-20T21:10:36.744886+00:00",
+  "desired_purpose": "Draft only: infer from project docs, README language, issues, and surrounding context.\n\nSignals:\n- \"$id\": \"https://rearviewforesight.local/schemas/functional-purpose-report.schema.json\",\n- \"title\": \"Functional Purpose Report\",\n- Generate a draft Functional Purpose Report (FPR) from a project folder or a single file.\n- python fpr_autogen.py /path/to/project --name \"Voice system\" --out draft_fpr.json\n- - extracts high-signal lines mentioning purpose, TODOs, tests, logs, and outcomes",
+  "stated_purpose": "Draft only: inferred from comments, docs, naming, and user-facing descriptions found in the scanned files.\n\nSignals:\n- re.compile(r\"\\b(purpose|goal|intent|why|problem|need|objective|mission)\\b\", re.I),\n- Desktop wrapper for Functional Purpose Report generation.\n- - Enter feature/system name\n- APP_TITLE = \"FPR Desktop Tool\"\n- self.name_var = tk.StringVar(value=\"Unnamed system\")",
+  "functional_purpose": "Draft only: inferred from code structure, tests, logs, and implementation cues; requires human or AI verification.",
+  "evidence": [
+    {
+      "type": "code_inspection",
+      "description": "re.compile(r\"\\b(test|assert|expect|passed|failed|spec)\\b\", re.I),",
+      "artifact": "fpr_autogen.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "re.compile(r\"\\b(todo|fixme|hack|bug|issue|risk)\\b\", re.I),",
+      "artifact": "fpr_autogen.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "re.compile(r\"\\b(log|trace|warning|error|exception)\\b\", re.I),",
+      "artifact": "fpr_autogen.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "except Exception:",
+      "artifact": "fpr_autogen.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "- Save current log to a text file",
+      "artifact": "fpr_desktop_tool.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "tk.Button(save_actions, text=\"Save log as…\", command=self.save_log_as).pack(side=\"left\")",
+      "artifact": "fpr_desktop_tool.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "tk.Label(self, text=\"Log:\", font=(\"Segoe UI\", 10, \"bold\")).pack(anchor=\"w\", padx=padx)",
+      "artifact": "fpr_desktop_tool.py",
+      "confidence": "Low"
+    },
+    {
+      "type": "code_inspection",
+      "description": "self.log = tk.Text(self, wrap=\"word\", height=20)",
+      "artifact": "fpr_desktop_tool.py",
+      "confidence": "Low"
+    }
+  ],
+  "impact": {
+    "easier": [],
+    "faster": [],
+    "safer": [],
+    "newly_possible": []
+  },
+  "alignment_status": "Partially aligned",
+  "confidence_level": "Low",
+  "drift_type": [
+    "Mixed"
+  ],
+  "gaps": {
+    "missing_behavior": [
+      "Need observed runtime behavior and user-facing validation."
+    ],
+    "missing_signals": [
+      "Need clearer source-of-truth statements for desired and stated purpose."
+    ],
+    "missing_integration": [
+      "Need linkage between docs, tests, and actual program behavior."
+    ],
+    "missing_constraints": [
+      "Need explicit acceptance criteria and failure conditions."
+    ]
+  },
+  "failure_cost": {
+    "breaks": [
+      "Decisions may be made on guessed purpose instead of verified purpose."
+    ],
+    "degrades": [
+      "Confidence in feature completeness and project continuity."
+    ],
+    "propagates_to": [
+      "Future planning, implementation, and audits."
+    ]
+  },
+  "signal_role": "Not a signal",
+  "cost_vs_benefit": {
+    "complexity_added": "Low to moderate; one draft-analysis pass across project files.",
+    "benefit_gained": "Creates a standardized first-pass FPR packet quickly.",
+    "worth_it": true
+  },
+  "required_actions": [
+    "Review desired purpose against real user need.",
+    "Replace draft functional claims with observed behavior.",
+    "Add concrete evidence from tests, logs, demos, or direct use."
+  ],
+  "final_decision": "Recalibrate",
+  "final_test": "If removed, the project loses a quick standardized way to draft an FPR from project artifacts.",
+  "notes": "Scanned 3 files successfully out of 3 candidates under /mnt/data. Skipped 0 oversized files and 0 unreadable or empty files."
+}

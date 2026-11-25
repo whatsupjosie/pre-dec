@@ -1,0 +1,8 @@
+PEQ v0.1 hardening verification — 2026-08-14
+
+pytest: 48 passed
+compileall: passed
+concurrency stress: 160 calls / 16 workers / 0 exceptions
+determinism probe: passed
+retrieval boundary probe: passed
+bytecode/cache cleanup: passed

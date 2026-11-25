@@ -1,0 +1,32 @@
+PubCast AI v7.0 - All Files from Chat Session + MOCAP
+=====================================================
+
+Created: Tue Mar 10 11:02:37 UTC 2026
+
+NEW: Motion Capture Integration System added!
+
+./FILE_LIST.txt
+./INSTALLATION_GUIDE.md
+./README_V7.md
+./core/.env_example_v7
+./core/main_v7.py
+./core/pete_enhanced_v7.py
+./core/requirements_v7.txt
+./data/voxel_asset_library.json
+./docs/ARCHITECTURE_V7.md
+./docs/COMPLETE_SYSTEM_README.md
+./docs/DEPLOYMENT_GUIDE_V7.md
+./docs/MOCAP_INTEGRATION_GUIDE.md
+./docs/QUICK_REFERENCE.md
+./docs/STUDIO_CONTROL_INTEGRATION.md
+./docs/VOXEL_SYSTEM_README.md
+./modules/mocap_integration.py
+./modules/studio_control.py
+./modules/studio_websocket.py
+./modules/voxel_asset_manager.py
+./modules/voxel_studio_integration.py
+./scripts/mocap_simulator.py
+./scripts/setup_pubcast_v7.py
+./scripts/setup_studio_control.py
+./static/studio_control_room.html
+./static/voxel_scene_builder.html

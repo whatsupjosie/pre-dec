@@ -1,0 +1,4 @@
+sqlcipher3>=3.9.2
+pycryptodome>=3.15.0
+flask>=2.3.0
+requests>=2.31.0

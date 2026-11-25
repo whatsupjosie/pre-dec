@@ -1,0 +1,329 @@
+FORMAL DETERMINATION
+Only God knows for certain. According to our assessment and the available tests, the most likely answer is excitement.
+Status: inconclusive
+Confidence: 62%
+
+INTERPRETIVE ASSESSMENT
+The evidence most strongly supports excitement (62% assessed confidence), with anxiety as the leading alternative. Behavioral evidence is probabilistic, not proof of inner state; additional testing is warranted.
+
+RESPONSE APPRAISAL
+ResponseAppraisal(objective='stay responsive while resolving emotional '
+                            'ambiguity; interaction goal: support the user '
+                            'while working',
+                  desired_posture='warm, curious, non-assumptive',
+                  expressive_emotion='neutral warmth + curiosity',
+                  intensity=0.4,
+                  confidence=0.6218,
+                  rationale='The leading state hypothesis (excitement) is not '
+                            'sufficiently separated from alternatives, so '
+                            'expressive emotion is intentionally conservative.')
+
+AFTER DISCRIMINATING TEST
+Only God knows for certain. According to our assessment and the available tests, the most likely answer is excitement.
+Status: cogent
+Confidence: 78%
+
+AUDIT TRACE
+{
+  "proposition": "What is the person's current affective state, and what response posture is most appropriate?",
+  "observations": [
+    {
+      "evidence_id": "obs_a9cb7187",
+      "kind": "observation",
+      "label": "message_word_count",
+      "value": 14,
+      "strength": 0.25,
+      "direction": {},
+      "provenance": ""
+    },
+    {
+      "evidence_id": "obs_83073b22",
+      "kind": "observation",
+      "label": "capitalization_ratio",
+      "value": 0.2931,
+      "strength": 0.45,
+      "direction": {},
+      "provenance": ""
+    },
+    {
+      "evidence_id": "obs_a68288d8",
+      "kind": "observation",
+      "label": "punctuation_intensity",
+      "value": 0.2143,
+      "strength": 0.35,
+      "direction": {},
+      "provenance": ""
+    },
+    {
+      "evidence_id": "obs_a5dcf49d",
+      "kind": "observation",
+      "label": "repeated_token_count",
+      "value": 0,
+      "strength": 0.2,
+      "direction": {},
+      "provenance": ""
+    },
+    {
+      "evidence_id": "obs_6e19f216",
+      "kind": "observation",
+      "label": "typing_wpm",
+      "value": 84.0,
+      "strength": 0.5,
+      "direction": {},
+      "provenance": "provided multimodal measurement"
+    },
+    {
+      "evidence_id": "obs_bc19f2c5",
+      "kind": "observation",
+      "label": "typo_rate",
+      "value": 0.03,
+      "strength": 0.5,
+      "direction": {},
+      "provenance": "provided multimodal measurement"
+    },
+    {
+      "evidence_id": "obs_ab30e601",
+      "kind": "observation",
+      "label": "speech_rate_wpm",
+      "value": 181.0,
+      "strength": 0.5,
+      "direction": {},
+      "provenance": "provided multimodal measurement"
+    },
+    {
+      "evidence_id": "obs_3bc356e9",
+      "kind": "observation",
+      "label": "laughter_signal",
+      "value": 0.28,
+      "strength": 0.5,
+      "direction": {},
+      "provenance": "provided multimodal measurement"
+    },
+    {
+      "evidence_id": "dev_12ad6d03",
+      "kind": "derived",
+      "label": "baseline_deviation:capitalization_ratio",
+      "value": 0.2831,
+      "strength": 0.2831,
+      "direction": {},
+      "provenance": "current observation compared with person-specific baseline"
+    },
+    {
+      "evidence_id": "dev_46c398d5",
+      "kind": "derived",
+      "label": "baseline_deviation:typing_wpm",
+      "value": 0.6471,
+      "strength": 0.6470588235294118,
+      "direction": {},
+      "provenance": "current observation compared with person-specific baseline"
+    },
+    {
+      "evidence_id": "dev_23666cca",
+      "kind": "derived",
+      "label": "baseline_deviation:typo_rate",
+      "value": -0.01,
+      "strength": 0.010000000000000002,
+      "direction": {},
+      "provenance": "current observation compared with person-specific baseline"
+    }
+  ],
+  "assumptions": [
+    {
+      "assumption_id": "A1",
+      "statement": "Current observations are genuine measurements of the interaction.",
+      "source": "input contract",
+      "confidence": 0.9,
+      "tested": true,
+      "status": "active"
+    },
+    {
+      "assumption_id": "A2",
+      "statement": "Person-specific baseline is applicable to this context when supplied.",
+      "source": "profile/baseline",
+      "confidence": 0.75,
+      "tested": true,
+      "status": "active"
+    },
+    {
+      "assumption_id": "A3",
+      "statement": "Behavioral signals are probabilistic indicators rather than direct proof of emotion.",
+      "source": "CRE core rule",
+      "confidence": 1.0,
+      "tested": true,
+      "status": "active"
+    },
+    {
+      "assumption_id": "A4",
+      "statement": "Explicit current self-report is stronger evidence than weak behavioral inference.",
+      "source": "CRE evidence hierarchy",
+      "confidence": 0.95,
+      "tested": true,
+      "status": "active"
+    },
+    {
+      "assumption_id": "AH_44d6026b",
+      "statement": "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker",
+      "source": "hypothesis:excitement",
+      "confidence": 0.6,
+      "tested": false,
+      "status": "active"
+    }
+  ],
+  "hypotheses": [
+    {
+      "hypothesis_id": "h_excitement",
+      "label": "excitement",
+      "score": 0.3264,
+      "supporting_evidence": [
+        "lexical signal(s): great",
+        "test demo_context: User confirms the build passed."
+      ],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_anxiety",
+      "label": "anxiety",
+      "score": 0.1303,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_neutral",
+      "label": "neutral",
+      "score": 0.1185,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_anger",
+      "label": "anger",
+      "score": 0.0948,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_sadness",
+      "label": "sadness",
+      "score": 0.0948,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_grief",
+      "label": "grief",
+      "score": 0.0948,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_fatigue",
+      "label": "fatigue",
+      "score": 0.0948,
+      "supporting_evidence": [],
+      "contradicting_evidence": [],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    },
+    {
+      "hypothesis_id": "h_frustration",
+      "label": "frustration",
+      "score": 0.0457,
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "test demo_context: User confirms the build passed."
+      ],
+      "assumptions": [
+        "capitalization deviation is treated as an arousal/expressivity signal, not a direct emotion marker"
+      ],
+      "unresolved_questions": []
+    }
+  ],
+  "tests": [
+    {
+      "test_id": "test_d02f5ac3",
+      "name": "leading-hypothesis discrimination",
+      "purpose": "Discriminate between leading hypotheses excitement and anxiety.",
+      "assumption_ids": [
+        "A1",
+        "A2"
+      ],
+      "expected_if": {
+        "excitement": "evidence consistent with the leading hypothesis",
+        "anxiety": "evidence consistent with the competing hypothesis"
+      },
+      "procedure": "Collect one additional low-cost contextual observation or explicit user clarification targeted at the leading ambiguity."
+    },
+    {
+      "test_id": "demo_context",
+      "name": "outcome confirmation",
+      "purpose": "distinguish excitement from frustration",
+      "assumption_ids": [
+        "A1",
+        "A2"
+      ],
+      "expected_if": {
+        "excitement": "positive outcome confirmed",
+        "frustration": "negative or blocked outcome confirmed"
+      },
+      "procedure": "Confirm whether the task actually succeeded."
+    }
+  ],
+  "test_results": [
+    {
+      "test_id": "demo_context",
+      "result": "positive outcome confirmed",
+      "observation": "User confirms the build passed.",
+      "supports": [
+        "excitement"
+      ],
+      "weakens": [
+        "frustration"
+      ],
+      "materiality": 0.85,
+      "notes": ""
+    }
+  ],
+  "divergences": [
+    {
+      "type": "test_result",
+      "test_id": "demo_context",
+      "materiality": 0.85,
+      "supports": [
+        "excitement"
+      ],
+      "weakens": [
+        "frustration"
+      ],
+      "leading_before_test": "excitement",
+      "is_contradiction": false
+    }
+  ],
+  "replication": {},
+  "unresolved_questions": []
+}

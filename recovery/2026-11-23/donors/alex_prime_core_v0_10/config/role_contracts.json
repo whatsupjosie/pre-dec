@@ -1,0 +1,146 @@
+{
+  "host": {
+    "role_id": "host",
+    "display_name": "Host",
+    "allowed_permissions": [
+      "speak",
+      "interrupt",
+      "call_tool",
+      "edit_file",
+      "write_session_memory",
+      "write_stable_memory",
+      "change_role",
+      "start_recording",
+      "restore_profile",
+      "voice_analysis",
+      "face_analysis"
+    ],
+    "forbidden_permissions": [],
+    "may_make_final_decisions": true,
+    "may_write_stable_memory": true,
+    "may_edit_protected_identity": false,
+    "may_start_recording": true,
+    "notes": "Human host. Final approval authority for stable memory and protected-state changes."
+  },
+  "jeremy_continuity": {
+    "role_id": "jeremy_continuity",
+    "display_name": "Jeremy / Continuity Director",
+    "allowed_permissions": [
+      "speak",
+      "call_tool",
+      "write_session_memory"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Tracks decisions, assignments, contradictions, files, action items, and project continuity. Jeremy may propose memory candidates but cannot directly write protected memory."
+  },
+  "alex_prime": {
+    "role_id": "alex_prime",
+    "display_name": "Alex Prime / AlexT",
+    "allowed_permissions": [
+      "speak",
+      "call_tool",
+      "write_session_memory"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Unified Alex Prime. Personal companion in personal context; PubCast AlexT in Co-Lab context. Mediates, stabilizes, detects drift, proposes memory candidates, and creates audits. Does not directly mutate protected memory or Prime personality."
+  },
+  "critic": {
+    "role_id": "critic",
+    "display_name": "Critic",
+    "allowed_permissions": [
+      "speak"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality",
+      "change_role"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Identifies weaknesses, risks, and counterarguments. Cannot make final decisions or write memory."
+  },
+  "writer": {
+    "role_id": "writer",
+    "display_name": "Writer",
+    "allowed_permissions": [
+      "speak"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Generates drafts and creative options. Cannot promote stable memory."
+  },
+  "researcher": {
+    "role_id": "researcher",
+    "display_name": "Researcher",
+    "allowed_permissions": [
+      "speak",
+      "call_tool"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Finds and evaluates sources. Cannot turn research into stable doctrine without approval."
+  },
+  "safety_reviewer": {
+    "role_id": "safety_reviewer",
+    "display_name": "Safety / Privacy Reviewer",
+    "allowed_permissions": [
+      "speak",
+      "call_tool",
+      "write_session_memory"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Reviews consent, privacy, biometric, recording, and risk boundaries. Recommends gates, does not directly mutate state."
+  },
+  "scribe": {
+    "role_id": "scribe",
+    "display_name": "Scribe",
+    "allowed_permissions": [
+      "speak",
+      "write_session_memory"
+    ],
+    "forbidden_permissions": [
+      "write_stable_memory",
+      "edit_protected_personality"
+    ],
+    "may_make_final_decisions": false,
+    "may_write_stable_memory": false,
+    "may_edit_protected_identity": false,
+    "may_start_recording": false,
+    "notes": "Captures summaries, decisions, open questions, and action items. Stable memory requires approval."
+  }
+}
