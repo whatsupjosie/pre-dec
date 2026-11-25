@@ -136,11 +136,16 @@ def read(message: str) -> Tuple[List[str], str]:
         mood = "hurt"
     elif "setback" in topics:
         mood = "setback"
-    elif "celebrate" in topics and _celebrate_words(text, deck, topics):
+    elif "celebrate" in topics and _celebrate_words(text, deck, topics) and not _is_question(text):
         mood = "celebrate"
     else:
         mood = "neutral"
     return topics, mood
+
+
+def _is_question(text: str) -> bool:
+    """'Who won the world series?' asks about a win; it doesn't announce one."""
+    return text.rstrip().endswith("?") or bool(re.match(r"\s*(who|what|when|where|which|did|does|do|is|are)\b", text, re.IGNORECASE))
 
 
 def _celebrate_words(text: str, deck: Mapping, topics: List[str]) -> bool:
@@ -212,6 +217,28 @@ def _fill(text: str, slots: Mapping[str, str], sancho: bool = True) -> str:
     return text
 
 
+_WORD = re.compile(r"[a-z][a-z'-]{2,}")
+
+
+def _closest(cards: List[dict], message: str) -> List[dict]:
+    """Among the cards for a topic, keep those that share a meaningful word with the
+    message ('how close should I be to the mic?' -> the mic card). If none share a
+    word, all of them stay in play."""
+    asked = {w.rstrip("s") for w in _WORD.findall(message.casefold())} - {w.rstrip("s") for w in _STOP | {"tip", "tips", "any", "should", "advice", "help", "good", "please", "tell"}}
+    if not asked:
+        return cards
+    scored = []
+    for c in cards:
+        words = {w.rstrip("s") for w in _WORD.findall(c["text"].casefold())}
+        hit = len(asked & words)
+        if hit:
+            scored.append((hit, c))
+    if not scored:
+        return cards
+    best = max(h for h, _ in scored)
+    return [c for h, c in scored if h == best]
+
+
 def _pick(cards: List[dict], seed: bytes, salt: str, recent: str, slots: Mapping[str, str]) -> Optional[dict]:
     if not cards:
         return None
@@ -273,6 +300,7 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
                 return {"topics": topics, "mood": mood, "cards": [told]}
     if not beats:
         return {"topics": topics, "mood": mood, "cards": []}
+    angle_chosen = False
     # Within a big subject, the question picks the angle ("why no awards?" gets
     # the awards grievance, "isn't it just smut?" gets the craft defence).
     if len(spoken) == 1 and spoken[0] in deck["angles"]:
@@ -280,6 +308,8 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         angled = [c for c in beats if c.get("angle") in wanted]
         if angled:
             beats = angled
+            angle_chosen = True
+    beats = _closest(beats, message)
     beat = _pick(beats, seed, "beat", recent, slots)
     # A story request gets a built action story half the time.
     if "story" in spoken and deck["kit"] and seed[6] % 2 == 0:
@@ -287,7 +317,7 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
         if told:
             beat = told
     # One time in four, on chatty topics, a Mad Lib stands in for the card.
-    if not beat.get("solo") and mood == "neutral" and seed[7] % 4 == 0:
+    if not beat.get("solo") and not angle_chosen and mood == "neutral" and seed[7] % 4 == 0:
         for t in spoken:
             built = _madlib_line(deck, t, seed, recent)
             if built:
@@ -296,7 +326,7 @@ def select(message: str, history: Sequence[Mapping[str, str]] = ()) -> Dict[str,
     # One time in three, a line built from a frame stands in for the card, so a
     # topic he has covered before still gets something new.
     kit_topic = _kit_topic(deck["kit"], spoken) if deck["kit"] else None
-    if kit_topic and not beat.get("solo") and seed[5] % 3 == 0:
+    if kit_topic and not beat.get("solo") and not angle_chosen and seed[5] % 3 == 0:
         framed = _frame_line(deck["kit"], kit_topic, mood, seed, recent)
         if framed:
             beat = framed
