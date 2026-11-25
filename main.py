@@ -823,6 +823,16 @@ class PubCastContextAdapter:
 # Lifespan — 12-step boot
 # —
 
+async def _finish_recordings_at_shutdown(application: FastAPI) -> None:
+    """Let every take still recording finish its files before the server goes (codex/main-debug 62ad072).
+
+    Without this, FFmpeg is cut off with the process and an MP4 it was writing has no index."""
+    router = getattr(application.state, "production_router", None)
+    finish = getattr(router, "shutdown_captures", None)
+    if callable(finish):
+        await finish()
+
+
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     global hub, bot_manager, room_manager, inference, cameras, recording, blackbox_witness
@@ -925,6 +935,9 @@ async def lifespan(application: FastAPI):
             yield
         finally:
             application.state._pubcast_lifespan_users = 0
+            if timeline_player is not None:
+                await timeline_player.stop()
+            await _finish_recordings_at_shutdown(application)
             if rearmed_camera_broadcast is not None:
                 await rearmed_camera_broadcast.stop()
             if rearmed_camera_pool is not None:
@@ -1184,6 +1197,8 @@ async def lifespan(application: FastAPI):
         emergency_snapshot=_studio_emergency_snapshot,
     )
     application.include_router(production_router)
+    # Kept so shutdown (first entry or a re-entry) can finish the files of takes still recording.
+    application.state.production_router = production_router
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
     application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
@@ -1954,6 +1969,9 @@ async def lifespan(application: FastAPI):
 
     # — Shutdown —
     logger.info("— PubCast AI shutting down —")
+    if timeline_player is not None:
+        await timeline_player.stop()
+    await _finish_recordings_at_shutdown(application)
     for _speech in (stt_engine, tts_engine):
         if _speech is not None:
             await _speech.close()
