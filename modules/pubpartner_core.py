@@ -50,6 +50,7 @@ from .pubpartner_guidance import PubPartnerGuidanceStore
 from .pubpartner_blackbox_light import PubPartnerBlackboxLight
 from .pubpartner_tokens import PubPartnerTokenCounter
 from .pubpartner_receipts import PubPartnerReceiptStore
+from .pubpartner_identity_checkpoint import checkpoint as identity_checkpoint
 from .pubpartner_relationship import RelationshipEngine
 from .pubpartner_knowledge import PubPartnerKnowledgeBroker
 from .pubpartner_work_notes import WorkNotesStore
@@ -1215,7 +1216,17 @@ class PubPartnerSpine:
             dispatch_config = self.profiles.resolve_provider(dispatch_config)
         if not isinstance(dispatch_config, dict):
             dispatch_config = {}
+        failure_stage = 'identity_checkpoint'
         try:
+            # Receipt chain is durable per user/session and survives host restarts.
+            # Counting completed live dispatches, not packet-preview requests, keeps
+            # response 1, 4, 7... stable even when preview endpoints are called.
+            receipt_state = self.receipts.verify(user_id=user_id or "anon", session_id=session_id or "default")
+            if not receipt_state.get("ok"):
+                raise ValueError("Cannot establish identity checkpoint sequence: receipt chain invalid")
+            response_number = int(receipt_state["entries"]) + 1
+            turn["identity_checkpoint"] = await identity_checkpoint(turn, response_number)
+            failure_stage = 'provider_dispatch'
             provider_result = await self.provider_dispatcher.dispatch(turn, dispatch_config)
             provider_fallback: Optional[Dict[str, Any]] = None
             if allow_fallback and not provider_result.ok and provider_result.provider not in {"offline", "mock"}:
@@ -1230,7 +1241,7 @@ class PubPartnerSpine:
                     self.blackbox_witness.record_event('partner.turn_failed', source='pubpartner', actor=user_id,
                         data={'turn_id':turn.get('turn_id'), 'session_id':session_id, 'room_id':room_id,
                               'state':'interrupted' if isinstance(exc, asyncio.CancelledError) else 'failed',
-                              'stage':'provider_dispatch', 'error_type':type(exc).__name__})
+                              'stage':failure_stage, 'error_type':type(exc).__name__})
                 except Exception:
                     logging.getLogger(__name__).exception('Unable to witness failed PubPartner dispatch')
             raise
@@ -1269,6 +1280,7 @@ class PubPartnerSpine:
             except Exception as exc:
                 live_result["eq_perception"] = {"status": "unavailable", "influence": "none",
                                                 "error": f"{type(exc).__name__}: {exc}"[:240]}
+        receipt["identity_checkpoint"] = turn["identity_checkpoint"]
         receipt_chain_row = self.receipts.append(user_id=user_id or "anon", session_id=session_id or "default", receipt=receipt)
         live_result.update({
             "live_loop": True,
