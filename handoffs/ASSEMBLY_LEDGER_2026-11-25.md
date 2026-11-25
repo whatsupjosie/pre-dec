@@ -21,6 +21,9 @@ Evidence words: RAN means it was run here. READ means the code was read. GUESS m
 11. The Base-Horizon companion mode, link and avatar preference layer (Pub-Partner-Base-Horizon `claude/federation-merge`, c9d053a). Runs on pre-dec's own newer federation core.
 12. The renderer's vendored Rust libraries (`claude/renderer-crates-vendored-2026-11-24`), then `bin/ws_renderer` rebuilt from them offline.
 13. Step three's garbled-character fix on the control room, Airlock and stage pages.
+14. The Word workspace guard (ad189776): a .2i switch is refused while a Word doc is open, and Open Word is hidden in file mode.
+15. Step three's launcher fix (866b037d): the offline 2i launcher now serves the desk's typewriter and its files. Step three reports its new tests/test_2i_offline_launcher.py passes 15 (their run).
+16. Step three's renderer bridge fix (f0985d6b): modules/voxel_webrtc_bridge.py now passes --port to the rebuilt ws_renderer, so an inherited PUBCAST_WS_PORT no longer wins over the bridge's own port.
 
 ## Every pre-dec branch (39 on GitHub at 04:15Z, Nov 25)
 
