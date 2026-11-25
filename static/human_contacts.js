@@ -86,6 +86,8 @@
       } catch (_) { busy(false); status('An unreadable message was received. Your draft is kept.'); }
     };
   }
+  const contact = new URLSearchParams(location.search).get('person');
+  if (contact) $('person').value = contact.slice(0, 100);
   $('request').onsubmit = async event => {
     event.preventDefault();
     try { const result = await api('request', { to_user: $('person').value.trim(), message: $('hello').value }); status(result.status === 'pending' ? 'Contact request sent.' : 'Contact channel is open.'); await load(); }

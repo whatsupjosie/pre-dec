@@ -502,7 +502,9 @@ body.perf-static .ambient-halo-pano{animation:none;opacity:0.6}
   letter-spacing:1px;position:absolute;top:4px;
 }
 </style>
+  <link rel="stylesheet" href="/static/host_events.css">
   <script src="/static/reach_auth.js"></script>
+  <script src="/static/host_events.js" defer></script>
 </head>
 <body>
 
@@ -956,6 +958,16 @@ body.perf-static .ambient-halo-pano{animation:none;opacity:0.6}
   <div class="chat-header">
     <div class="chat-dot"></div>◆ LIVE CHAT ◆
   </div>
+  <div class="host-events">
+    <button type="button" data-page-host="studio">Request the host</button>
+    <span data-page-host-status role="status"></span>
+  </div>
+  <details class="host-events" data-host-events hidden>
+    <summary>Host alerts <span data-alert-count></span></summary>
+    <div data-event-list></div>
+    <p data-event-status role="status"></p>
+    <a href="/host-events">Open host event log</a>
+  </details>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input-bar">
     <input class="chat-input" id="chatInput" placeholder="Type a message..." maxlength="500">

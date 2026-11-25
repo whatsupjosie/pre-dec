@@ -143,3 +143,56 @@ def test_revoked_guest_cannot_receive_unsolicited_frames_on_idle_socket(rig):
         with pytest.raises(WebSocketDisconnect) as error:
             ws.receive_text()
         assert error.value.code == 1008
+
+
+def test_temporary_pass_goes_only_to_pending_browser_and_only_owner_can_issue(rig):
+    client, owner, admission, _ = rig
+    ticket = 'a' * 64
+    arrival = client.post('/api/guests/arrival', json={'ticket':ticket,'screen_name':'Session Guest'})
+    assert arrival.status_code == 201
+    path = '/api/guests/arrivals/' + arrival.json()['arrival_id'] + '/session-pass'
+    staff = {'Authorization':'Bearer ' + auth.create_access_token({'sub':'staff','role':'mod'})}
+    assert client.post(path, headers=staff).status_code == 403
+    assert client.post(path).status_code == 401
+    issued = client.post(path, headers=owner)
+    assert issued.status_code == 201
+    assert client.post(path, headers=owner).status_code == 400
+    assert 'access_token' not in client.post('/api/guests/arrival/status',json={'ticket':'b'*64}).json()
+    passed = client.post('/api/guests/arrival/status',json={'ticket':ticket})
+    assert 'HttpOnly' in passed.headers['set-cookie']
+    lease = passed.json()
+    assert lease['entry_id'] == issued.json()['pass_id']
+    assert lease['role'] == 'guest'
+    guest = {'Authorization':'Bearer '+lease['access_token']}
+    assert client.get('/api/auth/verify',headers=guest).status_code == 200
+    assert client.get('/api/profile/me',headers=guest).json()['display_name'] == 'Session Guest'
+    assert client.post('/api/guests/pass-session/end', headers=guest).status_code == 403
+    events = client.get('/api/guests/events',headers=owner).json()['events']
+    assert any(e['reference'] == lease['entry_id'] and 'without contract signature' in e['detail'] for e in events)
+    with client.websocket_connect('/probe',headers=guest) as socket:
+        assert socket.receive_json()['user_id'] == lease['user_id']
+        assert client.post('/api/guests/pass-session/end',headers=owner).json()['ended']
+        socket.send_text('after the owner ends the session')
+        with pytest.raises(WebSocketDisconnect):
+            socket.receive_text()
+    assert client.get('/api/auth/verify',headers=guest).status_code == 401
+    assert client.post('/api/guests/arrival/status',json={'ticket':ticket}).json() == {'status':'expired'}
+
+
+def test_session_pass_expires_with_production_and_cannot_revive(rig):
+    client, owner, admission, _ = rig
+    scope = [None]
+    admission.active_production = lambda: scope[0]
+    soft_ticket = 'c' * 64
+    arrival = admission.knock('Guest before production', soft_ticket, 'test')
+    admission.issue_session_pass(arrival, 'owner')
+    assert admission.arrival_status(soft_ticket)['status'] == 'session_pass'
+    scope[0] = 'slate-1:active'
+    assert admission.arrival_status(soft_ticket) == {'status':'expired'}
+    take_ticket = 'd' * 64
+    arrival = admission.knock('Guest during production', take_ticket, 'test')
+    admission.issue_session_pass(arrival, 'owner')
+    assert admission.arrival_status(take_ticket)['status'] == 'session_pass'
+    scope[0] = 'slate-1:ended'
+    assert admission.arrival_status(take_ticket) == {'status':'expired'}
+    assert admission.arrival_status(soft_ticket) == {'status':'expired'}

@@ -1201,7 +1201,14 @@ async def lifespan(application: FastAPI):
     application.state.production_router = production_router
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
-    application.include_router(create_slate_router(DATA_DIR / "production_slates.sqlite3"))
+    slate_router = create_slate_router(DATA_DIR / "production_slates.sqlite3")
+    application.include_router(slate_router)
+
+    def production_pass_scope():
+        slate = slate_router.store.current()
+        if slate is None:
+            return None
+        return slate['id'] + (':ended' if slate['phase'] == 'ended' else ':active')
     from modules.pubcast_vision_integration import PubcastVisionManager
     from modules.pubcast_vision_routes import create_vision_router
     vision_manager = PubcastVisionManager(camera_manager=cameras, data_dir=DATA_DIR)
@@ -1285,7 +1292,7 @@ async def lifespan(application: FastAPI):
     governance = GovernanceEngine(DATA_DIR)
     from modules.guest_identity import GuestAdmission
     from modules.guest_identity_routes import create_guest_identity_router
-    application.state.guest_admission = GuestAdmission(governance)
+    application.state.guest_admission = GuestAdmission(governance, production_pass_scope)
     auth_module.set_guest_admission(application.state.guest_admission)
     application.include_router(create_guest_identity_router(application.state.guest_admission, cred_store))
     application.include_router(create_governance_router(governance, hub, authority_bridge=alex_bridge, authority_store=pub_manager_authority))
@@ -2060,6 +2067,8 @@ from modules.control_plane_guard import ControlPlaneGuardMiddleware  # noqa: E40
 app.add_middleware(ControlPlaneGuardMiddleware)
 from modules.guest_session_guard import GuestSessionGuardMiddleware  # noqa: E402
 app.add_middleware(GuestSessionGuardMiddleware)
+from modules.airlock_guard import AirlockGuardMiddleware  # noqa: E402
+app.add_middleware(AirlockGuardMiddleware)
 app.mount("/2i-assets", StaticFiles(directory=str(Path(__file__).resolve().parent / "2i" / "2i-assets")), name="writers-room-assets")
 
 if STATIC_DIR.exists() and any(STATIC_DIR.iterdir()):
@@ -3725,6 +3734,11 @@ async def pub_manager_issue_report():
         return {"available": False, "error": "Pub Manager recovery scaffold unavailable"}
     snapshot = build_snapshot(_pub_manager_raw_status())
     return {"available": True, "report": issue_report(snapshot)}
+
+
+@app.get("/host-events", include_in_schema=False)
+async def host_events_page():
+    return FileResponse(STATIC_DIR / "host_events.html")
 
 
 @app.get("/general-chat", include_in_schema=False)

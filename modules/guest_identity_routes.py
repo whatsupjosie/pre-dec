@@ -2,9 +2,10 @@
 import asyncio
 import json
 import math
+import re
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from starlette.concurrency import run_in_threadpool
 
 from . import auth, userdb
@@ -42,6 +43,16 @@ def create_guest_identity_router(admission, vault):
             raise HTTPException(403, 'The owner of this PubCast copy controls guest admission')
         return profile
 
+    async def signed_in(identity=Depends(current_identity)):
+        if not identity.get('authenticated'):
+            raise HTTPException(401, 'Sign in to PubCast')
+        return identity
+
+    async def door_staff(identity=Depends(signed_in)):
+        if identity['role'] not in {'security', 'mod', 'admin', 'owner'}:
+            raise HTTPException(403, 'Door staff access required')
+        return identity
+
     async def call(function, *args):
         try:
             return await run_in_threadpool(function, *args)
@@ -60,7 +71,8 @@ def create_guest_identity_router(admission, vault):
     @router.post('/invites', status_code=201)
     async def invite(request: Request, profile=Depends(owner)):
         body = await _body(request)
-        code = await call(admission.invite, body.get('room', 'studio'), body.get('duration', 3600), body.get('max_uses', 1))
+        code = await call(admission.invite, body.get('room', 'studio'), body.get('duration', 3600), body.get('max_uses', 1),
+                          body.get('returning_auto', False))
         admission.governance._audit('GUEST_INVITE', profile['user_id'], None, 'room=' + body.get('room', 'studio'))
         return {'invite_code': code}
 
@@ -74,6 +86,106 @@ def create_guest_identity_router(admission, vault):
     @router.get('/settings')
     async def settings(profile=Depends(owner)):
         return await call(admission.settings)
+
+    @router.get('/event')
+    async def public_event(response: Response):
+        response.headers['Cache-Control'] = 'no-store'
+        return {'description': await call(admission.event_description)}
+
+    @router.post('/event')
+    async def update_event(request: Request, profile=Depends(owner)):
+        body = await _body(request)
+        description = await call(admission.set_event_description, body.get('description'))
+        admission.governance._audit('GUEST_EVENT', profile['user_id'], None,
+                                    'updated' if description else 'cleared')
+        return {'description': description}
+
+    @router.post('/arrival', status_code=201)
+    async def arrive(request: Request):
+        body = await _body(request)
+        source = request.client.host if request.client else 'unknown'
+        arrival = await call(admission.knock, body.get('screen_name'), body.get('ticket'), source)
+        return {'arrival_id': arrival, 'status': 'waiting'}
+
+    @router.post('/arrival/status')
+    async def arrival_status(request: Request, response: Response):
+        response.headers['Cache-Control'] = 'no-store'
+        body = await _body(request)
+        result = await call(admission.arrival_status, body.get('ticket'))
+        if result['status'] != 'session_pass':
+            return result
+        user_id = result['user_id']
+        claims = {'sub': user_id, 'role': 'guest', 'guest_host': admission.host_id, 'guest_entry': result['entry_id']}
+        if not await call(admission.validate_claims, claims):
+            return {'status': 'expired'}
+        profile = {'user_id': user_id, 'username': user_id, 'display_name': result['display_name'],
+                   'details': {'discoverable': False, 'public_fields': [], 'about': {}, 'onboarding_complete': True}}
+        await run_in_threadpool(userdb._sync_save_visiting_profile, profile, result['issued_at'])
+        token = auth.create_access_token(claims, expires_minutes=math.ceil(max(1, result['expires'] - time.time()) / 60))
+        _set_ws_session_cookie(response, request, token)
+        return dict(result, access_token=token, username=user_id, role='guest', token_type='bearer')
+
+    @router.post('/arrivals/{arrival_id}/session-pass', status_code=201)
+    async def issue_pass(arrival_id: str, profile=Depends(owner)):
+        return {'pass_id': await call(admission.issue_session_pass, arrival_id, profile['user_id'])}
+
+    @router.get('/pass-session')
+    async def pass_session(response: Response, profile=Depends(owner)):
+        response.headers['Cache-Control'] = 'no-store'
+        return await call(admission.pass_session)
+
+    @router.post('/pass-session/end')
+    async def end_pass_session(profile=Depends(owner)):
+        return {'ended': await call(admission.end_pass_session, profile['user_id'])}
+
+    @router.get('/arrivals')
+    async def arrivals(identity=Depends(door_staff)):
+        return {'arrivals': await call(admission.arrivals)}
+
+    @router.post('/arrivals/{arrival_id}/decision')
+    async def decide_arrival(arrival_id: str, request: Request, identity=Depends(door_staff)):
+        body = await _body(request)
+        return {'status': await call(admission.decide_arrival, arrival_id, body.get('allow'), identity['user_id'])}
+
+    @router.get('/events')
+    async def events(response: Response, before: int | None = Query(None, gt=0),
+                     limit: int = Query(100, ge=1, le=200), identity=Depends(door_staff)):
+        response.headers['Cache-Control'] = 'no-store'
+        return {'events': await call(admission.host_events, identity['user_id'], before, limit)}
+
+    @router.post('/events/{event_id}/acknowledge')
+    async def acknowledge(event_id: int, identity=Depends(door_staff)):
+        if not await call(admission.acknowledge_event, event_id, identity['user_id']):
+            raise HTTPException(404, 'Host event not found')
+        return {'acknowledged': True}
+
+    @router.post('/host-request', status_code=201)
+    async def host_request(request: Request, identity=Depends(signed_in)):
+        body = await _body(request)
+        room, detail = body.get('room'), body.get('detail', '')
+        if room not in ('green_room', 'studio') or not isinstance(detail, str) or len(detail) > 500:
+            raise HTTPException(400, 'Choose Green Room or Studio and use no more than 500 characters')
+        person = await userdb.get_profile_by_username(identity['user_id'])
+        name = (person or {}).get('display_name') or identity['user_id']
+        event_id = await run_in_threadpool(admission.add_host_event, 'host_request', name,
+                                           room=room, user_id=identity['user_id'], detail=detail.strip())
+        return {'event_id': event_id}
+
+    @router.post('/security-report', status_code=201)
+    async def security_report(request: Request, identity=Depends(door_staff)):
+        body = await _body(request)
+        room, target, detail = body.get('room'), body.get('user_id'), body.get('detail')
+        if (room not in ('green_room', 'studio') or not isinstance(target, str)
+                or not re.fullmatch(r'[A-Za-z0-9_.@-]{1,128}', target)
+                or not isinstance(detail, str) or not 1 <= len(detail.strip()) <= 500):
+            raise HTTPException(400, 'Choose a room, guest ID, and a reason of up to 500 characters')
+        person = await userdb.get_profile_by_username(target)
+        if not person or person.get('role') in {'owner', 'admin', 'mod', 'security'}:
+            raise HTTPException(404, 'Guest account not found')
+        name = person.get('display_name') or target
+        event_id = await run_in_threadpool(admission.add_host_event, 'security_report', name, room=room,
+                                           user_id=target, detail=detail.strip())
+        return {'event_id': event_id}
 
     @router.post('/challenge')
     async def challenge(request: Request):
@@ -110,11 +222,11 @@ def create_guest_identity_router(admission, vault):
         return dict(result, access_token=token, username=result['user_id'], role='guest', token_type='bearer')
 
     @router.get('/pending')
-    async def pending(profile=Depends(owner)):
+    async def pending(profile=Depends(door_staff)):
         return {'pending': await call(admission.pending)}
 
     @router.post('/entries/{entry_id}/approve')
-    async def approve(entry_id: str, request: Request, profile=Depends(owner)):
+    async def approve(entry_id: str, request: Request, profile=Depends(door_staff)):
         body = await _body(request)
         pending = {p['entry_id']: p for p in await call(admission.pending)}
         if entry_id not in pending:
@@ -124,13 +236,15 @@ def create_guest_identity_router(admission, vault):
         result = await call(admission.governance.approve_entry, entry_id, profile['user_id'])
         if result is None:
             raise HTTPException(409, 'This request was already decided')
+        await call(admission.acknowledge_visit, entry_id)
         return {'status': result.status.value}
 
     @router.post('/entries/{entry_id}/deny')
-    async def deny(entry_id: str, profile=Depends(owner)):
+    async def deny(entry_id: str, profile=Depends(door_staff)):
         result = await call(admission.governance.deny_entry, entry_id, profile['user_id'])
         if result is None:
             raise HTTPException(404, 'No pending request')
+        await call(admission.acknowledge_visit, entry_id)
         return {'status': result.status.value}
 
     @router.post('/entries/{entry_id}/revoke')

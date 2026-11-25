@@ -196,6 +196,7 @@ class SlateStore:
 def create_slate_router(path: Path):
     router = APIRouter()
     store = SlateStore(path)
+    router.store = store
     peers: set[WebSocket] = set()
     peer_locks: dict[WebSocket, asyncio.Lock] = {}
 
@@ -526,7 +527,11 @@ def create_slate_router(path: Path):
 # The Foresight Counter is its own shell (tray physics, programs, 2i hosting) and
 # is served byte-for-byte from static/foresight_counter.html; the floor slate
 # belongs to the studio pages and is never layered over it.
-SLATE_EXEMPT_PATHS = frozenset({'/foresight-counter', '/static/foresight_counter.html'})
+SLATE_EXEMPT_PATHS = frozenset({
+    '/foresight-counter', '/static/foresight_counter.html',
+    # Guest entry pages, from the Airlock line (codex/studio-integration via portable-2i).
+    '/login', '/airlock', '/static/waiting_room.html', '/static/human_visits.html',
+})
 
 
 class SlateOverlayMiddleware:

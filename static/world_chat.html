@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>2i · Chat</title>
   <link rel="stylesheet" href="/static/world_chat.css">
+  <link rel="stylesheet" href="/static/host_events.css">
   <script src="/static/reach_auth.js" defer></script>
   <script src="/static/speech_client.js" defer></script>
   <script src="/static/world_chat_widget.js" defer></script>
+  <script src="/static/host_events.js" defer></script>
 </head>
 <body class="twoi-chat-page">
   <header>
@@ -18,6 +20,12 @@
   </header>
   <main class="world-chat-widget" data-world-chat data-world-restore-draft>
     <h2>World Chat</h2>
+    <details class="host-events" data-host-events hidden>
+      <summary>Host alerts <span data-alert-count></span></summary>
+      <div data-event-list></div>
+      <p data-event-status role="status"></p>
+      <a href="/host-events">Open host event log</a>
+    </details>
     <div role="status" aria-live="polite" data-world-status>Connecting to the world room…</div>
     <div role="log" aria-label="World Chat messages" data-world-messages></div>
     <form data-world-form>

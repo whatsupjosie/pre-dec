@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PubCast · Host Event Log</title>
+  <link rel="stylesheet" href="/static/host_events.css">
+  <script src="/static/reach_auth.js" defer></script>
+  <script src="/static/host_events.js" defer></script>
+</head>
+<body class="host-events-page">
+  <main class="host-events" data-host-events data-event-log>
+    <h1>Host event log</h1>
+    <nav><a href="/2i/chat">Host alerts in Chat</a> · <a href="/static/human_visits.html?mode=host">Door station</a></nav>
+    <form data-security-report hidden>
+      <h2>Report an urgent guest issue</h2>
+      <label>Room <select name="room"><option value="green_room">Green Room</option><option value="studio">Studio</option></select></label>
+      <label>Guest PubCast ID <input name="user_id" required maxlength="128"></label>
+      <label>Reason for recommending ejection <textarea name="detail" required maxlength="500"></textarea></label>
+      <button>Send security recommendation</button>
+    </form>
+    <p data-event-status role="status"></p>
+    <div data-event-list></div>
+    <button type="button" data-event-older hidden>Earlier events</button>
+  </main>
+</body>
+</html>

@@ -110,6 +110,7 @@ textarea { width: 100%; height: 90px; background: var(--bg); color: var(--ink); 
       <span class="chip warn" id="chipStatus">PREVIEW &middot; proposed, nothing approved</span>
       <span class="chip" id="chipRoom"></span>
       <span class="chip live" id="chipLive" title="Connection to the PubCast host">&#9679; Offline</span>
+      <button id="askHost" type="button" hidden>Request the host</button>
       <button id="twoiNotebook" type="button">Notebook</button>
       <button id="twoiSeat" type="button" hidden>Sit at typewriter</button>
       <a class="chip" id="classicLink" href="/world" title="Open this room in the classic PubWorld page">Classic view</a>
@@ -1075,6 +1076,23 @@ function setLiveChip(st) {
   c.title = st.online ? "Connected to the PubCast host" + (st.room ? " in " + st.room : "") : "Not connected to the PubCast host. Walking still works.";
 }
 window.addEventListener("pubcast:live-status", e => setLiveChip(e.detail));
+const hostRequest = $("askHost");
+function showHostRequest(room) {
+  hostRequest.hidden = !["green_room", "studio"].includes(room);
+}
+window.addEventListener("pubcast:room", event => showHostRequest(event.detail?.room));
+hostRequest.addEventListener("click", async () => {
+  hostRequest.disabled = true;
+  try {
+    const response = await fetch("/api/guests/host-request", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify({room:S.room.id}),
+      signal:AbortSignal.timeout(10000)});
+    if (!response.ok) throw Error("The host could not be paged. Try again shortly.");
+    toast("The host has been paged.");
+  } catch (error) { toast(error.message); }
+  finally { hostRequest.disabled = false; }
+});
+
 window.addEventListener("pubcast:room", e => {
   const a = $("classicLink"), r = e.detail && e.detail.room;
   // the classic page only knows the rooms it was drawn with; anywhere else it opens at its own start
@@ -1691,6 +1709,7 @@ window.PubCastWalk = {
       S.demoHeights[demoCharacter] = 36;
       syncLibrarySelect();
     }
+    showHostRequest(S.room.id);
     document.documentElement.dataset.ready = "1";
     if (L) L.setPresence(presenceNow);
     HostPanel.init().catch(() => { /* no host panel for this session */ });

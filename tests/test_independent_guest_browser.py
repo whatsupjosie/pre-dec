@@ -8,6 +8,8 @@ from tests.test_production25d_browser import production_browser
 
 
 def seed(context, base, token):
+    response = context.request.get(base + '/api/auth/verify', headers={'Authorization':'Bearer ' + token})
+    assert response.ok
     context.add_init_script('if(location.origin===' + json.dumps(base) + ') sessionStorage.setItem("pubcast_token",' + json.dumps(token) + ');')
 
 
@@ -71,9 +73,9 @@ def test_browser_invite_home_popup_owner_approval_and_revoke(tmp_path, productio
             director.locator('#revoke button').click()
             director.wait_for_function('document.getElementById("status").textContent.includes("revoked")')
             visitor.reload()
-            visitor.wait_for_url('**/login?next=**')
-            visitor.wait_for_selector('#loginUser:visible')
-            assert visitor.evaluate('sessionStorage.getItem("pubcast_token")') is None
+            visitor.wait_for_url('**/human_visits.html?mode=join')
+            visitor.wait_for_selector('#arrival-name:visible')
+            visitor.wait_for_function('sessionStorage.getItem("pubcast_token") === null')
             assert not errors
         finally:
             owner_context.close()

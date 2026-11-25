@@ -44,6 +44,13 @@ body{
   color:var(--teal);opacity:0.7;margin-top:4px;
 }
 .airlock-body{padding:24px 32px}
+.host-faq{margin:20px 0 0;color:var(--cream)}
+.host-faq h2{font-size:1.1rem;margin:0 0 8px}
+.host-faq p{margin:0 0 10px}
+.host-faq details{margin:6px 0}
+.host-faq details p{margin:6px 0 10px 1em}
+.host-faq summary{cursor:pointer;color:var(--brass)}
+.host-faq a{color:var(--brass)}
 .host-note{
   margin-bottom:18px;padding:12px 14px;
   border-left:2px solid var(--brass);
@@ -163,6 +170,7 @@ body{
 }
 </style>
   <script src="/static/reach_auth.js"></script>
+  <script src="/static/waiting_room_host.js"></script>
 </head>
 <body>
 
@@ -175,13 +183,13 @@ body{
   <div class="airlock-body">
     <div class="host-note" aria-live="polite">
       <div class="host-name" id="hostName">Sir Purfluous</div>
-      <div class="host-line" id="hostLine">Welcome to the threshold, Sancho.</div>
+      <div class="host-line" id="hostLine">Welcome to the threshold.</div>
     </div>
 
     <!-- STEP 1: Terms -->
     <div class="step active" id="step1">
       <div class="step-label">â—† Step 1 â€” Terms &amp; Consent â—†</div>
-      <div class="consent-box" id="termsBox">Loading terms...</div>
+      <div class="consent-box" id="termsBox">Loading the host’s entry contract…</div>
       <div class="check-row">
         <input type="checkbox" id="chkTos">
         <label class="check-label" for="chkTos">
@@ -206,6 +214,10 @@ body{
       <div class="btn-row">
         <button class="btn primary" id="btnStep1" onclick="nextStep(2)" disabled>CONTINUE</button>
       </div>
+      <section class="host-faq" aria-labelledby="host-faq-title">
+        <h2 id="host-faq-title">Waiting Room FAQ</h2>
+        <div id="host-faq"></div>
+      </section>
     </div>
 
     <!-- STEP 2: Identity -->
@@ -264,15 +276,21 @@ let userId = 'user_' + Math.random().toString(36).slice(2,10);
 let entryId = null;
 const STEP_STATES = {1:'consent', 2:'identity', 3:'pending', 4:'approved'};
 
-async function loadHostLine(state='arrival') {
-  try {
-    const resp = await fetch(`/api/governance/waiting-room/host?state=${encodeURIComponent(state)}`);
-    if (!resp.ok) return;
-    const data = await resp.json();
-    document.getElementById('hostName').textContent = data.display_name || 'Sir Purfluous';
-    document.getElementById('hostLine').textContent = data.line || 'Welcome to the threshold, Sancho.';
-  } catch {}
+let contractReady = false;
+function updateContinue() {
+  const accepted = ['chkTos', 'chkAi'].every(id => document.getElementById(id).checked);
+  document.getElementById('btnStep1').disabled = !contractReady || !accepted;
 }
+
+const waitingHost = window.PubcastWaitingRoomHost.mount({
+  line: document.getElementById('hostLine'),
+  terms: document.getElementById('termsBox'),
+  faq: {container: document.getElementById('host-faq'), contract: document.getElementById('termsBox'), invited: false},
+  termsReady(ready) {
+    contractReady = ready;
+    updateContinue();
+  }
+});
 
 // Build color grid
 const grid = document.getElementById('colorGrid');
@@ -289,20 +307,8 @@ COLORS.forEach((c,i) => {
   grid.appendChild(div);
 });
 
-// Load terms
-fetch('/api/governance/terms').then(r=>r.json()).then(d=>{
-  document.getElementById('termsBox').textContent = d.terms || 'Terms not available.';
-}).catch(()=>{
-  document.getElementById('termsBox').textContent =
-    'PUBCAST AI â€” TERMS OF SERVICE\n\n1. Respect all participants.\n2. AI characters are present.\n3. Some rooms are recorded.\n4. The host may moderate at any time.\n\nBy continuing, you accept these terms.';
-});
-
-// Consent checkboxes enable continue
-['chkTos','chkAi','chkRec'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', ()=>{
-    const all = ['chkTos','chkAi'].every(i=>document.getElementById(i).checked);
-    document.getElementById('btnStep1').disabled = !all;
-  });
+['chkTos', 'chkAi'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateContinue);
 });
 
 // Name enables enter
@@ -313,10 +319,8 @@ document.getElementById('nameInput').addEventListener('input', e=>{
 function nextStep(n) {
   document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
   document.getElementById('step'+n).classList.add('active');
-  loadHostLine(STEP_STATES[n] || 'pending');
+  waitingHost.show(STEP_STATES[n] || 'pending');
 }
-
-loadHostLine('arrival');
 
 async function requestEntry() {
   const name = document.getElementById('nameInput').value.trim();
@@ -349,6 +353,7 @@ async function requestEntry() {
       }),
     });
     const data = await resp.json();
+    if (!resp.ok || typeof data.entry_id !== 'string') throw Error('No entry request was confirmed');
     entryId = data.entry_id;
 
     document.getElementById('waitingRoomName').textContent = 'STUDIO';
@@ -372,6 +377,7 @@ async function pollApproval() {
       return;
     }
     if (data.status === 'denied') {
+      waitingHost.show('denied');
       alert('Entry was not approved. Please contact the host if you think this is a mistake.');
       return;
     }
