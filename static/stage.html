@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PubCast AI â€” Stage</title>
+<title>PubCast AI — Stage</title>
 <style>
-/* â”€â”€ Reset & base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Reset & base ──────────────────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --gold:    #d4a84b;
@@ -20,16 +20,16 @@
 html,body{width:100%;height:100%;overflow:hidden;background:var(--ink)}
 body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 
-/* â”€â”€ Stage â€” the 2.5D parallax world â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Stage — the 2.5D parallax world ──────────────────────────────────────── */
 #stage{
   position:fixed;inset:0;overflow:hidden;
   background:radial-gradient(ellipse 120% 80% at 50% 60%, #1a1208 0%, #0d0b09 100%);
 }
 
-/* Parallax layers â€” each shifts independently on mouse/camera move */
+/* Parallax layers — each shifts independently on mouse/camera move */
 .layer{position:absolute;inset:0;will-change:transform;transform-origin:center center}
 
-/* Layer 0 â€” deep background: painted wall texture */
+/* Layer 0 — deep background: painted wall texture */
 #layer-bg{
   background:
     radial-gradient(ellipse 60% 40% at 50% 110%, rgba(212,168,75,0.06) 0%, transparent 70%),
@@ -37,7 +37,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
     linear-gradient(180deg, #0a0806 0%, #100e08 40%, #0d0b09 100%);
 }
 
-/* Layer 1 â€” back wall architecture */
+/* Layer 1 — back wall architecture */
 #layer-wall{z-index:1}
 #layer-wall::before{
   content:'';position:absolute;
@@ -58,7 +58,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   border-right:1px solid rgba(212,168,75,0.08);
 }
 
-/* Layer 2 â€” broadcast monitor bank on back wall */
+/* Layer 2 — broadcast monitor bank on back wall */
 #layer-monitors{z-index:2}
 .monitor-bank{
   position:absolute;top:12%;left:50%;transform:translateX(-50%);
@@ -92,7 +92,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 .monitor.pgm{border-color:rgba(255,34,34,0.5);box-shadow:0 0 12px rgba(255,34,34,0.2),inset 0 0 8px rgba(0,0,0,0.8)}
 .monitor.pvw{border-color:rgba(34,221,102,0.4);box-shadow:0 0 12px rgba(34,221,102,0.15),inset 0 0 8px rgba(0,0,0,0.8)}
 
-/* Layer 3 â€” ambient light halo on back wall, animated */
+/* Layer 3 — ambient light halo on back wall, animated */
 #layer-ambientlight{z-index:3;pointer-events:none}
 .ambient-halo{
   position:absolute;
@@ -110,7 +110,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   50%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}
 }
 
-/* Layer 4 â€” midground set dressing: desk / console */
+/* Layer 4 — midground set dressing: desk / console */
 #layer-desk{z-index:4}
 .broadcast-desk{
   position:absolute;
@@ -149,10 +149,10 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   margin:0 auto;
 }
 
-/* Layer 5 â€” character layer â€” avatars rendered here */
+/* Layer 5 — character layer — avatars rendered here */
 #layer-characters{z-index:5;pointer-events:none}
 
-/* Character slot â€” where the SVG avatar lives */
+/* Character slot — where the SVG avatar lives */
 .char-slot{
   position:absolute;bottom:18%;
   display:flex;flex-direction:column;align-items:center;
@@ -162,7 +162,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 .char-slot.left{left:22%}
 .char-slot.right{right:22%}
 
-/* SVG avatar â€” silhouette with glow */
+/* SVG avatar — silhouette with glow */
 .char-figure{
   position:relative;
   width:100px;height:200px;
@@ -193,7 +193,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 }
 @keyframes ring-pulse{0%,100%{opacity:0.6;transform:translateX(-50%) scaleX(1)}50%{opacity:1;transform:translateX(-50%) scaleX(1.15)}}
 
-/* Mood state indicator â€” small colored dot above name */
+/* Mood state indicator — small colored dot above name */
 .char-mood{
   width:5px;height:5px;border-radius:50%;
   background:var(--char-glow,rgba(109,214,199,0.6));
@@ -201,9 +201,9 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   margin-bottom:4px;
 }
 
-/* Layer 6 â€” foreground dressing: equipment edges, mic arm, cables */
+/* Layer 6 — foreground dressing: equipment edges, mic arm, cables */
 #layer-fg{z-index:6;pointer-events:none}
-/* Mic arm â€” comes from bottom-right */
+/* Mic arm — comes from bottom-right */
 .mic-arm{
   position:absolute;bottom:22%;right:32%;
   width:2px;height:30%;
@@ -216,7 +216,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   border:1px solid rgba(212,168,75,0.3);
   background:rgba(30,20,10,0.8);
 }
-/* Left equipment edge â€” partial frame of a monitor just offscreen */
+/* Left equipment edge — partial frame of a monitor just offscreen */
 .fg-equipment-left{
   position:absolute;left:0;top:20%;bottom:22%;
   width:6%;
@@ -230,7 +230,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   border-left:1px solid rgba(212,168,75,0.06);
 }
 
-/* Layer 7 â€” key light shafts, top-down through rig */
+/* Layer 7 — key light shafts, top-down through rig */
 #layer-lighting{z-index:7;pointer-events:none;mix-blend-mode:screen}
 .light-shaft{
   position:absolute;top:0;
@@ -257,7 +257,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
     transparent 100%);
 }
 
-/* â”€â”€ UI Chrome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── UI Chrome ─────────────────────────────────────────────────────────────── */
 
 /* Chat panel */
 .chat-panel{
@@ -352,7 +352,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 .room-btn:hover{border-color:var(--teal);color:var(--teal)}
 .room-btn.active{border-color:var(--teal);color:var(--teal);background:rgba(109,214,199,0.08)}
 
-/* Upgrade badge â€” links to 3D stage */
+/* Upgrade badge — links to 3D stage */
 .upgrade-badge{
   position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;
   background:rgba(10,8,6,0.85);border:1px solid var(--gold-dim);
@@ -389,7 +389,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   <a href="/avatar-walk-test" style="background:rgba(5,3,2,.76);border:1px solid rgba(71,231,255,.45);color:#baf7ff;font:700 11px Consolas,'Courier New',monospace;letter-spacing:.08em;padding:7px 10px;border-radius:6px;text-decoration:none">MANNY WALK</a>
 </nav>
 
-<!-- â”€â”€ STAGE â€” 2.5D PARALLAX WORLD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- ── STAGE — 2.5D PARALLAX WORLD ──────────────────────────────────────── -->
 <div id="stage">
 
   <!-- Layer 0: Deep background -->
@@ -451,7 +451,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
         <div class="desk-led"></div>
         <div class="desk-led"></div>
         <div class="desk-led"></div>
-        <span class="desk-logo">Belle Ã‰poque Studios</span>
+        <span class="desk-logo">Belle Époque Studios</span>
         <div class="desk-led"></div>
         <div class="desk-led"></div>
         <div class="desk-led"></div>
@@ -462,7 +462,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   <!-- Layer 5: Characters -->
   <div class="layer" id="layer-characters" data-depth="0.14">
 
-    <!-- Left character â€” Pete -->
+    <!-- Left character — Pete -->
     <div class="char-slot left" id="slot-pete" style="--char-glow:rgba(109,214,199,0.4)">
       <div class="char-mood"></div>
       <div class="char-figure">
@@ -474,11 +474,11 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
             </radialGradient>
             <filter id="peteglow-f"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           </defs>
-          <!-- Body silhouette â€” production floor worker, practical clothes -->
+          <!-- Body silhouette — production floor worker, practical clothes -->
           <!-- Legs -->
           <rect x="37" y="140" width="12" height="55" rx="4" fill="url(#peteglow)" opacity="0.5"/>
           <rect x="51" y="140" width="12" height="55" rx="4" fill="url(#peteglow)" opacity="0.5"/>
-          <!-- Torso â€” work clothes, slight figure -->
+          <!-- Torso — work clothes, slight figure -->
           <path d="M28 80 Q30 70 50 68 Q70 70 72 80 L70 145 Q60 148 50 148 Q40 148 30 145 Z" fill="url(#peteglow)" opacity="0.7"/>
           <!-- Arms -->
           <path d="M28 82 Q18 100 20 130" stroke="#6dd6c7" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.5"/>
@@ -495,7 +495,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
       <div class="char-name">Pete</div>
     </div>
 
-    <!-- Center character â€” Host / Director slot -->
+    <!-- Center character — Host / Director slot -->
     <div class="char-slot host" id="slot-host" style="--char-glow:rgba(229,193,126,0.5);display:none">
       <div class="char-mood" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></div>
       <div class="char-figure" style="width:110px;height:220px">
@@ -520,7 +520,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
       <div class="char-name">Host</div>
     </div>
 
-    <!-- Right character â€” Purfluous -->
+    <!-- Right character — Purfluous -->
     <div class="char-slot right" id="slot-purfluous" style="--char-glow:rgba(180,120,220,0.45)">
       <div class="char-mood" style="background:rgba(180,120,220,0.7);box-shadow:0 0 8px rgba(180,120,220,0.5)"></div>
       <div class="char-figure" style="width:105px;height:210px">
@@ -532,21 +532,21 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
             </radialGradient>
             <filter id="purfglow-f"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           </defs>
-          <!-- Purfluous â€” theatrical, older, broader presence. Coat tails suggested -->
+          <!-- Purfluous — theatrical, older, broader presence. Coat tails suggested -->
           <rect x="36" y="140" width="12" height="55" rx="4" fill="url(#purfglow)" opacity="0.5"/>
           <rect x="52" y="140" width="12" height="55" rx="4" fill="url(#purfglow)" opacity="0.5"/>
-          <!-- Coat body â€” wider silhouette -->
+          <!-- Coat body — wider silhouette -->
           <path d="M22 78 Q24 65 50 62 Q76 65 78 78 L82 148 Q61 154 50 154 Q39 154 18 148 Z" fill="url(#purfglow)" opacity="0.7"/>
           <!-- Coat tails -->
           <path d="M22 130 Q16 155 20 170" stroke="#c078e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.35"/>
           <path d="M78 130 Q84 155 80 170" stroke="#c078e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.35"/>
-          <!-- Arms â€” theatrical gesture, one slightly raised -->
+          <!-- Arms — theatrical gesture, one slightly raised -->
           <path d="M22 82 Q10 105 14 135" stroke="#c078e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.5"/>
           <path d="M78 82 Q90 95 86 120" stroke="#c078e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.5"/>
           <!-- Neck + cravat suggestion -->
           <rect x="44" y="58" width="12" height="10" rx="4" fill="url(#purfglow)" opacity="0.8"/>
           <ellipse cx="50" cy="44" rx="20" ry="21" fill="url(#purfglow)" opacity="0.5"/>
-          <!-- Head â€” older, larger brow -->
+          <!-- Head — older, larger brow -->
           <ellipse cx="50" cy="42" rx="21" ry="22" fill="url(#purfglow)" opacity="0.88" filter="url(#purfglow-f)"/>
         </svg>
       </div>
@@ -577,17 +577,17 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
 <div class="grain"></div>
 
 <!-- Upgrade to 3D badge -->
-<a class="upgrade-badge" href="stage_panoramic.html" title="Switch to 360Â° Panoramic Studio">
-  â—ˆ 360Â° PANORAMIC STAGE
+<a class="upgrade-badge" href="stage_panoramic.html" title="Switch to 360° Panoramic Studio">
+  ◈ 360° PANORAMIC STAGE
 </a>
 
-<!-- â”€â”€ UI CHROME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- ── UI CHROME ───────────────────────────────────────────────────────────── -->
 
 <!-- Chat -->
 <div class="chat-panel">
   <div class="chat-header">
     <div class="chat-header-dot"></div>
-    â—† LIVE CHAT â—†
+    ◆ LIVE CHAT ◆
   </div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input-bar">
@@ -596,7 +596,7 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   </div>
 </div>
 
-<!-- Camera/view bar â€” parallax uses "view angles" not 3D cameras -->
+<!-- Camera/view bar — parallax uses "view angles" not 3D cameras -->
 <div class="cam-bar" id="camBar"></div>
 
 <!-- Status bar -->
@@ -611,26 +611,26 @@ body{font-family:Consolas, 'Courier New', monospace;color:var(--cream)}
   </div>
   <div class="status-right">
     <span id="timecode" style="color:#33ff99;opacity:0.4;font-size:0.6rem">00:00:00:00</span>
-    <button class="rec-btn" id="recBtn" onclick="toggleRecord()">â— REC</button>
+    <button class="rec-btn" id="recBtn" onclick="toggleRecord()">● REC</button>
   </div>
 </div>
 
-<!-- â”€â”€ JAVASCRIPT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- ── JAVASCRIPT ──────────────────────────────────────────────────────────── -->
 <script>
 'use strict';
 
-// â•â•â• PARALLAX ENGINE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ PARALLAX ENGINE ═══════════════════════════════════════════════════════
 
 const layers = Array.from(document.querySelectorAll('.layer[data-depth]'));
 let mouseX = 0, mouseY = 0;
 let currentX = 0, currentY = 0;
 let raf = null;
 
-// Target offsets per layer (max Â±px at full mouse deflection)
+// Target offsets per layer (max ±px at full mouse deflection)
 const MAX_SHIFT = 28;
 
 document.addEventListener('mousemove', e => {
-  mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;  // -1 â€¦ +1
+  mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;  // -1 … +1
   mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
 
@@ -650,7 +650,7 @@ function tickParallax() {
 }
 tickParallax();
 
-// â•â•â• AMBIENT LIGHT â€” mood-driven breathing â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ AMBIENT LIGHT — mood-driven breathing ══════════════════════════════════
 
 const halo = document.getElementById('ambientHalo');
 let moodColor = {r:229, g:193, b:126};   // default warm amber
@@ -681,7 +681,7 @@ setInterval(() => {
     transparent 70%)`;
 }, 50);
 
-// â•â•â• VIEW SYSTEM (parallax "cameras") â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ VIEW SYSTEM (parallax "cameras") ══════════════════════════════════════
 
 // Each view is a set of parallax offsets + zoom applied to the stage
 const VIEWS = {
@@ -731,7 +731,7 @@ function buildCamBar() {
 }
 buildCamBar();
 
-// â•â•â• RECORDING â€” captures the full stage as video â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ RECORDING — captures the full stage as video ══════════════════════════
 
 // DOM stages need actual tab capture; a painted label is not stage footage.
 let isRecording = false, mediaRecorder = null, recordedChunks = [], recordingStream = null;
@@ -790,7 +790,7 @@ window.toggleRecord = async function () {
   } finally {choosingCapture = false;}
 };
 
-// â•â•â• WEBSOCKET â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ WEBSOCKET ═════════════════════════════════════════════════════════════
 
 let ws = null;
 const ROOM = new URLSearchParams(location.search).get('room') || 'studio';
@@ -807,12 +807,12 @@ function connectWS() {
         } else if (msg.type === 'history' && msg.payload) {
           msg.payload.forEach(m => addChatMessage(m.user || 'Anon', m.text || '', m.user_id));
         } else if (msg.type === 'say') {
-          // Bot utterance via SayEvent schema â€” show in chat panel
+          // Bot utterance via SayEvent schema — show in chat panel
           const who = msg.participant_id || 'Bot';
           const text = msg.text || '';
           if (text) addChatMessage(who, text, msg.participant_id);
         } else if (msg.type === 'stream_chunk') {
-          // Streaming bot token â€” append to the last bot message or open a new one
+          // Streaming bot token — append to the last bot message or open a new one
           const chunk = msg.chunk || '';
           const botId = msg.participant_id || 'bot';
           if (chunk) appendStreamChunk(botId, chunk);
@@ -826,10 +826,10 @@ function connectWS() {
         } else if (msg.type === 'mood_change' && msg.payload) {
           setMoodColor(msg.payload.state || 'neutral');
         } else if (msg.type === 'skin_color_changed' && msg.payload) {
-          // Avatar ethereal color changed â€” update stage if character matches
+          // Avatar ethereal color changed — update stage if character matches
           setMoodColor(msg.payload.color_name || msg.payload.state || 'neutral');
         } else if (msg.type === 'lighting_preset' && msg.payload) {
-          // Lighting changed â€” subtle body class for CSS theming
+          // Lighting changed — subtle body class for CSS theming
           document.body.dataset.lighting = msg.payload.preset || 'normal';
         } else if (msg.type === 'production_state' && msg.payload) {
           // Update room label if room changed
@@ -873,7 +873,7 @@ function addChatMessage(user, text, userId) {
   container.scrollTop = container.scrollHeight;
 }
 
-// appendStreamChunk â€” appends a streaming token to the last open bot message,
+// appendStreamChunk — appends a streaming token to the last open bot message,
 // or creates a new one if none exists for this botId.
 const _streamDivs = {};
 function appendStreamChunk(botId, chunk) {
@@ -900,7 +900,7 @@ function closeStreamChunk(botId) {
   delete _streamDivs[botId];
 }
 
-// â•â•â• TIMECODE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ TIMECODE ══════════════════════════════════════════════════════════════
 
 setInterval(() => {
   const now = new Date();
@@ -912,7 +912,7 @@ setInterval(() => {
     `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }, 100);
 
-// â•â•â• KEYBOARD â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ KEYBOARD ══════════════════════════════════════════════════════════════
 
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
@@ -921,7 +921,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'r' || e.key === 'R') window.toggleRecord();
 });
 
-// â•â•â• BOOT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══ BOOT ══════════════════════════════════════════════════════════════════
 
 connectWS();
 </script>
