@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PubCast AI â€” Control Room</title>
+<title>PubCast AI — Control Room</title>
 <style>
 :root{
   --red:#ff2222;--green:#22dd66;--brass:#e5c17e;--teal:#6dd6c7;
@@ -76,7 +76,7 @@ body{
     <div class="mon-text" id="pgmFeedText" style="color:var(--cream)">WIDE</div>
     <div class="mon-label pgm">PROGRAM</div>
   </div>
-  <div class="live-tag" id="liveTag" style="left:70%;top:11%">â—† LIVE â—†</div>
+  <div class="live-tag" id="liveTag" style="left:70%;top:11%">◆ LIVE ◆</div>
   <!-- Small monitor bank -->
   <div class="monitor-overlay" style="left:60%;top:41%;width:7%;height:10%"><div class="mon-cam" style="font-size:clamp(.4rem,.8vw,.55rem)">1</div></div>
   <div class="monitor-overlay" style="left:67%;top:41%;width:7%;height:10%"><div class="mon-cam" style="font-size:clamp(.4rem,.8vw,.55rem)">2</div></div>
@@ -84,11 +84,11 @@ body{
   <div class="monitor-overlay" style="left:60%;top:52%;width:7%;height:10%"><div class="mon-tc" id="pvwTc" style="font-size:clamp(.28rem,.55vw,.38rem);color:var(--crt-green);opacity:.5"></div><div class="mon-cam" id="pvwCamText" style="font-size:clamp(.4rem,.8vw,.55rem)">PVW</div><div class="mon-label pvw">PVW</div></div>
   <div class="monitor-overlay" style="left:67%;top:52%;width:7%;height:10%"><div class="mon-tc" id="chkTc" style="font-size:clamp(.28rem,.55vw,.38rem);color:var(--crt-green);opacity:.5"></div><div class="mon-cam" id="chkCamText" style="font-size:clamp(.4rem,.8vw,.55rem)">CHK</div><div class="mon-label chk">CHK</div></div>
   <!-- PGM row (center console) -->
-  <button class="hotspot round" id="pgm1" style="left:38%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam1')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 1 â€” WIDE</span></button>
-  <button class="hotspot round" id="pgm2" style="left:42%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam2')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 2 â€” TWO-SHOT</span></button>
-  <button class="hotspot round" id="pgm3" style="left:46%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam3')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 3 â€” CLOSE</span></button>
-  <button class="hotspot round" id="pgm4" style="left:50%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam4')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 4 â€” OVERHEAD</span></button>
-  <button class="hotspot round" id="pgm5" style="left:54%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam5')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 5 â€” STAGE</span></button>
+  <button class="hotspot round" id="pgm1" style="left:38%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam1')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 1 — WIDE</span></button>
+  <button class="hotspot round" id="pgm2" style="left:42%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam2')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 2 — TWO-SHOT</span></button>
+  <button class="hotspot round" id="pgm3" style="left:46%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam3')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 3 — CLOSE</span></button>
+  <button class="hotspot round" id="pgm4" style="left:50%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam4')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 4 — OVERHEAD</span></button>
+  <button class="hotspot round" id="pgm5" style="left:54%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam5')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 5 — STAGE</span></button>
   <!-- PVW row -->
   <button class="hotspot round" id="pvw1" style="left:38%;top:52%;width:3.5%;height:5%" onclick="setPVW('cam1')"><span class="tooltip" style="top:110%;left:50%;transform:translateX(-50%)">PVW 1</span></button>
   <button class="hotspot round" id="pvw2" style="left:42%;top:52%;width:3.5%;height:5%" onclick="setPVW('cam2')"><span class="tooltip" style="top:110%;left:50%;transform:translateX(-50%)">PVW 2</span></button>
@@ -133,12 +133,12 @@ body{
   <button data-station="prompter">TELEPROMPTER</button>
   <button data-station="vtr">VTR</button>
 </div>
-<div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1â€“5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
-<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button onclick="wsSend({type:'recording_action',action:'pause'})">PAUSE</button> <button onclick="wsSend({type:'recording_action',action:'stop'})">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
-<div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
-<div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
+<div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1–5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
+<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button onclick="wsSend({type:'recording_action',action:'pause'})">PAUSE</button> <button onclick="wsSend({type:'recording_action',action:'stop'})">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loading…</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
+<div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third text…" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
+<div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script here…" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div></div>
-<div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
+<div class="hk-bar"><span class="hk">1–5</span> CAMERAS · <span class="hk">SPACE</span> CUT · <span class="hk">R</span> REC · <span class="hk">ESC</span> PANIC · <span class="hk">M</span> MUTE ALL · <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
 <script>
 "use strict";
@@ -207,11 +207,11 @@ function updateUI(){
   const pc=CAMS.find(c=>c.id===pgm),vc=CAMS.find(c=>c.id===pvw);
   document.getElementById('pgmCamText').textContent=pc?'CAM '+pc.n:'BLACK';
   document.getElementById('pgmFeedText').textContent=controlBlackout?'BLACKOUT CUED':pc?pc.l:'SOURCE UNBOUND';
-  document.getElementById('pvwCamText').textContent=vc?'CAM '+vc.n:'â€”';
+  document.getElementById('pvwCamText').textContent=vc?'CAM '+vc.n:'—';
   MODES.forEach(m=>{const el=document.getElementById(MODE_BTN_MAP[m]);if(el)el.className='hotspot round'+(mode===m?' pvw-active':'')});
   document.getElementById('srMode').textContent='MODE: '+mode.toUpperCase();
   document.getElementById('srCam').textContent='PGM: '+(pc?'CAM '+pc.n:'BLACK');
-  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(isRec?'â— ON':'OFF');
+  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(isRec?'● ON':'OFF');
   document.getElementById('tRec').className='hotspot rect'+(isRec?' rec-active':'');
 }
 async function setPGM(id){
@@ -347,7 +347,7 @@ function handleWsEvent(m){
       const shot=m.payload?.camera_shot||m.shot||'';
       const uid=m.payload?.user_id||'';
       const chk=document.getElementById('chkCamText');
-      if(chk && shot) chk.textContent=shot.toUpperCase()+(uid?' Â· '+uid:'');
+      if(chk && shot) chk.textContent=shot.toUpperCase()+(uid?' · '+uid:'');
       break;
     }
     case 'avatar_action_cue':{
@@ -357,7 +357,7 @@ function handleWsEvent(m){
       break;
     }
     case 'choreo_frame':
-      // Silently consume â€” control room doesn't render skeleton frames
+      // Silently consume — control room doesn't render skeleton frames
       break;
     case 'choreo_start':
     case 'choreo_complete':
@@ -367,7 +367,7 @@ function handleWsEvent(m){
       break;
     }
     case 'user_update':{
-      // Could surface in future presence panel â€” absorb for now
+      // Could surface in future presence panel — absorb for now
       break;
     }
     case 'recording_started':
