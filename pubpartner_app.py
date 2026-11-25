@@ -37,6 +37,8 @@ from modules.chat_rooms import create_chat_router, install_chat_websocket
 from modules.route_security import current_identity
 from modules.writers_room import create_writers_room_router
 from modules.manuscript_intelligence import make_router as create_manuscript_intelligence_router
+from modules.pubpartner_cartridges import create_pubpartner_cartridge_router
+from modules.avatar_imports import create_avatar_import_router
 from modules.pubpartner_vessel import PubPartnerVesselRuntime
 
 try:
@@ -220,6 +222,11 @@ app.add_middleware(
 # routers are mounted in lifespan after their stores and bridges exist.
 app.include_router(auth_routes.router)
 app.include_router(pubpartner_routes.router)
+# The standalone app uses the same existing cartridge studio as PubCast.
+# Without this mount, the shipped New Cartridge UI fails with 404.
+app.include_router(create_pubpartner_cartridge_router(DATA_DIR))
+# Existing cartridge editor asks the same avatar import library as PubCast.
+app.include_router(create_avatar_import_router(DATA_DIR))
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/2i-assets", StaticFiles(directory=str(ROOT / "2i" / "2i-assets")), name="twoi-assets")
 
