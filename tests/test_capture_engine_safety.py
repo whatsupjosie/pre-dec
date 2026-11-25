@@ -151,6 +151,35 @@ def test_a_take_stopped_while_paused_keeps_what_was_recorded(tmp_path):
     assert report["paused_seconds"] >= 1.0
 
 
+def test_a_join_that_cannot_be_checked_keeps_every_piece(tmp_path, monkeypatch):
+    # With no ffprobe the joined file cannot be read back, so the pieces are kept and go with the take too.
+    monkeypatch.setenv("PUBCAST_FFPROBE", "no-such-ffprobe-here")
+    tone = _tone(tmp_path / "tone.wav", 30)
+    take = tmp_path / "take"
+    take.mkdir()
+
+    async def run():
+        engine = _engine()
+        [path] = await engine.start("take", [_file_source("mic", tone)], _audio_profile(tmp_path), take)
+        await asyncio.sleep(2.0)
+        await engine.pause("take")
+        await asyncio.sleep(1.0)
+        await engine.resume("take")
+        await asyncio.sleep(2.0)
+        outputs = await engine.stop("take")
+        return engine, path, outputs
+
+    engine, path, outputs = asyncio.run(run())
+    [report] = engine.report("take")
+    assert report["join"]["state"] == "unchecked", report["join"]
+    pieces = [Path(p) for p in report["join"]["kept"]]
+    assert len(pieces) == 2 and all(p.stat().st_size > 0 for p in pieces), pieces
+    assert path.stat().st_size > 0 and path not in pieces
+    assert set(outputs) == {path, *pieces}, outputs
+    assert any("could not be checked" in w for w in report["warnings"]), report["warnings"]
+    assert not report.get("failed"), report
+
+
 def test_a_file_camera_resumes_where_it_has_got_to(tmp_path):
     # Five seconds of tone, then silence. Resumed about 6.5 s in, the clip has reached the silence; a camera
     # that started its clip over would record the tone again.

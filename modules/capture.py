@@ -223,15 +223,20 @@ def _probe(path: Path) -> Optional[dict]:
     return {"duration": duration, "streams": sorted(s.get("codec_type") for s in data.get("streams", []))}
 
 
+_JOIN_UNCHECKED = "ffprobe was not found, so the joined file's length and streams could not be checked"
+
+
 def _joined_problem(joined: Path, pieces: List[Path]) -> Optional[str]:
-    """Why ``joined`` does not hold what ``pieces`` held, or None when it does."""
+    """Why ``joined`` does not hold what ``pieces`` held, or None when it does.
+
+    ``_JOIN_UNCHECKED`` when there is no ffprobe to read it back: the size alone does not prove the join."""
     size = joined.stat().st_size
     total = sum(p.stat().st_size for p in pieces)
     if size < 0.9 * total:
         return f"the joined file holds {size} bytes; the pieces hold {total}"
     found = _probe(joined)
     if found is None:
-        return None          # no ffprobe on this machine: the size is what can be checked
+        return _JOIN_UNCHECKED
     parts = [_probe(p) or {} for p in pieces]
     if not found or any(not part for part in parts):
         return "the joined file or a piece could not be read back"
@@ -648,6 +653,9 @@ class FFmpegCaptureEngine:
                             "(PUBCAST_CAPTURE_X264_PRESET).")
         if cp.join.get("state") == "failed":
             warnings.append(f"The pieces of this paused recording could not be joined, so each is kept: {cp.join.get('error')}")
+        elif cp.join.get("state") == "unchecked":
+            warnings.append(f"The pieces of this paused recording were joined, but {cp.join.get('error')}, "
+                            "so each piece is kept beside the joined file")
         report = {"source_id": cp.source_id, "returncode": cp.proc.returncode, "output_bytes": size,
                   "wall_seconds": round(end - cp.started_at, 2), "encoded_seconds": encoded, "speed": speed,
                   "warnings": warnings, "log": cp.log_path.as_posix() if cp.log_path else None}
@@ -710,6 +718,9 @@ class FFmpegCaptureEngine:
             if cp.proc.returncode is not None and cp.join.get("state") == "failed":
                 # Nothing is lost: every piece is a whole file of its own and is handed on as it is.
                 output_paths += [Path(p) for p in cp.join.get("kept", [])]
+            elif cp.proc.returncode is not None and cp.join.get("state") == "unchecked":
+                # The joined file could not be read back, so the pieces go with the take as well.
+                output_paths += [cp.output_path] + [Path(p) for p in cp.join.get("kept", [])]
             elif cp.proc.returncode is not None and report["output_bytes"] > 0:
                 output_paths.append(cp.output_path)
                 logger.info("Artifact ready: %s (%d bytes)", cp.output_path, report["output_bytes"])
@@ -772,6 +783,13 @@ class FFmpegCaptureEngine:
             if proc.returncode != 0 or not joining.is_file():
                 raise RuntimeError(f"FFmpeg exited with status {proc.returncode}: {self._log_tail(log_path, 2)}")
             problem = await asyncio.to_thread(_joined_problem, joining, [p.path for p in usable])
+            if problem == _JOIN_UNCHECKED:
+                # The joined file takes the take's name, but nothing proves it whole, so every piece stays beside it.
+                os.rename(joining, cp.output_path)
+                listing.unlink()
+                cp.join = {"state": "unchecked", "pieces": cp.join["pieces"], "file": cp.output_path.name,
+                           "kept": [str(p.path) for p in usable], "error": problem}
+                return
             if problem:
                 raise RuntimeError(problem)
             os.rename(joining, cp.output_path)
