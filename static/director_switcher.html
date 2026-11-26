@@ -657,6 +657,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
           <button class="switch" type="button" data-preset="wrap">Wrap</button>
         </div>
         <div style="height:12px"></div>
+        <div data-operator-timeline style="margin-bottom:12px"></div>
         <div class="event-log" id="eventLog"></div>
       </div>
     </section>
@@ -687,13 +688,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <script src="/static/operator_recording_controls.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
 <script>
-const cameras = [
-  {id: "cam1", sourceId: "wide_shot", label: "Camera 1", shot: "Wide"},
-  {id: "cam2", sourceId: "medium_shot", label: "Camera 2", shot: "Host"},
-  {id: "cam3", sourceId: "close_up", label: "Camera 3", shot: "Guest"},
-  {id: "cam4", sourceId: "overhead", label: "Camera 4", shot: "Desk"},
-  {id: "cam5", sourceId: "cam1_ndi", label: "Camera 5", shot: "Stage"}
-];
+const cameras = []; // Populate only with acknowledged server camera IDs.
 const recordingOptions=window.PubCastRecordingControls.mount("operatorRecordingOptions");
 let recordingBusy=false,lastPostError="";
 // One audio mixer shared by all studios. These are real server buses, NOT a
@@ -704,8 +699,8 @@ const audio = [
   {name:"Sound FX",bus:"sfx",muted:false,volume:1,activeSources:0},
   {name:"VTR",bus:"vtr",muted:false,volume:1,activeSources:0}
 ];
-let program = "cam1";
-let preview = "cam3";
+let program = "";
+let preview = "";
 let recording = false;
 let paused = false;
 let directorBlackout = false, directorPreviewBars = false;
@@ -1065,7 +1060,8 @@ async function toggleRecordInternal(btn) {
     }
     recording = false;
     paused = false;
-    failedRecordingSources = [...new Set([...failedRecordingSources, ...stopFailures(stopped?.result)])];
+    $("pauseBtn").textContent="PAUSE";$("pauseBtn").classList.remove("active-preview");
+    failedRecordingSources = [...new Set([...failedRecordingSources, ...startFailures(stopped?.result), ...stopFailures(stopped?.result)])];
     if (failedRecordingSources.length) {
       const detail = "Capture problems with " + failedRecordingSources.join(", ") + " (see the take's capture report)";
       setTruthCard("truthRecording", "bad", "Incomplete take", detail);
@@ -1098,10 +1094,10 @@ async function pauseRecordingInternal(btn) {
   failedRecordingSources=[...new Set([...failedRecordingSources,...startFailures({capture_errors:result.pause_problems})])];
   btn.textContent=paused?"RESUME":"PAUSE";
   btn.classList.toggle("active-preview",paused);
-  setTruthCard("truthRecording",paused?"warn":"bad",paused?"Backend Paused":"Backend REC",
-    `Backend confirmed pause=${paused}`);
+  setTruthCard("truthRecording",failedRecordingSources.length?"bad":paused?"warn":"ok",failedRecordingSources.length?"Incomplete take":paused?"Backend Paused":"Backend REC",
+    failedRecordingSources.length?"Capture problems: "+failedRecordingSources.join(", "):`Backend confirmed pause=${paused}`);
   log(paused?"backend recording paused":"backend recording resumed");
-  toast(paused?"PAUSED":"RESUMED");
+  toast(failedRecordingSources.length?"CAPTURE PROBLEM: "+failedRecordingSources.join(", "):paused?"PAUSED":"RESUMED");
 }
 
 async function marker() {
@@ -1119,7 +1115,7 @@ async function panic() {
   const result=await postJSON("/api/production/panic",{});
   if(!result){setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
   if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
-    recording=false;paused=false;$("recordBtn").classList.remove("live");
+    recording=false;paused=false;recordingOptions.setLocked(false);$("recordBtn").classList.remove("live");$("pauseBtn").textContent="PAUSE";
   }
   directorBlackout=!!result.blackout_cued;
   setTruthCard("truthRecording",result.ok?"warn":"bad",result.ok?"PANIC SENT":"PANIC PARTIAL",
@@ -1307,6 +1303,7 @@ function init() {
 }
 init();
 </script>
+<script src="/static/operator_timeline_controls.js" defer></script>
 <script src="/static/camera_pool_async.js"></script>
 <script src="/static/camera_pool_controller.js"></script>
 <script src="/static/camera_pool_panel.js" defer></script>

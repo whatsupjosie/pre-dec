@@ -100,10 +100,10 @@ body{
   <button class="hotspot rect" id="tRec" style="left:47%;top:58%;width:5%;height:5%" onclick="toggleRec()"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">RECORD (R)</span></button>
   <button class="hotspot rect" id="tPanic" style="left:53%;top:58%;width:5%;height:5%" onclick="panic()"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">PANIC (ESC)</span></button>
   <!-- Audio (left console) -->
-  <button class="hotspot round" style="left:22%;top:50%;width:3%;height:4.5%" onclick="cycleAudio(0)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">HOST MIC</span></button>
-  <button class="hotspot round" style="left:25.5%;top:50%;width:3%;height:4.5%" onclick="cycleAudio(1)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">GUEST 1</span></button>
-  <button class="hotspot round" style="left:22%;top:55.5%;width:3%;height:4.5%" onclick="cycleAudio(2)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">GUEST 2</span></button>
-  <button class="hotspot round" style="left:25.5%;top:55.5%;width:3%;height:4.5%" onclick="cycleAudio(3)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">MUSIC</span></button>
+  <button class="hotspot round" style="left:22%;top:50%;width:3%;height:4.5%" onclick="cycleAudio(0)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">DIALOGUE BUS</span></button>
+  <button class="hotspot round" style="left:25.5%;top:50%;width:3%;height:4.5%" onclick="cycleAudio(1)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">MUSIC BUS</span></button>
+  <button class="hotspot round" style="left:22%;top:55.5%;width:3%;height:4.5%" onclick="cycleAudio(2)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">SFX BUS</span></button>
+  <button class="hotspot round" style="left:25.5%;top:55.5%;width:3%;height:4.5%" onclick="cycleAudio(3)"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">VTR BUS</span></button>
   <button class="hotspot round" style="left:23.5%;top:61%;width:3%;height:4.5%" onclick="muteAll()"><span class="tooltip" style="right:110%;top:50%;transform:translateY(-50%)">MUTE ALL (M)</span></button>
   <!-- Director modes (right of center desk) -->
   <button class="hotspot round" id="dAuto" style="left:58%;top:48%;width:3%;height:4.5%" onclick="setMode('auto')"><span class="tooltip" style="left:110%;top:50%;transform:translateY(-50%)">AUTO</span></button>
@@ -132,18 +132,20 @@ body{
   <button data-station="chyron">CHYRON</button>
   <button data-station="prompter">TELEPROMPTER</button>
   <button data-station="vtr">VTR</button>
+  <button data-station="timeline">TIMELINE</button>
 </div>
 <div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1â€“5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
 <div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="operatorRecordingOptions"></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button id="operatorPause" onclick="togglePause()">PAUSE</button> <button onclick="toggleRec()">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
 <div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
 <div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div></div>
+<div id="station-timeline" class="station-panel hidden"><h3>SHOW TIMELINE</h3><div data-operator-timeline></div></div>
 <div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
 <script>
 "use strict";
-const CAMS=[{id:'cam1',n:'1',l:'WIDE',sourceId:'wide_shot'},{id:'cam2',n:'2',l:'TWO-SHOT',sourceId:'medium_shot'},{id:'cam3',n:'3',l:'CLOSE',sourceId:'close_up'},{id:'cam4',n:'4',l:'OVERHEAD',sourceId:'overhead'},{id:'cam5',n:'5',l:'STAGE',sourceId:'cam1_ndi'}];
+const CAMS=[]; // Never expose guessed camera IDs before the server responds.
 const MODES=['auto','news','documentary','cinematic','manual'];
 const MODE_BTN_MAP={auto:'dAuto',news:'dNews',documentary:'dDoc',cinematic:'dCine',manual:'dMan'};
 const studioActions=window.PubCastStudioConsoleHotspots?new window.PubCastStudioConsoleHotspots.StudioConsoleHotspots():null;
@@ -152,7 +154,7 @@ const recordingOptions=window.PubCastRecordingControls.mount('operatorRecordingO
 let recordingBusy=false,recordingPaused=false;
 // The server lists each source that failed to record as {source_id, error, phase}.
 function captureFailures(list){return [...new Set((Array.isArray(list)?list:[]).map(item=>String(item?.source_id||'a source')))]}
-let pgm='cam1',pvw='cam2',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
+let pgm='',pvw='',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
 let audioMuted=[false,false,false,false,false];
 let controlBlackout=false,lastPanic=0,lastBlackout=0;
 let cameraBank=0,cameraGroup="",activeSourceList=[],lastSwitcherSnapshot=null;
@@ -214,7 +216,7 @@ function updateUI(){
   MODES.forEach(m=>{const el=document.getElementById(MODE_BTN_MAP[m]);if(el)el.className='hotspot round'+(mode===m?' pvw-active':'')});
   document.getElementById('srMode').textContent='MODE: '+mode.toUpperCase();
   document.getElementById('srCam').textContent='PGM: '+(pc?'CAM '+pc.n:'BLACK');
-  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(isRec?'â— ON':'OFF');
+  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(recordingPaused?'PAUSED':isRec?'â— ON':'OFF');
   document.getElementById('tRec').className='hotspot rect'+(isRec?' rec-active':'');
 }
 async function setPGM(id){
@@ -242,12 +244,12 @@ async function toggleRecInternal(){
     const started=await runStudioAction('recording.start',{...options,session_id:`image_console_${Date.now()}`},{safety:'confirm',label:'Start recording'});
     if(!started||!started.result||!started.result.session_id)return;
     activeRecordingSessionId=started.result.session_id;failedRecordingSources=captureFailures(started.result.capture_errors);isRec=true;recordingPaused=false;recStart=Date.now();
-    document.getElementById('rec-active-panel').style.display='block';
+    document.getElementById('rec-active-panel').style.display='block';document.getElementById('rec-active-id').textContent=activeRecordingSessionId;document.getElementById('rec-status-badge').textContent='REC';document.getElementById('operatorPause').textContent='PAUSE';
   }else{
     const stopped=activeRecordingSessionId?await runStudioAction('recording.stop',{session_id:activeRecordingSessionId},{safety:'confirm',label:'Stop recording'}):null;
     if(activeRecordingSessionId&&!stopped)return;
-    failedRecordingSources=captureFailures(stopped?.result?.capture_errors);
-    activeRecordingSessionId='';isRec=false;recordingPaused=false;document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudTime').textContent='00:00:00';
+    failedRecordingSources=[...new Set([...failedRecordingSources,...captureFailures(stopped?.result?.capture_errors)])];
+    activeRecordingSessionId='';isRec=false;recordingPaused=false;document.getElementById('rec-active-id').textContent='';document.getElementById('rec-status-badge').textContent='IDLE';document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudTime').textContent='00:00:00';
   }
   document.getElementById('hudRec').classList.toggle('on',isRec);document.getElementById('liveTag').style.display=isRec?'block':'none';updateUI()
 }
@@ -273,7 +275,7 @@ async function panic(){
     if(!response.ok)throw Error("HTTP "+response.status);
     const result=await response.json();
     if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
-      isRec=false;document.getElementById("hudRec").classList.remove("on");
+      activeRecordingSessionId='';isRec=false;recordingPaused=false;recordingOptions.setLocked(false);document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudRec').classList.remove('on');updateUI();
     }
     if(result.blackout_cued)document.getElementById("pgmFeedText").textContent="PANIC BLACKOUT CUED";
     document.getElementById("srMode").textContent=result.ok?"PANIC CONFIRMED":"PANIC PARTIAL: "+(result.capture_errors?.length||0)+" ERRORS";
@@ -345,7 +347,7 @@ setInterval(()=>refreshCanonical().catch(()=>{}),1200);
 setInterval(()=>refreshProductionTruth().catch(()=>{}),900);
 setInterval(()=>refreshAudioTruth().catch(()=>{}),3500);
 refreshCanonical();refreshProductionTruth();refreshAudioTruth();
-function connectWS(){try{ws=new WebSocket(window.ReachAuth.websocketURL('/ws/controlroom'));ws.onmessage=e=>{try{const m=JSON.parse(e.data);handleWsEvent(m);if(typeof window.__pubcastStationsHook==='function')window.__pubcastStationsHook(m)}catch{}};ws.onclose=()=>setTimeout(connectWS,3000)}catch{}}
+function connectWS(){try{ws=new WebSocket(window.ReachAuth.websocketURL('/ws/controlroom'));ws.onmessage=e=>{try{const m=JSON.parse(e.data);handleWsEvent(m);if(typeof window.__pubcastStationsHook==='function'&&(!m.type?.startsWith('recording_')||m.payload?.session_id===activeRecordingSessionId))window.__pubcastStationsHook(m)}catch{}};ws.onclose=()=>setTimeout(connectWS,3000)}catch{}}
 function handleWsEvent(m){
   switch(m.type){
     case 'director_cut':
@@ -357,10 +359,8 @@ function handleWsEvent(m){
       if(m.payload?.mode) { mode=m.payload.mode; updateUI(); }
       break;
     case 'production_panic':
-      pgm='black'; isRec=false;
-      document.getElementById('hudRec').classList.remove('on');
-      document.getElementById('liveTag').style.display='none';
-      updateUI();
+      // A panic broadcast alone does not prove this particular take stopped.
+      refreshProductionTruth();refreshCanonical();
       break;
     case 'lighting_preset':{
       const badge=document.getElementById('srMode');
@@ -395,17 +395,21 @@ function handleWsEvent(m){
       break;
     }
     case 'recording_started':
+      if(!activeRecordingSessionId||activeRecordingSessionId!==m.payload?.session_id)break;
       failedRecordingSources=captureFailures(m.payload?.capture_errors);
-      if(!m.payload?.session_id||activeRecordingSessionId&&activeRecordingSessionId!==m.payload.session_id)break;
       activeRecordingSessionId=m.payload.session_id;isRec=true;recordingPaused=false;recStart=Date.now();recordingOptions.setLocked(true);
       document.getElementById('hudRec').classList.add('on');
       document.getElementById('liveTag').style.display='block';
       updateUI();
       break;
+    case 'recording_paused':
+    case 'recording_resumed':
+      if(!activeRecordingSessionId||m.payload?.session_id!==activeRecordingSessionId)break;
+      recordingPaused=m.type==='recording_paused';document.getElementById('operatorPause').textContent=recordingPaused?'RESUME':'PAUSE';updateUI();break;
     case 'recording_stopped':
     case 'recording_archived':
       if(!activeRecordingSessionId||m.payload?.session_id!==activeRecordingSessionId)break;
-      activeRecordingSessionId='';recordingPaused=false;recordingOptions.setLocked(false);
+      activeRecordingSessionId='';recordingPaused=false;recordingOptions.setLocked(false);document.getElementById('rec-active-id').textContent='';document.getElementById('rec-status-badge').textContent='IDLE';document.getElementById('rec-active-panel').style.display='none';
       if(m.payload?.capture_errors)failedRecordingSources=captureFailures(m.payload.capture_errors);
       isRec=false;
       document.getElementById('hudRec').classList.remove('on');
@@ -425,6 +429,7 @@ if(bankBtn)bankBtn.addEventListener("click",()=>{
 updateUI();connectWS();
 </script>
 <script src="control_stations.js"></script>
+<script src="/static/operator_timeline_controls.js" defer></script>
 <script src="./camera_pool_async.js"></script>
 <script src="./camera_pool_controller.js"></script>
 <script src="camera_pool_panel.js" defer></script>

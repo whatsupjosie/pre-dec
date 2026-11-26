@@ -38,7 +38,7 @@
     const status=document.createElement("output");status.setAttribute("role","status");status.style.display="block";
     const check=document.createElement("button");check.type="button";check.textContent="CHECK READINESS";
     panel.append(modeLabel,legend,sourceList,check,status);
-    let snapshot=null,selection=new Set(),explicit=false,signature="";
+    let snapshot=null,selection=new Set(),explicit=false,signature="",locked=false;
     function setSnapshot(next){
       if(!next||!Array.isArray(next.sources))return;
       snapshot=next;
@@ -62,17 +62,20 @@
         input.addEventListener("change",()=>{if(!input.checked){selection.delete(sid);label.remove();}});
         label.append(input,document.createTextNode(" "+sid+" (unavailable; deselect to continue)"));sourceList.append(label);
       }
+      setLocked(locked);
     }
-    function setLocked(locked){mode.disabled=locked;check.disabled=locked;sourceList.querySelectorAll("input").forEach(x=>x.disabled=locked);}
+    function setLocked(value){locked=!!value;mode.disabled=locked;check.disabled=locked;sourceList.querySelectorAll("input").forEach(x=>x.disabled=locked);}
     async function prepare(){
       setSnapshot(await request("/api/switcher/state"));
       const payload=buildPayload(snapshot,mode.value,[...selection]);
+      status.textContent="Checking selected sources and recording profile...";
       const report=await request("/api/recording/preflight",{sources:payload.sources,profile_id:payload.profile_id,host_override:false});
       if(!Array.isArray(report.issues))throw Error("Invalid readiness report");
       // Existing preflight is video-oriented. Data-only intentionally writes no pictures.
       const issues=report.issues.filter(x=>!(payload.mode==="data_only"&&x.code==="source_not_recordable"));
       if(issues.length||(!report.ready&&report.issues.length===0))throw Error(issues.map(x=>x.message||x.code).join("; ")||"Recording preflight not ready");
-      status.textContent="Source/profile checks passed; actual capture must still be confirmed.";
+      const warnings=(report.warnings||[]).map(x=>x.message||x.code).filter(Boolean);
+      status.textContent="Source/profile checks passed; actual capture must still be confirmed."+(warnings.length?" Warnings: "+warnings.join("; "):"");
       return payload;
     }
     mode.addEventListener("change",()=>{status.textContent="Mode changed; check readiness again.";});
