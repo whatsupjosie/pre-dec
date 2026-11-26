@@ -1,0 +1,17 @@
+# c0b41173__Beyond-October~11-12-merge__pubcast_avatar_studio_corrected.zip
+
+Where: GitHub Beyond-October branch 11-12-merge: recovery/2026-10-21/avatars/retrieved/avatar_catalog/pubcast_avatar_studio_corrected.zip ; GitHub Beyond-October branch 2i-beta-polish: recovery/2026-10-21/avatars/retrieved/avatar_catalog/pubcast_avatar_studio_corrected.zip ; GitHub Beyond-October branch audit/standard-first-2026-11-19: recovery/2026-10-21/avatars/retrieved/avatar_catalog/pubcast_avatar_studio_corrected.zip ; and 114 more (see branch_files_index.tsv, fingerprint of the zip c0b41173)
+
+9 files. Status counts: NOT IN ANY REPO BRANCH: 9
+
+| File (path inside the zip) | What it is | Status | Quality | Potential |
+|---|---|---|---|---|
+| pubcast_avatar_studio_corrected/README.md | document: PubCast Avatar Studio — corrected prototype / Windows setup / Blender batch processing | NOT IN ANY REPO BRANCH (exists only inside this zip) | document; 43 lines | Notes/handoff not in the build: read for decisions or lost context. |
+| pubcast_avatar_studio_corrected/blender_worker.py | Executed inside Blender 4.x, via rig_pipeline.py. | NOT IN ANY REPO BRANCH (exists only inside this zip) | Python; compiles; 0 functions, 0 classes; 79 lines | Code with no same-named file in the build: candidate to read for missing parts. |
+| pubcast_avatar_studio_corrected/index.html | page: PubCast Avatar Studio — Provisional Rig | NOT IN ANY REPO BRANCH (exists only inside this zip) | HTML page; 22 lines | Code with no same-named file in the build: candidate to read for missing parts. |
+| pubcast_avatar_studio_corrected/rig.json | status": "PROVISIONAL_NOT_CANONICAL", / expectedCanonicalCount": 67, / joints": [ — keys: status, expectedCanonicalCount, joints | NOT IN ANY REPO BRANCH (exists only inside this zip) | JSON data; 600 lines | Data/other file not in the build. |
+| pubcast_avatar_studio_corrected/rig_pipeline.py | PubCast provisional rigging worker — defines: validate_definition, run | NOT IN ANY REPO BRANCH (exists only inside this zip) | Python; compiles; 2 functions, 0 classes; 35 lines | Code with no same-named file in the build: candidate to read for missing parts. |
+| pubcast_avatar_studio_corrected/server.py | defines: Handler | NOT IN ANY REPO BRANCH (exists only inside this zip); differs from closest current file with this name (0 matching folders): iteration_wallet/server.py: 17 line... | Python; compiles; 2 functions, 1 classes; 21 lines | Mostly older than current; read the lines only here before discarding. |
+| pubcast_avatar_studio_corrected/setup_vendor.ps1 | $ErrorActionPreference = "Stop / $base = "https://unpkg.com/three@0.160.0 / $files = @( | NOT IN ANY REPO BRANCH (exists only inside this zip) | text (.ps1); 18 lines | Data/other file not in the build. |
+| pubcast_avatar_studio_corrected/studio.js | One tube per actual skeletal segment. Each vertex gets distance-based / blending to its segment endpoints, with a 2-joint transition. — defines: boneWorld, clear, getPositions, makeGeometry, validate,... | NOT IN ANY REPO BRANCH (exists only inside this zip) | JavaScript/TypeScript; 194 lines | Code with no same-named file in the build: candidate to read for missing parts. |
+| pubcast_avatar_studio_corrected/tests.py | Pure-Python structural tests; no Blender/browser needed. — defines: RigTests | NOT IN ANY REPO BRANCH (exists only inside this zip) | Python; compiles; 4 functions, 1 classes; 24 lines | Code with no same-named file in the build: candidate to read for missing parts. |

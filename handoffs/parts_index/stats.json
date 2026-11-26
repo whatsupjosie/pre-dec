@@ -1,0 +1,19 @@
+{
+ "zip_file_entries": 16059,
+ "zip_distinct_contents": 7798,
+ "zip_status": {
+  "A_current": 3795,
+  "B_other_branch": 6484,
+  "C_nowhere_in_git": 5780
+ },
+ "zip_distinct_status": {
+  "A_current": 1111,
+  "B_other_branch": 4167,
+  "C_nowhere_in_git": 2520
+ },
+ "max_zip_nesting": 5,
+ "max_folder_depth": 10,
+ "sources": 108,
+ "branch_distinct_files": 14429,
+ "branch_refs": 196
+}
