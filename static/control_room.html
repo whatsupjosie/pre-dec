@@ -170,7 +170,7 @@ const confidenceViewer=window.PubCast25DRemoteFeed?.create({targets:{
   preview:{image:document.getElementById("operatorPreviewImage"),status:document.getElementById("operatorPreviewStatus")}
 }});
 const confidenceGuard=window.PubCastConfidenceGuard.create(confidenceViewer,()=>lastSwitcherSnapshot);
-let switcherPollBusy=false,switcherRevision=0;
+let switcherPollBusy=false,switcherRevision=0,switcherActionBusy=false;
 function cam(id){return CAMS.find(c=>c.id===id)||null}
 async function syncSwitcherState(snapshot){
   if(!snapshot||!Array.isArray(snapshot.sources))throw Error("Canonical switcher state unavailable");
@@ -197,16 +197,18 @@ async function syncSwitcherState(snapshot){
   if(!preview&&snapshot.preview)document.getElementById("pvwCamText").textContent="EXTERNAL PVW";
 }
 async function sharedSwitcher(path){
-  const revision=++switcherRevision;
-  const response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"}});
-  if(!response.ok)throw Error(path+" HTTP "+response.status);
-  const payload=await response.json();if(revision===switcherRevision)await syncSwitcherState(payload);
-  return payload;
+  if(switcherActionBusy)throw Error("A switch command is in progress");
+  switcherActionBusy=true;const revision=++switcherRevision;
+  try{
+    const response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(5000)});
+    if(!response.ok)throw Error(path+" HTTP "+response.status);
+    const payload=await response.json();if(revision===switcherRevision)await syncSwitcherState(payload);return payload;
+  }finally{switcherActionBusy=false;refreshCanonical();}
 }
 async function refreshCanonical(){
-  if(switcherPollBusy)return;switcherPollBusy=true;const revision=switcherRevision;
+  if(switcherPollBusy||switcherActionBusy)return;switcherPollBusy=true;const revision=switcherRevision;
   try{
-    const response=await fetch("/api/switcher/state",{cache:"no-store"});
+    const response=await fetch("/api/switcher/state",{cache:"no-store",signal:AbortSignal.timeout(1800)});
     if(!response.ok)throw Error("HTTP "+response.status);
     const state=await response.json();if(revision===switcherRevision)await syncSwitcherState(state);
   }catch(e){if(revision===switcherRevision){lastSwitcherSnapshot=null;CAMS.splice(0);pgm="";pvw="";confidenceGuard.apply();updateUI();document.getElementById("srCam").textContent="SWITCHER UNVERIFIED: "+e.message;}}
@@ -286,7 +288,7 @@ async function togglePause(){
   finally{recordingBusy=false;}
 }
 async function panic(){
-  confidenceGuard.invalidate();
+  const releaseConfidence=confidenceGuard.hold();
   try{
     const response=await fetch("/api/production/panic",{method:"POST"});
     if(!response.ok)throw Error("HTTP "+response.status);
@@ -298,6 +300,7 @@ async function panic(){
     document.getElementById("srMode").textContent=result.ok?"PANIC CONFIRMED":"PANIC PARTIAL: "+(result.capture_errors?.length||0)+" ERRORS";
     if(!result.ok)console.warn("PANIC partial failure",result.capture_errors);
   }catch(e){document.getElementById("srMode").textContent="PANIC FAILED: "+e.message;}
+  finally{releaseConfidence();}
 }
 async function muteAll(){
   try{

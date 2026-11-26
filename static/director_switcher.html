@@ -1002,23 +1002,31 @@ function syncVideoSwitcherState(snapshot){
   renderAux("auxLeft",0);renderAux("auxRight",2);
   return true;
 }
-let lastSwitcherSignature="";
+let lastSwitcherSignature="",switcherPollBusy=false,switcherRevision=0,switcherActionBusy=false;
+function invalidateSwitcher(){lastSwitcherSignature="";backendTruth.switcher=null;cameras.splice(0);program="";preview="";confidenceGuard.apply();updateMonitors();}
 async function refreshSwitcherState() {
+  if(switcherPollBusy||switcherActionBusy)return;
+  switcherPollBusy=true;const revision=switcherRevision;
   try {
-    const response=await fetch("/api/switcher/state",{cache:"no-store"});
+    const response=await fetch("/api/switcher/state",{cache:"no-store",signal:AbortSignal.timeout(1800)});
     if(!response.ok)throw Error("HTTP "+response.status);
     const data=await response.json();
+    if(revision!==switcherRevision)return;
     if(!Array.isArray(data.sources))throw Error("Invalid camera registry");
-    const signature=JSON.stringify({program:data.program,preview:data.preview,sources:data.sources.map(x=>[x.id,x.name])});
+    const signature=JSON.stringify({program:data.program,preview:data.preview,sources:data.sources.map(x=>[x.id,x.name,x.transport])});
     if(signature!==lastSwitcherSignature){lastSwitcherSignature=signature;syncVideoSwitcherState(data);}
-  }catch(_) {lastSwitcherSignature="";backendTruth.switcher=null;cameras.splice(0);program="";preview="";confidenceGuard.apply();updateMonitors();}
+  }catch(_) {if(revision===switcherRevision)invalidateSwitcher();}
+  finally{switcherPollBusy=false;}
 }
 async function videoAction(path,payload,description){
-  const result=await postJSON(path,payload);
-  if(!result||!syncVideoSwitcherState(result)){toast("SWITCH FAILED");log(description+" failed: backend state unavailable");return false;}
-  log(description+" confirmed by shared switcher");
-  toast(description);
-  return true;
+  if(switcherActionBusy){toast("SWITCH COMMAND IN PROGRESS");return false;}
+  switcherActionBusy=true;switcherRevision++;
+  try{
+    const result=await postJSON(path,payload);
+    if(!result||!syncVideoSwitcherState(result)){invalidateSwitcher();toast("SWITCH FAILED");log(description+" failed: backend state unavailable");return false;}
+    lastSwitcherSignature="";
+    log(description+" confirmed by shared switcher");toast(description);return true;
+  }finally{switcherActionBusy=false;refreshSwitcherState();}
 }
 async function setPreview(id,btn){
   const cam=cameras.find(c=>c.id===id);
@@ -1135,8 +1143,8 @@ async function marker() {
 async function panic() {
   // Do not update the local video source or claim recording stopped until
   // the backend has actually attempted the stop, black cue, and audio mute.
-  confidenceGuard.invalidate();
-  const result=await postJSON("/api/production/panic",{});
+  const releaseConfidence=confidenceGuard.hold();
+  let result;try{result=await postJSON("/api/production/panic",{});}finally{releaseConfidence();}
   if(!result){setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
   if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
     recording=false;paused=false;recordingOptions.setLocked(false);$("recordBtn").classList.remove("live");$("pauseBtn").textContent="PAUSE";
@@ -1151,8 +1159,8 @@ async function panic() {
 
 async function bars() {
   const desired=!directorPreviewBars;
-  confidenceGuard.invalidate();
-  const result=await postJSON("/api/production/video-cue",{cue:"preview_bars",enabled:desired});
+  const releaseConfidence=confidenceGuard.hold();
+  let result;try{result=await postJSON("/api/production/video-cue",{cue:"preview_bars",enabled:desired});}finally{releaseConfidence();}
   if(!result?.ok){log("Preview bars command failed; no local-only success state");toast("BARS FAILED");return;}
   directorPreviewBars=desired;$("previewMode").textContent=desired?"BARS":"Ready";
   log("Preview bars confirmed by backend: "+desired);
@@ -1196,7 +1204,7 @@ async function exportRecording(btn) {
 
 async function refreshTruth() {
   backendTruth.failures = [];
-  const [health, studio, camerasState, recordingStorage, mocap, timeline, voxel, ai, switcher] = await Promise.all([
+  const [health, studio, camerasState, recordingStorage, mocap, timeline, voxel, ai] = await Promise.all([
     getJSON("/health"),
     getJSON("/api/studio/status"),
     getJSON("/api/cameras"),
@@ -1204,11 +1212,10 @@ async function refreshTruth() {
     getJSON("/api/mocap/status"),
     getJSON("/api/timeline/status"),
     getJSON("/api/voxel/status"),
-    getJSON("/api/byok/ollama/status"),
-    getJSON("/api/switcher/state")
+    getJSON("/api/byok/ollama/status")
   ]);
-  backendTruth = {health, studio, cameras: camerasState, recordingStorage, mocap, timeline, voxel, ai, switcher, programAudio:backendTruth.programAudio, failures: backendTruth.failures};
-  if(!switcher.error) syncVideoSwitcherState(switcher);else {backendTruth.switcher=null;cameras.splice(0);program="";preview="";confidenceGuard.apply();}
+  backendTruth = {health, studio, cameras: camerasState, recordingStorage, mocap, timeline, voxel, ai, switcher:backendTruth.switcher, programAudio:backendTruth.programAudio, failures: backendTruth.failures};
+  refreshSwitcherState();
   setTruthCard("truthHealth", health.error ? "bad" : "ok", health.error ? "Offline" : "OK", health.error || `cameras=${health.systems?.cameras ?? "?"} recording_profiles=${health.systems?.recording_profiles ?? "?"}`);
   const studioState = studio.state || studio.status || (studio.available ? "available" : "unavailable");
   if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture problems with " + failedRecordingSources.join(", "));
@@ -1291,8 +1298,8 @@ function init() {
   $("barsBtn").onclick = (ev) => { clickFlash(ev.currentTarget); bars(); };
   $("blackoutBtn").onclick = async ()=>{
     const desired=!directorBlackout;
-    confidenceGuard.invalidate();
-    const result=await postJSON("/api/production/video-cue",{cue:"blackout",enabled:desired});
+    const releaseConfidence=confidenceGuard.hold();
+    let result;try{result=await postJSON("/api/production/video-cue",{cue:"blackout",enabled:desired});}finally{releaseConfidence();}
     if(!result?.ok){toast("BLACKOUT FAILED");log("Blackout command not acknowledged");return;}
     directorBlackout=desired;
     log("Server blackout "+(desired?"ON":"OFF"));
