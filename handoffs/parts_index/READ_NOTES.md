@@ -137,3 +137,66 @@ READ (structure) for all of these, compared with the live files.
 | `timeline.py`, `timeline_routes.py` | `8d034073`, `355d9fab` | Older forms of the live ones (main.py wires timeline_routes at line 1350). Nothing to harvest. |
 | `recording_pipeline_routes.py` | `ab8204ce` | Older form of the live one (EDL and FCPXML export, markers). Nothing to harvest. |
 | `recording_evo_bridge.py` | `f8b9143b` (`Slightly older still good... zip` on Drive, id 1SwzA3x5iZmwBRrrxnC0aNUlXHE674Sy1, `>> pubcast_ai_complete/pubcast_build/pubcast_evo_FINAL.zip > pubcast_evo/`) | **Idea worth keeping:** when recording starts, EVO's level-of-detail is locked to full fidelity ("every frame matters") and released at stop. Not in the current build. It patches RecordingService's start/stop by monkey-patching, which should not be copied; the policy should be a recording-mode hook. |
+
+## 4. Native renderer, camera crate and performer files, 2026-11-26
+
+| File | Read | What it is | Verdict |
+|---|---|---|---|
+| `renderer.rs` (`480d687f`, 914 lines). Where: DREAMS branch New-Twin-Pubcast-Rust-Pythos-duo, `pubcast_engine_locked_bundle.zip >> pubcast_renderer_workspace_fixed2.zip > pubcast_renderer_workspace/src/renderer.rs` | READ (first 60 lines and every item name) | A native wgpu renderer: frame budget (16.67 ms target, 33.33 ms ceiling, quality drops at 13.34 ms), mesh pool with LRU eviction, metrics, camera uniform, and a real fallback draw path. Its header says it does NOT yet do voxel meshing, the Python-Rust bridge, real telemetry or scene-driven meshes. | **Candidate for a native renderer backend**: nothing like it is in the build (`experiments/prime_rust_recovery/src/renderer.rs` is a 206-byte trait). NOT compiled here. It needs a GPU or a software Vulkan, so per the build rules it could only ever be optional. Josie's call. |
+| `camera.rs` (`f62299b1`, 431 lines), `engine.rs` (`9492afcb`), `fallback.rs` (`b01a2a5a`), `packet.rs` (`8e2d88ed`), `lib.rs` (`dc1766fd`): the April 2026 `rust_camera` crate from section 2 | READ (every item name and comment) | VirtualCamera with roles, operator and intent modes, lens profiles (wide, medium, close-up, overhead), shot queue, follow, scene truth, a fallback ladder and packets. CameraEngine: program/preview/take, assign scene, distribute scene truth, tick, packets, the PubCast lineup. | Same family as the current `pubcast_camera_recovery/` crate (camera/, control_room/, scene/), which is larger. What the April crate has and the current one lacks: the JSON server (ffi.rs), world.rs, per-shot lens profiles. |
+| `camera.rs` (`05e77446`), `scene.rs` (`e567a7d9`), `lib.rs` (`ff030dce`), `render_window.rs` (`ca482871`), all from the renderer workspace | READ (item names) | The wgpu workspace's view-projection camera, an empty SceneManager (7 lines), and a window example. | Parts of the renderer.rs entry above. |
+| `ws_renderer.rs` (`7d2e8d12`) | READ (item names, comments) | WebSocket avatar renderer tick loop. | Older than the current `rust_crate/src/ws_renderer.rs` (7 lines only here, 47 only in current). Nothing to harvest. |
+| `voxel.rs` (`5655718e`) | READ (item names) | Voxel chunks and a mesher. | Older than the current `run2_rust/voxel.rs`. Nothing to harvest. |
+| `facial_performance.py` (`e1f8a515`, 661 lines). Where: Drive `Slightly older still good... zip` (1SwzA3x5iZmwBRrrxnC0aNUlXHE674Sy1) `>> pubcast_ai_complete/pubcast_build/pubcast_evo_FINAL.zip > pubcast_evo/facial_performance.py` | READ (every differing line against the live `modules/evo/facial_performance.py`) | Performer and audience face analysis (MediaPipe, DeepFace) feeding the prosody and VDI engines. | **Harvest.** The live file is a placeholder in two places, and this one does the real work: `_expression_velocity` returns 0.0 live, while this measures nose-tip and lip-corner motion between frames; `_breathing_rate` returns 15.0 live, while this tracks nose height over 10 s and counts peaks. It also fixes `face_area` (live uses `.size`, which counts colour channels). Port with care: it runs face_mesh a second time per frame (the landmarks should be reused), and its imports are bare where the live file's are package imports. |
+| `facial_performance.py` (`f0da9e34`, Breaking-Dawn `not_yet_integrated/`) | READ (differing lines counted) | An earlier form. | The live file is this plus 8 lines. Nothing to harvest. |
+| `evo_bus_wiring.py` (`195fe3e7`, April bundle) | READ (structure) | EVO subscribes to the take lifecycle. At slate, characters go to places; at ready, performance is armed; at action, energy ramps and blinks are suppressed; at live, full expressivity; at cut, characters relax. When the program camera changes, the characters' eyelines turn to the new camera. A mid-take cut gets a brief composure hold. | **Idea worth keeping**: nothing in the build turns eyelines to the program camera or ties EVO to the take state. It depends on the old ControlRoom bus; it would hook to CameraManager's switch event and the slate phases. |
+| `performance_manager.py`, `performer_state.py`, `animation_authority.py` (`0d47ef2d`), `avatar_motion.py` | READ (structure) | Earlier forms. | Each is smaller than its live counterpart in `runtime/spine/` or `modules/`, and the live one has more. Nothing to harvest. |
+| `camera_manager.py` (`1724da3a`), `_camera_manager_v5_retired.py`, `_cameras_advanced_v5_retired.py`, `cameras_advanced.py` (`dee7d1fb`), `cameras.py` (`a687840c`, a 26-line shim) | READ (structure) | AdvancedCameraManager: USB, IP, OBS virtual camera and voxel-engine TCP sources, monitoring, and cut, preview and auto transitions. | Older forms of the live `modules/cameras_advanced.py`, which main.py imports at line 408. Nothing to harvest. |
+
+## 5. Voice, mocap, routes and engines: compared line by line with the live file, 2026-11-26
+
+READ (every non-comment line that the live file doesn't have, and every class or function that only one side has).
+
+| File | Live file | Verdict |
+|---|---|---|
+| `prosody_engine.py` (`e5878e4f`). Where: Drive `Slightly older still good... zip` (1SwzA3x5iZmwBRrrxnC0aNUlXHE674Sy1) `>> pubcast_ai_complete/pubcast_build/pubcast_evo_FINAL.zip > pubcast_evo/prosody_engine.py` | `modules/evo/prosody_engine.py` | **Harvest.** The live `_cartesia_emotion` is a 3-rule stub: fixed levels from style, crack and pitch. This one grades every level (lowest to high) from the actual values: warmth gives positivity; crack probability gives sadness; pitch range with style gives curiosity; direct address with proximity gives trust; slow speech with warmth gives anticipation; capped at 3 emotions. A small, contained port. |
+| `distributed_engine.py` (`faa70bd1`, same zip) | `modules/evo/distributed_engine.py` | Its extra 149 lines are local stand-in copies of the bridge, circuit-breaker and IRM classes, used when `modules.bridge` is missing ("stub mode"). The live file has every real function. Nothing to harvest. |
+| `mocap_integration.py` (`76b7688b`, Prime canon) | `modules/mocap_integration.py` | Older: the live file has `open()` and `_receive_frames()` with the task kept and cancelled. Nothing to harvest. |
+| `production_routes.py` (`5004e16f`, `fb7218d0`, `370d190b`) | `modules/production_routes.py` (1,086 lines) | Older (473 to 662 lines). Nothing to harvest. |
+| `program_audio_routes.py` (`064810ad`) | `modules/program_audio_routes.py` | Older, without the current role check. Nothing to harvest. |
+| `stage_compat_routes.py` (`c176446f`, `4cd64e85`) | `modules/stage_compat_routes.py` | Older; they trust an `X-Client-Id` header as identity, which the live file doesn't. Nothing to harvest. |
+| `pubcast_twin_engine_service.py` (`e457e849`) | `run3_bridge/pubcast_twin_engine_service.py` | Two lines differ. Nothing to harvest. |
+| `avatar.py` (`ea3ed727`), `choreography_controller.py` (`df0a32a6`) | `modules/avatar.py`, `modules/choreography_controller.py` | Older; the live ones are larger, and the differing lines are formatting of the same logic. Nothing to harvest. |
+
+## 6. Avatar building from art: small tools that exist only in zips, 2026-11-26
+
+READ (structure; each is 18 to 90 lines). These are for building a character model (Lena), not for the show's
+reconstruction from show data. Each zip that holds them is committed in many branches (`branch_files_index.tsv` gives
+every location by the zip's fingerprint). The build has none of them: no TRELLIS, visual hull, Blender worker or GLB audit.
+
+| File | What it says it is | Honest limits it states |
+|---|---|---|
+| `trellis_integration/reconstruct_with_trellis.py` (`bb7e4c05`), `prepare_views.py` (`544020ed`) | Multi-view reconstruction of Lena with Microsoft's TRELLIS; normalizes the artwork first | Needs the official TRELLIS install and CUDA; "no substitute silhouette meshing" |
+| `reconstruct.py` (`3e59d7d2`), `preview.py` (`2e2fbfa0`), `render_check.py` (`add3397a`) | Two-view silhouette visual-hull reconstruction, offline and reproducible | "Not a learned 3D model"; occluded limbs are not inferred |
+| `pubcast_avatar_studio_corrected/rig_pipeline.py` (`b3d3456c`), `blender_worker.py` (`1706c670`), `reconstruction/mesh_scale.py` (`ddc5bc7a`), `upstream_photo_to_mesh/mesh_units.py` (`006e1e9c`, adapted from an MIT project) | Rigging inside Blender 4.x, and scaling a reconstructed GLB to metres | "Provisional", "no canonical certification"; needs Blender |
+| `pubcast_avatar_rebuild/build_offline_glb.py` (`0c1ece27`), `audit_existing_glb.py` (`31617cb4`), `extract_canonical.py` (`764431a0`) | A self-contained skinned, animated glTF test fixture; a read-only GLB audit; extraction of the Rust `create_pubcast_rig` construction | The fixture says it is "NOT a Lena character model" |
+
+Verdict: candidates for the avatar area, not the control-room engine. `audit_existing_glb.py` could serve the engine as
+a check on the GLB actors that `world_walk_glb.js` loads. None of them were run here.
+
+## 7. Control-room pages found in zips (frontend, so ChatGPT's area), 2026-11-26
+
+READ (every function name, every API path called, and the CSS section comments). Claude does not edit the frontend on
+this branch. They are listed so the operator side can find them, and for the backend routes they expect.
+
+| File | Where | What it is | Backend routes it calls: does the build have them? |
+|---|---|---|---|
+| `station_ccu.html` (`28d3d737`, 446 lines) | GitHub Storage main: `pubcast_utilities_systems_part3.zip >> util3/pubcast_session_2026-05-13.zip > pubcast_session_handoff/static/` (only in that zip) | A camera control unit drawn over a console image: camera strip, presets 1 to 4, shots 1 to 6, focus, zoom, knob, joystick, trackball, tally lamp, return video, monitor | `/api/cameras/{focus,zoom,pantilt,preset,shot,tally,return,knob,menu,param,trackball,switch}` and `/ws/controlroom`: **none exist.** The build has PTZ and pose at `/api/switcher/ptz/{id}` and `/api/switcher/pose/{id}`, and moves at `/api/camera-moves`. A CCU would be wired to those; tally, preset recall and return video have no backend. |
+| `station_audio (1).html` (`e9ec3df0`, 406 lines) | GitHub Just-The-Pubcast main (also in Storage's `Just-The-Pubcast-main.zip`) | An audio station drawn over a console image: faders, knobs, arc buttons, mute, keyboard bar | `/api/audio/{channel,knob,route}`: **none exist under those names.** The build's channel strip is `/api/program-audio/channels` and `/api/program-audio/channels/{id}` (gain, mute, solo), from this branch. |
+| `control_room.html` (`41a6e40a`, `595bfd79`, `c7ab68bf`) | Prime canon; DREAMS bundle; Storage session 2026-05-13 | Console-image control rooms with hotspots: PGM/PVW, cut, record, panic, mute all, presets, stations bar | They call `/api/cameras/cut`, `/api/cameras/switch`, `/api/recording/start`, `/api/production/panic`. The live `static/control_room.html` differs from all three. |
+| `director_switcher.html` (`855bed78`, 1,205 lines) | Prime canon | Switcher with truth card, danger panel, aux, fade, pause recording, marker, bars, export | Older than the live `static/director_switcher.html` (137 lines only here, 230 only live). |
+| `studio_control_room.html` (`206fc815`) | Prime canon | Audio matrix, countdown, preflight checks | Near the live file (47 lines only here, 63 only live). |
+| `pubcast_control_room_v14.html` (`0181f9d5`, 3,687 lines) | a zip committed in three branches (`curtsey_context/code/`), only in that zip | A large styled control room ("brass and gold", "teal marble"); calls `/api/switcher` | Not compared further. Its look is Josie's design work: the operator side should look at it before changing any control-room look. |
+| `control_room_ui.html` (`36e49dfa`) | The-Prime assembled-pubcast (in a branch) | Resizable trays, telemetry, layout persisted at `/api/layout` | Not compared further. |
+| `mocap.html` (`8546daf5`), `pubcast-control.html` (`47253231`), `Enhanced_control_room_HTML_integration_-_Claude.html` (`31845a16`) | 2026-03-21 code zip; Drive `Slightly older still good` zip; Thursday- breakfast zip | A mocap status panel; a procedural-avatar canvas; a 1,945-line launcher page | Not compared further. |
+| `studio.js` (8 versions) | avatar rebuild zips (section 6) | The browser side of the avatar tools: geometry, GLB load, rest pose, edge-stretch measure | With section 6. |
