@@ -134,12 +134,13 @@ body{
   <button data-station="vtr">VTR</button>
 </div>
 <div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1â€“5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
-<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button onclick="wsSend({type:'recording_action',action:'pause'})">PAUSE</button> <button onclick="wsSend({type:'recording_action',action:'stop'})">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
+<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="operatorRecordingOptions"></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button id="operatorPause" onclick="togglePause()">PAUSE</button> <button onclick="toggleRec()">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
 <div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
 <div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div></div>
 <div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
+<script src="/static/operator_recording_controls.js"></script>
 <script>
 "use strict";
 const CAMS=[{id:'cam1',n:'1',l:'WIDE',sourceId:'wide_shot'},{id:'cam2',n:'2',l:'TWO-SHOT',sourceId:'medium_shot'},{id:'cam3',n:'3',l:'CLOSE',sourceId:'close_up'},{id:'cam4',n:'4',l:'OVERHEAD',sourceId:'overhead'},{id:'cam5',n:'5',l:'STAGE',sourceId:'cam1_ndi'}];
@@ -147,6 +148,8 @@ const MODES=['auto','news','documentary','cinematic','manual'];
 const MODE_BTN_MAP={auto:'dAuto',news:'dNews',documentary:'dDoc',cinematic:'dCine',manual:'dMan'};
 const studioActions=window.PubCastStudioConsoleHotspots?new window.PubCastStudioConsoleHotspots.StudioConsoleHotspots():null;
 let failedRecordingSources=[];
+const recordingOptions=window.PubCastRecordingControls.mount('operatorRecordingOptions');
+let recordingBusy=false,recordingPaused=false;
 // The server lists each source that failed to record as {source_id, error, phase}.
 function captureFailures(list){return [...new Set((Array.isArray(list)?list:[]).map(item=>String(item?.source_id||'a source')))]}
 let pgm='cam1',pvw='cam2',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
@@ -157,6 +160,7 @@ function cam(id){return CAMS.find(c=>c.id===id)||null}
 async function syncSwitcherState(snapshot){
   if(!snapshot||!Array.isArray(snapshot.sources))throw Error("Canonical switcher state unavailable");
   lastSwitcherSnapshot=snapshot;
+  recordingOptions.setSnapshot(snapshot);
   const activeId=String(snapshot.program||snapshot.preview||"");
   const prefix=activeId.startsWith("p25d_")&&activeId.lastIndexOf("_")>5
     ?activeId.slice(0,activeId.lastIndexOf("_")+1):"";
@@ -202,8 +206,7 @@ async function runStudioAction(actionId,payload={},spec=null){
   }
 }
 function updateUI(){
-  CAMS.forEach((c,i)=>{const el=document.getElementById('pgm'+(i+1));if(el)el.className='hotspot round'+(pgm===c.id?' pgm-active':'')});
-  CAMS.forEach((c,i)=>{const el=document.getElementById('pvw'+(i+1));if(el)el.className='hotspot round'+(pvw===c.id?' pvw-active':'')});
+  for(let i=0;i<5;i++){const c=CAMS[i];for(const [prefix,current,active] of [['pgm',pgm,'pgm-active'],['pvw',pvw,'pvw-active']]){const el=document.getElementById(prefix+(i+1));if(el){el.disabled=!c;el.className='hotspot round'+(c&&current===c.id?' '+active:'');}}}
   const pc=CAMS.find(c=>c.id===pgm),vc=CAMS.find(c=>c.id===pvw);
   document.getElementById('pgmCamText').textContent=pc?'CAM '+pc.n:'BLACK';
   document.getElementById('pgmFeedText').textContent=controlBlackout?'BLACKOUT CUED':pc?pc.l:'SOURCE UNBOUND';
@@ -229,19 +232,40 @@ async function cut(){
   catch(e){document.getElementById("srCam").textContent="CUT FAILED: "+e.message;}
 }
 async function toggleRec(){
+  if(recordingBusy)return;recordingBusy=true;
+  try{await toggleRecInternal();}finally{recordingBusy=false;recordingOptions.setLocked(isRec);}
+}
+async function toggleRecInternal(){
   if(!isRec){
-    const source=cam(pgm);
-    if(!source){document.getElementById("srRec").textContent="REC BLOCKED: NO VERIFIED PROGRAM";return;}
-    const started=await runStudioAction('recording.start',{session_id:`image_console_${Date.now()}`,sources:[source.sourceId],profile_id:'broadcast_mp4',countdown_seconds:0},{safety:'confirm',label:'Start recording'});
+    let options;
+    try{options=await recordingOptions.prepare();}catch(e){document.getElementById("srRec").textContent="REC BLOCKED: "+e.message;return;}
+    const started=await runStudioAction('recording.start',{...options,session_id:`image_console_${Date.now()}`},{safety:'confirm',label:'Start recording'});
     if(!started||!started.result||!started.result.session_id)return;
-    activeRecordingSessionId=started.result.session_id;failedRecordingSources=captureFailures(started.result.capture_errors);isRec=true;recStart=Date.now();
+    activeRecordingSessionId=started.result.session_id;failedRecordingSources=captureFailures(started.result.capture_errors);isRec=true;recordingPaused=false;recStart=Date.now();
+    document.getElementById('rec-active-panel').style.display='block';
   }else{
     const stopped=activeRecordingSessionId?await runStudioAction('recording.stop',{session_id:activeRecordingSessionId},{safety:'confirm',label:'Stop recording'}):null;
     if(activeRecordingSessionId&&!stopped)return;
     failedRecordingSources=captureFailures(stopped?.result?.capture_errors);
-    activeRecordingSessionId='';isRec=false;document.getElementById('hudTime').textContent='00:00:00';
+    activeRecordingSessionId='';isRec=false;recordingPaused=false;document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudTime').textContent='00:00:00';
   }
   document.getElementById('hudRec').classList.toggle('on',isRec);document.getElementById('liveTag').style.display=isRec?'block':'none';updateUI()
+}
+async function togglePause(){
+  if(recordingBusy||!isRec||!activeRecordingSessionId)return;
+  recordingBusy=true;
+  try{
+    const response=await fetch('/api/recording/'+encodeURIComponent(activeRecordingSessionId)+'/pause',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paused:!recordingPaused})});
+    const result=await response.json().catch(()=>null);
+    if(!response.ok)throw Error(window.PubCastRecordingControls.errorText(result,response.status));
+    if(!['active','paused'].includes(result?.state))throw Error('Pause state not confirmed');
+    recordingPaused=result.state==='paused';
+    document.getElementById('operatorPause').textContent=recordingPaused?'RESUME':'PAUSE';
+    failedRecordingSources=[...new Set([...failedRecordingSources,...captureFailures(result.pause_problems)])];
+    document.getElementById('rec-status-badge').textContent=recordingPaused?'PAUSED':'REC';
+    document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):recordingPaused?'REC: PAUSED':'REC: ON';
+  }catch(e){document.getElementById('srRec').textContent='PAUSE FAILED: '+e.message;}
+  finally{recordingBusy=false;}
 }
 async function panic(){
   try{
@@ -288,8 +312,8 @@ function setMode(m){
 }
 function firePreset(p){({showOpen:()=>setPGM('cam1'),interview:()=>setPGM('cam2'),wide:()=>setPGM('cam1'),showClose:()=>setPGM('cam1')})[p]?.()}
 document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-  switch(e.key){case'1':setPGM('cam1');break;case'2':setPGM('cam2');break;case'3':setPGM('cam3');break;case'4':setPGM('cam4');break;case'5':setPGM('cam5');break;case' ':e.preventDefault();cut();break;case'r':case'R':toggleRec();break;case'Escape':panic();break;case'm':case'M':muteAll();break;case'd':case'D':mode=MODES[(MODES.indexOf(mode)+1)%MODES.length];updateUI();break}
+  if(e.repeat||e.target.closest?.('input,textarea,select,button,[contenteditable]'))return;
+  switch(e.key){case'1':setPGM('cam1');break;case'2':setPGM('cam2');break;case'3':setPGM('cam3');break;case'4':setPGM('cam4');break;case'5':setPGM('cam5');break;case' ':e.preventDefault();cut();break;case'r':case'R':toggleRec();break;case'Escape':panic();break;case'm':case'M':muteAll();break;case'd':case'D':setMode(MODES[(MODES.indexOf(mode)+1)%MODES.length]);break}
 });
 setInterval(()=>{const now=new Date();const tc=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}:${String(Math.floor(now.getMilliseconds()/1000*30)).padStart(2,'0')}`;document.getElementById('pgmTc').textContent=tc;document.getElementById('pvwTc').textContent=tc.slice(0,8);document.getElementById('chkTc').textContent=tc.slice(0,8);if(isRec){const s=Math.floor((Date.now()-recStart)/1000);document.getElementById('hudTime').textContent=`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}},250);
 // These timecode digits are wall-clock estimates, not recorder synchronization.
@@ -372,13 +396,16 @@ function handleWsEvent(m){
     }
     case 'recording_started':
       failedRecordingSources=captureFailures(m.payload?.capture_errors);
-      isRec=true; recStart=Date.now();
+      if(!m.payload?.session_id||activeRecordingSessionId&&activeRecordingSessionId!==m.payload.session_id)break;
+      activeRecordingSessionId=m.payload.session_id;isRec=true;recordingPaused=false;recStart=Date.now();recordingOptions.setLocked(true);
       document.getElementById('hudRec').classList.add('on');
       document.getElementById('liveTag').style.display='block';
       updateUI();
       break;
     case 'recording_stopped':
     case 'recording_archived':
+      if(!activeRecordingSessionId||m.payload?.session_id!==activeRecordingSessionId)break;
+      activeRecordingSessionId='';recordingPaused=false;recordingOptions.setLocked(false);
       if(m.payload?.capture_errors)failedRecordingSources=captureFailures(m.payload.capture_errors);
       isRec=false;
       document.getElementById('hudRec').classList.remove('on');
@@ -401,5 +428,6 @@ updateUI();connectWS();
 <script src="./camera_pool_async.js"></script>
 <script src="./camera_pool_controller.js"></script>
 <script src="camera_pool_panel.js" defer></script>
+<script src="/static/show_clocks.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+"use strict";
+const assert=require("node:assert/strict");
+const api=require("../static/operator_recording_controls.js");
+const snap={program:"a",sources:[{id:"a"},{id:"b"}]};
+assert.deepEqual(api.buildPayload(snap,"camcorder",["a","b"]).sources,["a","b"]);
+assert.equal(api.buildPayload(snap,"data_only",["b"]).record_data,true);
+assert.deepEqual(api.buildPayload(snap,"main_camera",["a","a","b"]).sources,["a","b"]);
+for(const [mode,sources] of [["main_camera",["b"]],["camcorder",["unknown"]],["camcorder",[]],["bogus",["a"]]])assert.throws(()=>api.buildPayload(snap,mode,sources));
+assert.equal(api.errorText({detail:"camera offline"},409),"camera offline");
+console.log("Operator recording options: 8 assertions passed");

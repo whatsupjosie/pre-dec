@@ -625,6 +625,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
         <div style="height:10px"></div>
         <div class="button-grid cameras" id="programButtons"></div>
         <div style="height:14px"></div>
+        <div id="operatorRecordingOptions" style="margin-bottom:12px"></div>
         <div class="button-grid transport">
           <button class="switch cut-button" type="button" id="cutBtn">CUT</button>
           <button class="switch" type="button" id="fadeBtn">FADE</button>
@@ -683,6 +684,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <div class="status-toast" id="toast">READY</div>
 
 <script src="/static/studio_console_hotspots.js"></script>
+<script src="/static/operator_recording_controls.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
 <script>
 const cameras = [
@@ -692,6 +694,8 @@ const cameras = [
   {id: "cam4", sourceId: "overhead", label: "Camera 4", shot: "Desk"},
   {id: "cam5", sourceId: "cam1_ndi", label: "Camera 5", shot: "Stage"}
 ];
+const recordingOptions=window.PubCastRecordingControls.mount("operatorRecordingOptions");
+let recordingBusy=false,lastPostError="";
 // One audio mixer shared by all studios. These are real server buses, NOT a
 // fabricated separation of individual speakers (host/guest/Pete routing is future work).
 const audio = [
@@ -769,11 +773,13 @@ function headers() {
 async function postJSON(url, payload) {
   try {
     const res = await fetch(url, {method: "POST", headers: headers(), body: JSON.stringify(payload || {})});
-    if (!res.ok) throw new Error(String(res.status));
     const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(window.PubCastRecordingControls.errorText(data,res.status));
+    lastPostError="";
     log("backend ok: " + url);
     return data;
   } catch (err) {
+    lastPostError=err.message;
     const msg = `${url} backend unavailable: ${err.message}`;
     backendTruth.failures.push(msg);
     log("visible failure: " + msg);
@@ -963,14 +969,15 @@ function updateMonitors() {
 // The console labels remain provisional until the owner supplies final hardware imagery.
 function syncVideoSwitcherState(snapshot){
   if(!snapshot||!Array.isArray(snapshot.sources))return false;
-  const ids=new Map(cameras.map(c=>[c.sourceId,c.id]));
+  recordingOptions.setSnapshot(snapshot);
+  // IDs are local button slots, not camera identities. Rebuild consistently from the server order.
   const nextCameras=snapshot.sources.map((s,i)=>({
-    id:ids.get(s.id)||("cam"+(i+1)),sourceId:s.id,
+    id:"cam"+(i+1),sourceId:s.id,
     label:s.name||s.id,shot:s.name||s.id,transport:s.transport||"unknown"
   }));
   cameras.splice(0,cameras.length,...nextCameras);
-  program=cameras.find(c=>c.sourceId===snapshot.program)?.id||program;
-  preview=cameras.find(c=>c.sourceId===snapshot.preview)?.id||preview;
+  program=cameras.find(c=>c.sourceId===snapshot.program)?.id||"";
+  preview=cameras.find(c=>c.sourceId===snapshot.preview)?.id||"";
   backendTruth.switcher=snapshot;
   remoteViewer?.setSources(snapshot.program,snapshot.preview);
   updateMonitors();
@@ -1018,16 +1025,17 @@ async function fade(){
 }
 
 async function toggleRecord(btn) {
+  if(recordingBusy)return;recordingBusy=true;btn.disabled=true;
+  try{await toggleRecordInternal(btn);}finally{recordingBusy=false;btn.disabled=false;recordingOptions.setLocked(recording);}
+}
+async function toggleRecordInternal(btn) {
   if (!recording) {
-    const camera=cameraById(program);
-    if(!camera.sourceId){toast("NO VERIFIED CAMERA");log("Recording denied: no live Program source");return;}
-    failedRecordingSources = [];   // a new take starts clean
+    let options;
+    try{options=await recordingOptions.prepare();}catch(e){toast("REC BLOCKED");setTruthCard("truthRecording","bad","Not ready",e.message);return;}
+    failedRecordingSources = [];
     const sessionId = `director_${Date.now()}`;
     const started = await runStudioAction("recording.start", {
-      session_id: sessionId,
-      sources: [cameraById(program).sourceId],
-      profile_id: "broadcast_mp4",
-      countdown_seconds: 0
+      ...options,session_id: sessionId
     }, {
       spec: {safety: "confirm", label: "Start recording"}
     });
@@ -1071,6 +1079,10 @@ async function toggleRecord(btn) {
 }
 
 async function pauseRecording(btn) {
+  if(recordingBusy)return;recordingBusy=true;btn.disabled=true;
+  try{await pauseRecordingInternal(btn);}finally{recordingBusy=false;btn.disabled=false;}
+}
+async function pauseRecordingInternal(btn) {
   clickFlash(btn);
   if (!recording) {
     log("pause not wired: no active recording");
@@ -1080,8 +1092,11 @@ async function pauseRecording(btn) {
   if(!activeRecordingSessionId){toast("NO BACKEND REC");return;}
   const desired=!paused;
   const result=await postJSON(`/api/recording/${encodeURIComponent(activeRecordingSessionId)}/pause`,{paused:desired});
-  if(!result){toast("PAUSE FAILED");return;}
-  paused=desired;
+  if(!result){toast("PAUSE FAILED: "+lastPostError);setTruthCard("truthRecording","bad","Pause failed",lastPostError);return;}
+  if(!["active","paused"].includes(result.state)){toast("PAUSE UNCONFIRMED");return;}
+  paused=result.state==="paused";
+  failedRecordingSources=[...new Set([...failedRecordingSources,...startFailures({capture_errors:result.pause_problems})])];
+  btn.textContent=paused?"RESUME":"PAUSE";
   btn.classList.toggle("active-preview",paused);
   setTruthCard("truthRecording",paused?"warn":"bad",paused?"Backend Paused":"Backend REC",
     `Backend confirmed pause=${paused}`);
@@ -1274,6 +1289,7 @@ function init() {
     knob.setAttribute("aria-label",knob.dataset.knob+" not wired — requires approved effect mapping");
   });
   document.addEventListener("keydown", (ev) => {
+    if(ev.repeat||ev.target.closest?.("input,textarea,select,button,[contenteditable]"))return;
     if (/^[1-5]$/.test(ev.key)) setPreview("cam" + ev.key);
     if (ev.key === " " || ev.key.toLowerCase() === "c") { ev.preventDefault(); cut(); }
     if (ev.key.toLowerCase() === "f") fade();
@@ -1294,5 +1310,6 @@ init();
 <script src="/static/camera_pool_async.js"></script>
 <script src="/static/camera_pool_controller.js"></script>
 <script src="/static/camera_pool_panel.js" defer></script>
-<script src="/static/drag_scroll.js"></script></body>
+<script src="/static/drag_scroll.js"></script><script src="/static/show_clocks.js" defer></script>
+</body>
 </html>
