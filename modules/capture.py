@@ -324,6 +324,11 @@ def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
     else:
         args += ["-an"]
 
+    if profile.is_audio_only:
+        # Write each sound packet as it is made. Without this FFmpeg writes a WAV in 256 KB blocks (2.7 s of 48 kHz
+        # mono): live meters cannot read finer than that, and a crash loses whatever is still in the block.
+        args += ["-flush_packets", "1"]
+
     args.append(str(output_path))
     return args
 
@@ -395,7 +400,7 @@ class _ClockProbe:
             return
 
 
-_PROGRESS_ARGS = ["-progress", "pipe:1", "-stats_period", "0.1"]
+_PROGRESS_ARGS = ["-progress", "pipe:1"]
 
 
 # ── Per-source process handle ─────────────────────────────────────────────────
@@ -688,6 +693,11 @@ class FFmpegCaptureEngine:
     def live_report(self, session_id: str) -> List[dict]:
         """The same account as ``report()``, for processes that are still running (empty when none are)."""
         return [self._report_for(cp) for cp in self._active.get(session_id, [])]
+
+    def current_files(self, session_id: str) -> List[Path]:
+        """The files the running encoders of ``session_id`` are writing now (for live level meters)."""
+        return [cp.current_path for cp in self._active.get(session_id, [])
+                if cp.proc.returncode is None and not cp.paused and cp.current_path is not None]
 
     def running(self, session_id: str) -> bool:
         """True while every process of ``session_id`` is still alive."""
