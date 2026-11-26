@@ -6,7 +6,7 @@ Where: GitHub Pubcast-AI-3-20-26-Agent-Pass branch 1st: pubcast_2026-03-21_asset
 
 | File (path inside the zip) | What it is | Status | Quality | Potential |
 |---|---|---|---|---|
-| pubcast_work/assets/.gitkeep | text ((none)) | IN CURRENT BUILD (identical content) at tools/__init__.py | text ((none)); 1 lines | Already in the build; nothing to harvest. |
+| pubcast_work/assets/.gitkeep | text ((none)) | IN CURRENT BUILD (identical content) at data/.gitkeep | text ((none)); 1 lines | Already in the build; nothing to harvest. |
 | pubcast_work/assets/brand/camera.jpg | JPEG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/brand/camera.jpg) | JPEG image; 281333 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/brand/pubcast_A_top_banner.jpg | JPEG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/brand/pubcast_A_top_banner.jpg) | JPEG image; 249400 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/brand/pubcast_B_bottom_banner.jpg | JPEG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/brand/pubcast_B_bottom_banner.jpg) | JPEG image; 251908 bytes | Media asset not in the build: check whether a screen or set still needs it. |
@@ -26,7 +26,7 @@ Where: GitHub Pubcast-AI-3-20-26-Agent-Pass branch 1st: pubcast_2026-03-21_asset
 | pubcast_work/assets/details/writers_coffee_niche.png | PNG image | NOT IN ANY REPO BRANCH (exists only inside this zip) | PNG image; 344563 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/details/writers_idea_orrery.png | PNG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/details/writers_idea_orrery.png) | PNG image; 322580 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/details/writers_story_table.png | PNG image | NOT IN ANY REPO BRANCH (exists only inside this zip) | PNG image; 623248 bytes | Media asset not in the build: check whether a screen or set still needs it. |
-| pubcast_work/assets/rooms/controlroom.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/world/rooms/control_room.jpg | JPEG image; 229035 bytes | Already in the build; nothing to harvest. |
+| pubcast_work/assets/rooms/controlroom.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/controlroom.jpg | JPEG image; 229035 bytes | Already in the build; nothing to harvest. |
 | pubcast_work/assets/rooms/dressing_polish.png | PNG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/rooms/dressing_polish.png) | PNG image; 2786783 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/rooms/greenroom.png | JPEG image | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Pucast-Tuesday/Brunch:assets/rooms/greenroom.png) | JPEG image; 102287 bytes | Media asset not in the build: check whether a screen or set still needs it. |
 | pubcast_work/assets/rooms/greenroom_polish.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/world/rooms/green_room.jpg | JPEG image; 257758 bytes | Already in the build; nothing to harvest. |

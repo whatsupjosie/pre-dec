@@ -8,7 +8,14 @@ import ast, json, os, re, subprocess, sys, collections
 
 STORE = "/home/claude/bigzip/x/_objects"
 recs = json.load(open("/home/claude/bigzip/catalog_raw.json"))
-cur_paths = json.load(open("/home/claude/bigzip/index.json"))["cur"]
+# Every path in the current build, by name. (A blob-keyed map loses every path whose content
+# also sits at another path: 544 paths were invisible to the comparison that way.)
+cur_paths = [p for p in subprocess.run(["git", "-C", "/home/claude/pre-dec", "ls-tree", "-r", "--name-only",
+                                        "finish/control-room-engine"], capture_output=True, text=True,
+                                       check=True).stdout.splitlines()
+             if not p.startswith(("handoffs/parts_index/", "tools/parts_index/"))]
+assert len(cur_paths) > 8000, len(cur_paths)
+CUR_NAMES = {os.path.basename(p).lower() for p in cur_paths}
 CUR_REPO = "/home/claude/pre-dec"
 
 MAGIC = [(b"\x7fELF", "ELF executable"), (b"MZ", "Windows executable/DLL"), (b"PK\x03\x04", "zip archive"),
@@ -150,7 +157,7 @@ def diff_vs_current(text, name, inner_path):
         while k < min(len(mine), len(theirs)) and mine[-1 - k] == theirs[-1 - k]:
             k += 1
         return k
-    cands = [p for b, p in cur_paths.items() if os.path.basename(p).lower() == name.lower()]
+    cands = [p for p in cur_paths if os.path.basename(p).lower() == name.lower()]
     cands.sort(key=lambda p: (-shared(p), p.startswith("recovery/"), len(p)))
     if not cands:
         return None
@@ -219,7 +226,7 @@ for i, (blob, r) in enumerate(distinct.items()):
             ent["top_defs"] = re.findall(r"^\s*(?:pub\s+)?(?:fn|struct|enum|impl|trait|mod)\s+([A-Za-z_][\w]*)", text, re.M)[:25]
         else:
             ent["kind"] = f"text ({r['ext']})"
-        if r["status"] != "A_current" and r["same_name_in_current"] and ent.get("kind") in ("Python", "JavaScript/TypeScript", "HTML page", "Rust"):
+        if r["status"] != "A_current" and os.path.basename(r["path"]).lower() in CUR_NAMES and ent.get("kind") in ("Python", "JavaScript/TypeScript", "HTML page", "Rust"):
             ent["vs_current"] = diff_vs_current(text, os.path.basename(r["path"]), r["path"])
     ent["all_locations"] = occ[blob][:12]
     out[blob] = ent

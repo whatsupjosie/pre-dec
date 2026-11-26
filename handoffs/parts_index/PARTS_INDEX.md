@@ -90,8 +90,8 @@ TSV files open in Excel/LibreOffice or any text editor (tab-separated). In Power
     2,520 in no repo branch at all (they exist only in these zips).
   - 11,029 entries are project files; 5,030 are third-party libraries or build output.
 - **Branches**: 14,429 distinct files across 196 branch tips.
-- **Flagged for a human read**: 1,061 distinct project code files. 372 of them touch the engine (render, capture,
-  record, audio, camera, switcher, mocap, performer, timeline, sync and the like).
+- **Flagged for a human read**: 1,059 distinct project code files. 599 of them touch the engine by name or content
+  (the word list is in `tools/parts_index/candidates.py`).
 
 ## Checks run on this index (RAN, 2026-11-26)
 
@@ -106,6 +106,12 @@ TSV files open in Excel/LibreOffice or any text editor (tab-separated). In Power
   - code summaries showed code lines, and missed /*! */ block comments;
   - 501 locations were cut short before the path inside the zip;
   - third-party library files were flagged as harvest candidates.
+  - (found 2026-11-26, after the first commit) the list of current files was keyed by content, so 544 current paths
+    whose content also sits at another path were invisible to the name comparison. Example: `facial_performance.py`
+    in the zips was marked "no same-named file" though `modules/evo/facial_performance.py` exists. Fixed and rebuilt.
+    8 distinct contents changed verdict; no status changed.
+- **Note on "closest current file"**: this is the current file of that name with the fewest differing lines. It can be
+  a copy under `recovery/` rather than the live one under `modules/`. Before porting, compare with the live file too.
 
 ## Human reading
 

@@ -8,6 +8,13 @@ recs = json.load(open(f"{B}/catalog_raw.json"))
 ident = json.load(open(f"{B}/identified.json"))
 bident = json.load(open(f"{B}/branch_identified.json"))
 idx = json.load(open(f"{B}/index.json"))
+import subprocess as _sp
+cur_by_blob = collections.defaultdict(list)   # every current path for a content, not just one
+for _line in _sp.run(["git", "-C", "/home/claude/pre-dec", "ls-tree", "-r", "finish/control-room-engine"],
+                     capture_output=True, text=True, check=True).stdout.splitlines():
+    _meta, _path = _line.split("\t", 1)
+    if not _path.startswith(("handoffs/parts_index/", "tools/parts_index/")):
+        cur_by_blob[_meta.split()[2]].append(_path)
 
 DRIVE_IDS = {
     "pubcast_camera_engine__1_.zip": "1LELn92u8dQ2UU8LoRrd1PB-X58tSqv0S", "companion core.zip.zip": "15uvubKFRR60zI_9WUIZxftJXHgJK7b8u",
@@ -149,7 +156,7 @@ for r in recs:
     if org != "project file" and r["status"] != "A_current":
         pot = "Third-party library, vendored copy or build output bundled in the zip, not PubCast code: no harvest value."
     if r["status"] == "A_current":
-        cp = idx["cur"].get(r["blob"])
+        cp = (sorted(cur_by_blob.get(r["blob"], []), key=lambda q: (q.startswith("recovery/"), len(q))) or [None])[0]
         st += f" at {cp}" if cp else " (same text apart from line endings)"
     elif r["status"] == "B_other_branch":
         first = bident.get(r["blob"], {}).get("locations", ["?"])[0]
