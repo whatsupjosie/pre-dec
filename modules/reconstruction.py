@@ -94,6 +94,7 @@ class ShowTimeline:
     gestures: List[Tuple[float, Dict[str, Any]]]
     complete: bool
     notes: List[str] = field(default_factory=list)
+    mixes: List[Tuple[float, Dict[str, Any]]] = field(default_factory=list)   # (show time, Program mix)
 
     @classmethod
     def read(cls, path: Path) -> "ShowTimeline":
@@ -104,6 +105,7 @@ class ShowTimeline:
         stage_t: List[float] = []
         stages: List[Dict[str, Any]] = []
         gestures: List[Tuple[float, Dict[str, Any]]] = []
+        mixes: List[Tuple[float, Dict[str, Any]]] = []
         last_t = 0.0
         for entry in iter_show_data(path):
             if entry.get("header"):
@@ -126,6 +128,8 @@ class ShowTimeline:
                     stages.append(stage)
                 for g in data.get("gestures") or []:
                     gestures.append((t, g))
+            elif kind == "audio.mix" and isinstance(data.get("channels"), dict):
+                mixes.append((t, data))
             elif kind == "take.paused":
                 pauses.append((t, None))
             elif kind == "take.resumed" and pauses and pauses[-1][1] is None:
@@ -144,9 +148,10 @@ class ShowTimeline:
         order = sorted(range(len(stage_t)), key=lambda i: (stage_t[i], i))
         stage_t, stages = [stage_t[i] for i in order], [stages[i] for i in order]
         gestures.sort(key=lambda g: g[0])
+        mixes.sort(key=lambda m: m[0])
         closed.sort()
         cuts.insert(0, Cut(0.0, header.get("program"), 0.0, None))
-        return cls(header, end_t, closed, cuts, stage_t, stages, gestures, footer is not None, notes)
+        return cls(header, end_t, closed, cuts, stage_t, stages, gestures, footer is not None, notes, mixes)
 
     @property
     def paused_seconds(self) -> float:
@@ -166,6 +171,26 @@ class ShowTimeline:
             else:
                 break
         return t
+
+    def take_time(self, show_t: float) -> float:
+        """Show-data time to take time (pauses taken out; a moment inside a pause is the pause's start)."""
+        return show_t - sum(min(b, show_t) - a for a, b in self.pauses if a < show_t)
+
+    def gain_steps(self, source_id: Optional[str]) -> Optional[List[Tuple[float, float]]]:
+        """[(take time, effective gain)] for the channel that carries ``source_id``, from the recorded mixes;
+        None when no channel names that source (its sound is then kept at full level)."""
+        if not source_id or not self.mixes:
+            return None
+        steps: List[Tuple[float, float]] = []
+        claimed = False
+        for t, mix in self.mixes:
+            gain = 0.0 if any(c.get("source_id") == source_id for c in mix["channels"].values()) else None
+            for channel in mix["channels"].values():
+                if channel.get("source_id") == source_id:
+                    claimed = True
+                    gain = max(gain or 0.0, float(channel.get("effective_gain", 0.0)))
+            steps.append((self.take_time(t), 1.0 if gain is None else gain))
+        return steps if claimed else None
 
     def stage_at(self, t: float) -> Optional[Dict[str, Any]]:
         i = bisect.bisect_right(self.stage_t, t) - 1
@@ -448,6 +473,7 @@ def _sha256(path: Path) -> str:
 class SoundTrack:
     path: Path
     timing: List[Dict[str, Any]]          # the capture engine's pieces, wall clock; empty for older takes
+    source_id: Optional[str] = None       # the camera or input it came from ("microphone" for the take's mic)
 
 
 def take_sound(take_dir: Path) -> List[SoundTrack]:
@@ -459,7 +485,7 @@ def take_sound(take_dir: Path) -> List[SoundTrack]:
         record = json.loads(record_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return []
-    entries = [record.get("microphone") or {}] + list(record.get("sound") or [])
+    entries = [{**(record.get("microphone") or {}), "source_id": "microphone"}] + list(record.get("sound") or [])
     out: List[SoundTrack] = []
     for entry in entries:
         name = entry.get("file")
@@ -467,7 +493,7 @@ def take_sound(take_dir: Path) -> List[SoundTrack]:
             continue
         path = take_dir / Path(name).name
         if path.is_file() and path.stat().st_size > 44 and all(t.path != path for t in out):
-            out.append(SoundTrack(path, list((entry.get("report") or {}).get("timing") or [])))
+            out.append(SoundTrack(path, list((entry.get("report") or {}).get("timing") or []), entry.get("source_id")))
     return out
 
 
@@ -565,11 +591,22 @@ async def reconstruct(take_dir: Path, request: Request, *, progress: Optional[Ca
         if note:
             sound_notes.append(note)
         placements.append({"file": track.path.name, "pieces": placed})
+        steps = timeline.gain_steps(track.source_id)
+        volume = ""
+        if steps is not None:
+            # The intended Program mix: this source's channel level, step by step, on take time (the delayed
+            # stream's own clock starts at the take's start). g0 + (g1-g0)*gte(t,t1) + ...
+            expr = f"{steps[0][1]:.6f}" + "".join(f"+({g - steps[n][1]:.6f})*gte(t,{t:.6f})"
+                                                  for n, (t, g) in enumerate(steps[1:]) if g != steps[n][1])
+            volume = f",volume='{expr}':eval=frame"
+        placements[-1]["mix"] = None if steps is None else [{"at": round(t, 4), "gain": round(g, 6)} for t, g in steps]
+        if steps is None:
+            sound_notes.append(f"{track.path.name}: no Program channel names {track.source_id}, so it is at full level")
         for k, piece in enumerate(placed):
             label = f"s{i}_{k}"
             trim = f"atrim=start={piece['from']:.6f}" + (f":duration={piece['length']:.6f}" if piece["length"] else "")
             delay = int(round(piece["at"] * 1000))
-            graph.append(f"[{i + 1}:a]{trim},asetpts=PTS-STARTPTS,aresample=48000,adelay={delay}:all=1[{label}]")
+            graph.append(f"[{i + 1}:a]{trim},asetpts=PTS-STARTPTS,aresample=48000,adelay={delay}:all=1{volume}[{label}]")
             labels.append(f"[{label}]")
     if labels:
         # The placed pieces are mixed over silence exactly as long as the take, and the mix takes the silence's length:
@@ -703,7 +740,9 @@ async def reconstruct(take_dir: Path, request: Request, *, progress: Optional[Ca
         "frames": total, "expected_seconds": round(expected, 4),
         "stretches": stretches, "frame_notes": frame_notes, "notes": timeline.notes,
         "sound": [{"file": t.path.name, "sha256": _sha256(t.path),
-                   "placement": next((p["pieces"] for p in placements if p["file"] == t.path.name), [])} for t in sound],
+                   "source_id": t.source_id,
+                   "placement": next((p["pieces"] for p in placements if p["file"] == t.path.name), []),
+                   "mix": next((p.get("mix") for p in placements if p["file"] == t.path.name), None)} for t in sound],
         "sound_notes": sound_notes,
         "renderer": {**host_report, "files": {name: _sha256(REPO / name) for name in RENDERER_FILES}},
         "verification": {"ffprobe": info, "decode": decoded},

@@ -98,6 +98,59 @@ def create_program_audio_router(state: Optional[ProgramAudioState] = None, *, bl
         _record("recovery", str(identity.get("user_id") or "director"), {"action_id": action_id, "dialogue_active": status["dialogue_active"]})
         return {"ok": True, "action_id": action_id, "status": status}
 
+    # -- independent channels, solo and meters (added 2026-11-26) -------------------------------------------
+    def _mix_event(mix: Dict[str, Any], actor: str, what: str) -> Dict[str, Any]:
+        event = audio_state.publish({"action": "mix", "mix": mix})
+        _record("mix", actor, {"what": what, "mix_sequence": mix["sequence"]})
+        return event
+
+    @router.get("/channels")
+    async def list_channels(identity: Dict[str, Any] = Depends(require_role("mod"))):
+        return {"ok": True, "mix": audio_state.mix()}
+
+    @router.post("/channels/{channel_id}")
+    async def change_channel(channel_id: str, request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
+        body = await _json_dict(request)
+        try:
+            mix = audio_state.set_channel(channel_id, body)
+        except KeyError:
+            raise HTTPException(404, f"No channel {channel_id}") from None
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from None
+        event = _mix_event(mix, str(identity.get("user_id") or "director"), f"channel {channel_id}")
+        return {"ok": True, "mix": mix, "event_sequence": event["sequence"]}
+
+    @router.post("/channels")
+    async def add_channel(request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
+        body = await _json_dict(request)
+        try:
+            mix = audio_state.add_channel(body)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from None
+        event = _mix_event(mix, str(identity.get("user_id") or "director"), f"add {body.get('id')}")
+        return {"ok": True, "mix": mix, "event_sequence": event["sequence"]}
+
+    @router.post("/solo/clear")
+    async def clear_solo(identity: Dict[str, Any] = Depends(require_role("mod"))):
+        mix = audio_state.clear_solo()
+        event = _mix_event(mix, str(identity.get("user_id") or "director"), "clear solo")
+        return {"ok": True, "mix": mix, "event_sequence": event["sequence"]}
+
+    @router.post("/meters")
+    async def report_meters(request: Request, identity: Dict[str, Any] = Depends(require_role("mod"))):
+        body = await _json_dict(request)
+        try:
+            return audio_state.take_meters(body, measured_by=str(identity.get("user_id") or "director"))
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from None
+
+    @router.get("/meters")
+    async def read_meters(identity: Dict[str, Any] = Depends(require_role("mod"))):
+        result = {"ok": True, "program_player": audio_state.meter_status()}
+        recording = getattr(router, "recording_levels", None)
+        result["recording_inputs"] = recording() if callable(recording) else []
+        return result
+
     router.state = audio_state  # test/introspection convenience; FastAPI ignores this attr.
     return router
 

@@ -44,6 +44,7 @@ import gzip
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import shutil
@@ -81,6 +82,74 @@ _NO_AUDIO_STREAM = re.compile(r"does not contain any stream|matches no streams|O
 
 # Hub system messages whose content is recorded directly through RecordingModeController.record_event.
 NATIVE_SYSTEM_EVENTS = frozenset({"performance_state"})
+
+
+def wav_tail_levels(path: Path, seconds: float = 0.2, *, since_frame: Optional[int] = None,
+                    longest: float = 2.0) -> Optional[Dict[str, Any]]:
+    """Peak and RMS (dBFS) of a PCM WAV that is still being written, or None when it is not a PCM WAV.
+
+    By default the last ``seconds``. With ``since_frame`` (the ``frames`` of an earlier reading), everything written
+    since then, up to ``longest`` seconds: a meter read that way never misses a peak between two readings (FFmpeg
+    writes in blocks of about a third of a second, so "the last 0.2 s" jumps and can step over a short sound).
+    FFmpeg fills in a WAV's data size only when it finishes, so the samples are found from the "data" chunk's
+    start and the file's current size. 16, 24 and 32-bit integer PCM.
+    """
+    try:
+        with open(path, "rb") as stream:
+            head = stream.read(4096)
+            if len(head) < 12:
+                # FFmpeg has not written the file's header yet (a network source spends its first seconds
+                # working out the stream): nothing to measure, which is not the same as a broken file.
+                return {"peak_dbfs": None, "rms_dbfs": None, "seconds_recorded": 0.0}
+            if head[:4] != b"RIFF" or head[8:12] != b"WAVE":
+                return None
+            pos, fmt, data_at = 12, None, None
+            while pos + 8 <= len(head):
+                cid, size = head[pos:pos + 4], int.from_bytes(head[pos + 4:pos + 8], "little")
+                if cid == b"fmt ":
+                    fmt = head[pos + 8:pos + 8 + 16]
+                elif cid == b"data":
+                    data_at = pos + 8
+                    break
+                pos += 8 + size + (size & 1)
+            if fmt is None or data_at is None or len(fmt) < 16:
+                return {"peak_dbfs": None, "rms_dbfs": None, "seconds_recorded": 0.0} if len(head) < 4096 else None
+            channels = int.from_bytes(fmt[2:4], "little")
+            rate = int.from_bytes(fmt[4:8], "little")
+            bits = int.from_bytes(fmt[14:16], "little")
+            if int.from_bytes(fmt[0:2], "little") not in (1, 0xFFFE) or bits not in (16, 24, 32) or not channels or not rate:
+                return None
+            block = channels * bits // 8
+            end = os.fstat(stream.fileno()).st_size
+            available = (end - data_at) // block
+            if since_frame is not None and 0 <= since_frame <= available:
+                frames = min(available - since_frame, int(rate * longest))
+                if frames <= 0:
+                    return {"peak_dbfs": None, "rms_dbfs": None, "seconds_recorded": round(available / rate, 3),
+                            "frames": available, "window_seconds": 0.0}
+            else:
+                frames = min(available, int(rate * seconds))
+            if frames <= 0:
+                return {"peak_dbfs": None, "rms_dbfs": None, "seconds_recorded": 0.0}
+            stream.seek(data_at + (available - frames) * block)
+            raw = stream.read(frames * block)
+    except OSError:
+        return None
+    width = bits // 8
+    full = float(1 << (bits - 1))
+    total, peak, count = 0.0, 0, 0
+    for i in range(0, len(raw) - width + 1, width):
+        value = int.from_bytes(raw[i:i + width], "little", signed=True)
+        magnitude = abs(value)
+        peak = max(peak, magnitude)
+        total += value * value
+        count += 1
+    if not count:
+        return None
+    rms = math.sqrt(total / count)
+    to_db = lambda v: -120.0 if v <= 0 else max(-120.0, round(20 * math.log10(v / full), 2))
+    return {"peak_dbfs": to_db(peak), "rms_dbfs": to_db(rms), "seconds_recorded": round(available / rate, 3),
+            "clipped": peak >= full - 1, "frames": available, "window_seconds": round(count / channels / rate, 3)}
 
 
 class ModeRequestError(ValueError):
@@ -1267,6 +1336,8 @@ class RecordingModeController:
         # Each returns (kind, data) or None: what is already true when a take begins (the stage, say),
         # written as the take's first events so a take started mid-show begins with the show as it is.
         self.snapshot_providers: List[Callable[[], Optional[Tuple[str, Any]]]] = []
+        self._meter_positions: Dict[str, int] = {}      # file -> frames already metered
+        self._meter_first_seen: Dict[str, float] = {}   # file -> when a meter first asked for it
 
     # -- wiring --------------------------------------------------------------------------------------------
     def _subscribe(self) -> None:
@@ -1331,6 +1402,59 @@ class RecordingModeController:
             if take.data is not None and take.data.record(kind, data, at=at):
                 kept += 1
         return kept
+
+    def live_levels(self) -> List[Dict[str, Any]]:
+        """Real levels of every sound file live takes are writing, read from the files themselves.
+
+        Each entry names its take and source, its level, and how long since the file last grew: a source whose
+        sound stopped arriving (a guest who dropped) shows a growing age, attributable to that source.
+        """
+        engine = self.capture_engine
+        out: List[Dict[str, Any]] = []
+        if engine is None or not hasattr(engine, "current_files"):
+            return out
+        live_files: set = set()
+        now = time.time()
+        for take in list(self._takes.values()):
+            entries = [(e.get("source_id"), e.get("key")) for e in take.sound if e.get("key")]
+            if take.microphone and take.microphone.get("key"):
+                entries.append(("microphone", take.microphone["key"]))
+            for source_id, key in entries:
+                for path in engine.current_files(key):
+                    if path.suffix.lower() != ".wav":
+                        continue
+                    live_files.add(str(path))
+                    key = str(path)
+                    known_for = now - self._meter_first_seen.setdefault(key, now)
+                    if not path.exists():
+                        # FFmpeg creates its file only once it has worked out the input (seconds, for a network
+                        # source): nothing written yet, which is starting, not broken.
+                        levels, age = {"peak_dbfs": None, "rms_dbfs": None, "seconds_recorded": 0.0}, None
+                    else:
+                        levels = wav_tail_levels(path, since_frame=self._meter_positions.get(key))
+                        if levels and levels.get("frames") is not None:
+                            self._meter_positions[key] = levels["frames"]
+                        try:
+                            age = round(now - path.stat().st_mtime, 3)
+                        except OSError:
+                            age = None
+                    born = known_for
+                    written = bool(levels and levels.get("seconds_recorded"))
+                    if levels is None:
+                        state = "unreadable"
+                    elif written and age is not None and age <= 1.0:
+                        state = "live"
+                    elif not written and born < 5.0:
+                        state = "starting"            # the encoder has not written its first samples yet
+                    else:
+                        state = "stalled"             # nothing new for over a second: this source's sound stopped
+                    out.append({"session_id": take.session_id, "source_id": source_id, "file": path.name,
+                                "levels": levels, "last_write_age_seconds": age, "state": state,
+                                "stale": state in ("stalled", "unreadable")})
+        for gone in (set(self._meter_positions) | set(self._meter_first_seen)) - live_files:   # finished pieces
+            self._meter_positions.pop(gone, None)
+            self._meter_first_seen.pop(gone, None)
+        return out
 
     def owns_capture(self, session_id: str) -> bool:
         """True when this mode, not the camcorder path, decides what picture and sound are recorded."""

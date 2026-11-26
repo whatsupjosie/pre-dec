@@ -153,6 +153,8 @@ def take(tmp_path_factory):
         assert anon.status_code in (401, 403), anon.text
 
         assert c.put("/api/performance/frame", json=stage()).status_code == 200   # the show is on before the take
+        r = c.post("/api/program-audio/channels/guest", json={"source_id": "beep_mic", "gain": 1.0})
+        assert r.status_code == 200, r.text
         sid = "recon_e2e_" + secrets.token_hex(3)
         r = c.post("/api/recording/start", json={"mode": "data_only", "sources": ["beep_mic"], "profile_id": "web_stream",
                                                  "countdown_seconds": 0, "session_id": sid})
@@ -194,6 +196,13 @@ def take(tmp_path_factory):
         send(stage(0.55, lower=True, jaw=0.8))
         at(9.0)
         assert c.post("/api/switcher/cut/p25d_late_night_wide").status_code == 200
+        meters = []
+        while time.time() - t0 < 10.9:         # steady sound: the beeper has been flowing for seconds
+            meters.append(c.get("/api/program-audio/meters").json()["recording_inputs"])
+            time.sleep(0.1)
+        at(11.0)
+        r = c.post("/api/program-audio/channels/guest", json={"gain": 0.25})       # the guest is brought down 12 dB
+        assert r.status_code == 200, r.text
         at(13.5)
         stopped = c.post(f"/api/recording/{sid}/stop")
         assert stopped.status_code == 200, stopped.text
@@ -220,7 +229,7 @@ def take(tmp_path_factory):
             assert job["state"] == "complete", job
             results[name] = job["result"]
         folder = h.data / "recordings" / sid
-        yield SimpleNamespace(h=h, sid=sid, folder=folder, wall=wall, results=results,
+        yield SimpleNamespace(h=h, sid=sid, folder=folder, wall=wall, results=results, meters=meters,
                               manifests={k: json.loads((folder / v["manifest"]).read_text()) for k, v in results.items()},
                               files={k: folder / v["file"] for k, v in results.items()})
     finally:
@@ -268,12 +277,12 @@ def beep_onsets(path):
     x = np.frombuffer(raw, dtype="<i2").astype(float)
     win = 480
     energy = np.array([np.abs(x[i:i + win]).mean() for i in range(0, len(x) - win, win)])
-    loud = energy > 0.25 * energy.max()
+    loud = energy > 0.05 * energy.max()          # beeps after the guest is brought down 12 dB are a quarter as loud
     starts = [i for i in range(1, len(loud)) if loud[i] and not loud[i - 1]]
     onsets = []
     for i in starts:          # refine to the sample where the beep rises
         seg = np.abs(x[(i - 1) * win:(i + 1) * win])
-        onsets.append(((i - 1) * win + int(np.argmax(seg > 0.25 * energy.max()))) / 48000)
+        onsets.append(((i - 1) * win + int(np.argmax(seg > 0.05 * energy.max()))) / 48000)
     return onsets
 
 
@@ -435,3 +444,35 @@ def test_nothing_sent_while_paused_is_in_the_show_data(take):
     assert not any(l.get("kind") == "hub.system" and l["data"].get("type") == "performance_state" for l in lines)
     switches = [l for l in lines if l.get("kind") == "camera.switch" and l["data"]["destination"] == "program"]
     assert any((s["data"].get("transition") or {}).get("duration_ms") == 800 for s in switches)
+
+
+def test_meters_read_the_real_sound_being_recorded(take):
+    readings = [m for reading in take.meters for m in reading if m["session_id"] == take.sid and m["source_id"] == "beep_mic"]
+    assert readings and all(m["state"] in ("starting", "live") for m in readings), readings
+    live = [m for m in readings if m["state"] == "live"]
+    assert len(live) >= 5 and all(m["levels"]["seconds_recorded"] > 0.5 for m in live), readings
+    peaks = [m["levels"]["peak_dbfs"] for m in live if m["levels"]["peak_dbfs"] is not None]   # None: nothing new since the last reading
+    assert -12 < max(peaks) < 0                    # a beep in the window: the beeper's 0.5 amplitude, about -6 dBFS
+    assert min(peaks) == -120.0                    # and the silence between beeps reads as silence
+
+
+def test_the_reconstruction_carries_the_intended_program_mix(take):
+    _, events = show_events(take)
+    mixes = [e for e in events if e["kind"] == "audio.mix"]
+    assert mixes[0]["t"] == 0 and mixes[0]["data"]["channels"]["guest"]["source_id"] == "beep_mic"
+    change = take_time(take, mixes[-1]["t"])
+    assert mixes[-1]["data"]["channels"]["guest"]["effective_gain"] == 0.25
+    m = take.manifests["program"]
+    assert m["sound"][0]["mix"][-1]["gain"] == 0.25
+    onsets = beep_onsets(take.files["program"])
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-i", str(take.files["program"]), "-vn", "-ac", "1",
+                          "-ar", "48000", "-f", "s16le", "-"], capture_output=True, check=True, timeout=120).stdout
+    x = np.frombuffer(raw, dtype="<i2").astype(float)
+    def beep_rms(t):
+        seg = x[int((t + 0.02) * 48000):int((t + 0.08) * 48000)]
+        return float(np.sqrt((seg ** 2).mean()))
+    before = [beep_rms(t) for t in onsets if 1.0 < t < change - 0.2 and not (6.0 < t < 8.5)]
+    after = [beep_rms(t) for t in onsets if change + 0.2 < t]
+    assert before and after, (onsets, change)
+    ratio_db = 20 * np.log10(np.median(after) / np.median(before))
+    assert ratio_db == pytest.approx(-12.04, abs=1.0), ratio_db

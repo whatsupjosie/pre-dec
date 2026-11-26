@@ -177,7 +177,8 @@ def create_production_router(
     # unavailable payloads instead of letting the panoramic/control-room UI hit 404s.
     router.include_router(create_runtime_control_router(include_overlapping_routes=include_overlapping_compat_routes))
     router.include_router(create_stage_compat_router(hub=hub, cameras=cameras, recording=recording, include_overlapping_routes=include_overlapping_compat_routes))
-    router.include_router(create_program_audio_router(program_audio_state, blackbox=blackbox, hub=hub))
+    program_audio_router = create_program_audio_router(program_audio_state, blackbox=blackbox, hub=hub)
+    router.include_router(program_audio_router)
     router.include_router(create_participant_audio_router())
 
     def _blackbox_event(event_type: str, *, source: str, actor: str = "SYS", data: Optional[Dict[str, Any]] = None) -> None:
@@ -416,6 +417,12 @@ def create_production_router(
     router.shutdown_captures = shutdown_captures
     # The one recording-mode controller, for modules that add events to live takes (performer data).
     router.recording_modes = recording_modes
+    # The Program mix goes into every live take's show data, at the start and on every change, so a take's
+    # intended mix can be rebuilt from its stems; meters read the sound files takes are writing.
+    program_audio_state.on_mix_change = lambda mix: recording_modes.record_event("audio.mix", mix)
+    recording_modes.snapshot_providers.append(lambda: ("audio.mix", program_audio_state.mix()))
+    program_audio_router.recording_levels = recording_modes.live_levels
+    router.program_audio_state = program_audio_state
 
     # —
     # CAMERAS
