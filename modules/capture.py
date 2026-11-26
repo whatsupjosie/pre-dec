@@ -248,6 +248,54 @@ def _joined_problem(joined: Path, pieces: List[Path]) -> Optional[str]:
     return None
 
 
+def _measure_pieces(cp: "_CaptureProcess") -> None:
+    """Read every finished piece's real length from its file (ffprobe), once, before any join removes it."""
+    for piece in cp.all_pieces():
+        name = piece.path.name
+        if name in cp.piece_seconds or not piece.path.is_file() or piece.path.stat().st_size == 0:
+            continue
+        found = _probe(piece.path)
+        if found and found.get("duration") is not None:
+            cp.piece_seconds[name] = float(found["duration"])
+
+
+def _piece_timing(cp: "_CaptureProcess", pieces: List["_Piece"], end: float) -> List[dict]:
+    """Where each piece of this recording sits on the wall clock (time.time()), so files can be lined up.
+
+    Every piece is anchored at its end. A pause or stop asks FFmpeg to finish at a known moment (``stopped_at``),
+    so the piece's first sample is that moment less its real length. When FFmpeg ended on its own before that
+    (a camera or guest dropped), its log stopped being written when it ended, so the log's last write is the end.
+    Without a measured length the spawn time is the only clue, and the entry says so.
+    """
+    out: List[dict] = []
+    for index, piece in enumerate(pieces, 1):
+        stop = piece.stopped_at or end
+        media = cp.piece_seconds.get(piece.path.name)
+        exited = None
+        try:
+            if piece.log_path and piece.log_path.exists():
+                exited = piece.log_path.stat().st_mtime
+        except OSError:
+            exited = None
+        ended_early = exited is not None and exited < stop - 1.0
+        last = exited if ended_early else stop
+        entry = {"piece": index, "file": piece.path.name, "spawned_at": round(piece.started_at, 4),
+                 "media_seconds": None if media is None else round(media, 4), "ended_early": ended_early}
+        if media is not None and piece.content_start is not None:
+            start = piece.content_start
+            entry.update(start=round(start, 4), end=round(start + media, 4), anchored="measured",
+                         startup_seconds=round(start - piece.started_at, 4),
+                         tail_lost_seconds=round(max(0.0, last - (start + media)), 4))
+        elif media is None:
+            entry.update(start=round(piece.started_at, 4), end=round(last, 4), anchored="spawn")
+        else:
+            start = max(piece.started_at, last - media)
+            entry.update(start=round(start, 4), end=round(start + media, 4), anchored="end",
+                         startup_seconds=round(start - piece.started_at, 4))
+        out.append(entry)
+    return out
+
+
 def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
     """Return FFmpeg codec/output arguments from an EncodingProfile."""
     args: List[str] = []
@@ -299,6 +347,55 @@ class _Piece:
     started_at: float
     stopped_at: Optional[float] = None
     returncode: Optional[int] = None
+    content_start: Optional[float] = None     # measured: the wall time this piece's first sample was recorded
+
+
+class _ClockProbe:
+    """Where one FFmpeg's output sits on the wall clock, measured from its own progress reports.
+
+    FFmpeg reports how much it has written (out_time) ten times a second on stdout. If T seconds of a real-time
+    source were written by wall time A, its first sample was recorded no later than A - T; the smallest A - T seen
+    is the tightest such bound, reached when the output was most caught up with the input. This holds whatever
+    the input does: a device slow to open, a network stream buffered while FFmpeg works out its format, or a
+    stop that drops what was still queued. Never earlier than the moment FFmpeg was started.
+    """
+
+    def __init__(self, spawned_at: float):
+        self.spawned_at = spawned_at
+        self.best: Optional[float] = None
+        self.reports = 0
+        self.task: Optional[asyncio.Task] = None
+
+    def observe(self, wall: float, out_seconds: float) -> None:
+        if out_seconds <= 0:
+            return
+        self.reports += 1
+        bound = wall - out_seconds
+        if self.best is None or bound < self.best:
+            self.best = bound
+
+    @property
+    def content_start(self) -> Optional[float]:
+        return None if self.best is None else max(self.spawned_at, self.best)
+
+    async def read(self, stream: Optional[asyncio.StreamReader]) -> None:
+        if stream is None:
+            return
+        try:
+            while True:
+                line = await stream.readline()
+                if not line:
+                    return
+                if line.startswith(b"out_time_us="):
+                    try:
+                        self.observe(time.time(), int(line.split(b"=", 1)[1]) / 1_000_000)
+                    except ValueError:
+                        pass
+        except (asyncio.CancelledError, ConnectionError, OSError):
+            return
+
+
+_PROGRESS_ARGS = ["-progress", "pipe:1", "-stats_period", "0.1"]
 
 
 # ── Per-source process handle ─────────────────────────────────────────────────
@@ -327,6 +424,8 @@ class _CaptureProcess:
     current_path: Optional[Path] = None                  # the file the running FFmpeg writes
     piece_started_at: Optional[float] = None
     join: Dict[str, Any] = field(default_factory=dict)   # what stop did with the pieces, when there was more than one
+    piece_seconds: Dict[str, float] = field(default_factory=dict)  # each piece's real length, measured before any join
+    clock: Optional[_ClockProbe] = None      # the running piece's measured place on the wall clock
 
     def __post_init__(self) -> None:
         if self.current_path is None:
@@ -344,7 +443,8 @@ class _CaptureProcess:
         pieces = list(self.pieces)
         if not self.paused:
             pieces.append(_Piece(self.current_path, self.log_path, self.piece_started_at,
-                                 self.stopped_at or at, self.proc.returncode))
+                                 self.stopped_at or at, self.proc.returncode,
+                                 self.clock.content_start if self.clock else None))
         return pieces
 
     def suspended_seconds(self, at: Optional[float] = None) -> float:
@@ -380,7 +480,9 @@ class _CaptureProcess:
             return False
         at = time.time()
         await self._finish()
-        self.pieces.append(_Piece(self.current_path, self.log_path, self.piece_started_at, at, self.proc.returncode))
+        await self._clock_done()
+        self.pieces.append(_Piece(self.current_path, self.log_path, self.piece_started_at, at, self.proc.returncode,
+                                  self.clock.content_start if self.clock else None))
         self.paused, self.paused_since = True, at
         logger.info("Capture for %s paused (piece %d ended, rc=%s)", self.source_id, len(self.pieces),
                     self.proc.returncode)
@@ -394,7 +496,17 @@ class _CaptureProcess:
             self.paused_since = None
             return
         await self._finish()
+        await self._clock_done()
         logger.info("Capture process for %s finished (rc=%s)", self.source_id, self.proc.returncode)
+
+    async def _clock_done(self) -> None:
+        """Read the last progress reports FFmpeg wrote as it finished (its stdout closes when it exits)."""
+        task = self.clock.task if self.clock else None
+        if task is not None and not task.done():
+            try:
+                await asyncio.wait_for(task, timeout=2.0)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                task.cancel()
 
 
 # ── Capture Engine ────────────────────────────────────────────────────────────
@@ -537,20 +649,26 @@ class FFmpegCaptureEngine:
         """Start one FFmpeg process writing ``out_path``, with its log kept beside it."""
         logger.info("FFmpeg cmd for %s: %s", source_id, " ".join(cmd))
         log_path = out_path.with_name(out_path.name + ".ffmpeg.log")
+        # Progress reports on stdout, timestamped as they arrive, say where the recording sits on the clock.
+        run = cmd if "-progress" in cmd else cmd[:1] + _PROGRESS_ARGS + cmd[1:]
         try:
             # FFmpeg's own output is kept next to the take: it is the only record of why an encode failed or lagged.
             with open(log_path, "wb") as log_file:
+                spawned = time.time()
                 proc = await asyncio.create_subprocess_exec(
-                    *cmd,
+                    *run,
                     stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.DEVNULL,
+                    stdout=asyncio.subprocess.PIPE,
                     stderr=log_file,
                 )
         except Exception as e:
             logger.error("Failed to start FFmpeg for %s: %s", source_id, e)
             return None
+        clock = _ClockProbe(spawned)
+        clock.task = asyncio.get_running_loop().create_task(clock.read(proc.stdout), name=f"ffmpeg-clock-{source_id}")
         logger.info("Capture started for %s → %s (pid=%d)", source_id, out_path, proc.pid)
-        return _CaptureProcess(source_id=source_id, output_path=out_path, proc=proc, log_path=log_path, cmd=list(cmd))
+        return _CaptureProcess(source_id=source_id, output_path=out_path, proc=proc, log_path=log_path, cmd=list(cmd),
+                               started_at=spawned, clock=clock)
 
     async def _register_started(self, session_id: str, procs: List["_CaptureProcess"],
                                 spawn_failures: Optional[List[dict]] = None) -> None:
@@ -666,6 +784,7 @@ class FFmpegCaptureEngine:
             report["pieces"] = len(pieces)
         if cp.join:
             report["join"] = dict(cp.join)
+        report["timing"] = _piece_timing(cp, pieces, end)
         return report
 
     @staticmethod
@@ -701,6 +820,9 @@ class FFmpegCaptureEngine:
         output_paths: List[Path] = []
         # Every camera is told to stop at once: one slow encoder must not hold the others (or a PANIC) back.
         results = await asyncio.gather(*(cp.terminate() for cp in procs), return_exceptions=True)
+        # Each piece's real length is read from the file now, before a join removes it: with the times FFmpeg
+        # started and stopped, it says where on the clock every piece of picture and sound belongs.
+        await asyncio.gather(*(asyncio.to_thread(_measure_pieces, cp) for cp in procs), return_exceptions=True)
         # A take that was paused has its pieces joined back into one file per camera, all cameras at once.
         await asyncio.gather(*(self._join(cp) for cp, result in zip(procs, results)
                                if not isinstance(result, BaseException) and cp.proc.returncode is not None),
@@ -764,6 +886,8 @@ class FFmpegCaptureEngine:
                     if not log_moved.exists():
                         os.rename(first.log_path, log_moved)
                         first.log_path = log_moved
+                if first.path.name in cp.piece_seconds:          # its measured length follows it
+                    cp.piece_seconds[moved.name] = cp.piece_seconds.pop(first.path.name)
                 first.path = moved
                 cp.join["pieces"][0] = moved.name
             usable = [p for p in pieces if p.path.is_file() and p.path.stat().st_size > 0]
@@ -884,6 +1008,7 @@ class FFmpegCaptureEngine:
                     "error": "FFmpeg could not be started again after the pause; see the server log"}
         now = time.time()
         cp.proc, cp.log_path, cp.current_path, cp.piece_started_at = fresh.proc, fresh.log_path, path, fresh.started_at
+        cp.clock = fresh.clock
         cp.paused_seconds += now - (cp.paused_since or now)
         cp.paused, cp.paused_since = False, None
         return None
