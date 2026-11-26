@@ -7,6 +7,7 @@ Single application worker, matching the existing camera manager architecture.
 from __future__ import annotations
 import asyncio
 import json
+from collections import deque
 import secrets
 import struct
 import time
@@ -29,12 +30,115 @@ class Peer:
     socket: WebSocket | None = None
 
 
+# A guest's microphone may arrive in bursts (a network stall, a busy browser tab, a phone waking its radio). The
+# relay lets a sender run ahead of real time by up to BURST_SECONDS and refills at SUSTAINED x real time, so a
+# backlog catches up while a sender that keeps flooding is still cut off. (It used to cut off any guest who sent
+# more than 1.2 s of audio within one second, which every catch-up after a hiccup of about a second does: one of
+# the ways a guest's sound dropped out of a long recording.)
+BURST_SECONDS = 5.0
+SUSTAINED = 1.25
+SLACK_BYTES = 32768
+# Audio waiting for the director's desk. A desk that stalls loses its oldest audio, never a guest's connection.
+OUTBOX_BYTES = 8 * 1024 * 1024
+SEND_TIMEOUT = 5.0
+
+
+class HostOutbox:
+    """Everything bound for the director's desk, sent in order by one task.
+
+    A guest's handler only queues and returns, so a desk that is slow for a moment no longer ends the guest's
+    connection (it used to: a one-second send timeout inside the guest's own handler). When the desk falls more
+    than OUTBOX_BYTES behind, the oldest audio frames are dropped, and the desk is told how many, per guest,
+    before the next thing it receives. Control messages (a guest arrived, left) are never dropped.
+    """
+
+    def __init__(self, socket_of, *, limit: int = OUTBOX_BYTES, timeout: float = SEND_TIMEOUT):
+        self._socket_of = socket_of            # returns the desk's socket, or None
+        self.limit, self.timeout = limit, timeout
+        self.items: deque = deque()
+        self.bytes = 0
+        self.dropped: dict[str, int] = {}
+        self.sent = 0
+        self.stalls = 0
+        self._wake = asyncio.Event()
+        self._task: asyncio.Task | None = None
+        self.closed = False
+
+    def put(self, message) -> None:
+        if self.closed:
+            return
+        self.items.append(message)
+        if isinstance(message, bytes):
+            self.bytes += len(message)
+            while self.bytes > self.limit:
+                if not self._drop_oldest_audio():
+                    break
+        self._wake.set()
+        if self._task is None or self._task.done():
+            self._task = asyncio.get_running_loop().create_task(self._run(), name="participant-audio-desk")
+
+    def _drop_oldest_audio(self) -> bool:
+        for index, item in enumerate(self.items):
+            if isinstance(item, bytes):
+                del self.items[index]
+                self.bytes -= len(item)
+                peer = item[:16].hex()
+                self.dropped[peer] = self.dropped.get(peer, 0) + 1
+                return True
+        return False
+
+    async def _send(self, socket, message) -> None:
+        if isinstance(message, bytes):
+            await asyncio.wait_for(socket.send_bytes(message), self.timeout)
+        else:
+            await asyncio.wait_for(socket.send_json(message), self.timeout)
+
+    async def _run(self) -> None:
+        while not self.closed:
+            if not self.items and not self.dropped:
+                self._wake.clear()
+                await self._wake.wait()
+                continue
+            socket = self._socket_of()
+            if socket is None:
+                return                      # the desk's own handler closes the room
+            # A gap report goes just before the next audio, after any control message already queued, so the
+            # desk always meets a guest ("source") before hearing about that guest's lost frames.
+            if self.dropped and (not self.items or isinstance(self.items[0], bytes)):
+                message, self.dropped = {"type": "gap", "dropped_frames": dict(self.dropped)}, {}
+            else:
+                message = self.items.popleft()
+                if isinstance(message, bytes):
+                    self.bytes -= len(message)
+            try:
+                await self._send(socket, message)
+                self.sent += 1
+            except asyncio.TimeoutError:
+                self.stalls += 1
+                if isinstance(message, bytes):
+                    peer = message[:16].hex()
+                    self.dropped[peer] = self.dropped.get(peer, 0) + 1
+            except Exception:
+                return                      # the desk went away; its handler closes the room
+
+    async def close(self) -> None:
+        self.closed = True
+        self._wake.set()
+        if self._task is not None and not self._task.done():
+            self._task.cancel()
+            try:
+                await self._task
+            except (asyncio.CancelledError, Exception):
+                pass
+
+
 @dataclass
 class Room:
     host: str
     peers: dict[str, Peer]
     sample_rate: int = 0
     send_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    outbox: HostOutbox | None = None
 
 
 def create_participant_audio_router(*, clock=time.monotonic):
@@ -78,14 +182,14 @@ def create_participant_audio_router(*, clock=time.monotonic):
         host = room.peers[room.host].socket
         if host is None:
             raise ValueError('Audio desk is not listening')
-        async with room.send_lock:
-            if isinstance(message, bytes):
-                await asyncio.wait_for(host.send_bytes(message), 1)
-            else:
-                await asyncio.wait_for(host.send_json(message), 1)
+        if room.outbox is None:
+            room.outbox = HostOutbox(lambda r=room: r.peers[r.host].socket if r.host in r.peers else None)
+        room.outbox.put(message)
 
     async def close_room(rid):
         room = rooms.pop(rid, None)
+        if room and room.outbox is not None:
+            await room.outbox.close()
         if room:
             for peer in list(room.peers.values()):
                 if peer.socket:
@@ -169,7 +273,8 @@ def create_participant_audio_router(*, clock=time.monotonic):
                 await to_host(room, {'type':'source', 'peer':pid, 'actor':peer.actor, 'sample_rate':rate})
             await ws.send_json({'ok':True})
             sequence = 0
-            window, count = clock(), 0
+            capacity = rate * 2 * BURST_SECONDS
+            budget, refilled = capacity, clock()
             while True:
                 packet = await asyncio.wait_for(ws.receive(), lease)
                 if packet['type'] == 'websocket.disconnect':
@@ -194,10 +299,11 @@ def create_participant_audio_router(*, clock=time.monotonic):
                 if struct.unpack_from('<I',data)[0] != sequence:
                     raise ValueError('Microphone frame sequence lost')
                 sequence += 1
-                if clock()-window >= 1:
-                    window, count = clock(), 0
-                count += len(data)
-                if count > rate*2*1.2+32768:
+                now = clock()
+                budget = min(capacity, budget + (now - refilled) * rate * 2 * SUSTAINED)
+                refilled = now
+                budget -= len(data) - 4
+                if budget < -SLACK_BYTES:
                     raise ValueError('Microphone rate exceeds its bound')
                 await to_host(room, bytes.fromhex(pid)+data)
         except (WebSocketDisconnect, asyncio.TimeoutError, HTTPException, ValueError, RuntimeError, KeyError, TypeError):
