@@ -54,7 +54,7 @@ import zlib
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from .persistence import write_json
 
@@ -77,6 +77,10 @@ FIRST_FRAME_WAIT_SECONDS = 15.0      # how long a camera that was cut to may tak
 _PRIVATE_ROOM_PREFIXES = ("dm____", "dmv2_")
 _NO_SOUND_TRANSPORTS = {"virtual", "webcam", "voxel_3d"}
 _NO_AUDIO_STREAM = re.compile(r"does not contain any stream|matches no streams|Output file #0 does not contain", re.I)
+
+
+# Hub system messages whose content is recorded directly through RecordingModeController.record_event.
+NATIVE_SYSTEM_EVENTS = frozenset({"performance_state"})
 
 
 class ModeRequestError(ValueError):
@@ -194,12 +198,17 @@ class ShowDataRecorder:
             self._write(header)
             self._flush()
 
-    def record(self, kind: str, data: Any, *, room: Optional[str] = None, during_pause: bool = False) -> None:
+    def record(self, kind: str, data: Any, *, room: Optional[str] = None, during_pause: bool = False,
+               at: Optional[float] = None) -> bool:
+        """Keep one event. ``at`` is when it happened on time.monotonic() (default: now); an event
+        from before the take began is placed at its start. Returns True when the event was kept."""
         with self._lock:
             if self.closed or self.error or self._gz is None or (self.paused and not during_pause):
-                return
-            entry: Dict[str, Any] = {"seq": self.events, "t": round(time.monotonic() - self._t0, 6),
-                                     "utc": time.time(), "kind": kind}
+                return False
+            now = time.monotonic()
+            when = now if at is None else min(now, max(self._t0, float(at)))
+            entry: Dict[str, Any] = {"seq": self.events, "t": round(when - self._t0, 6),
+                                     "utc": time.time() - (now - when), "kind": kind}
             if room is not None:
                 entry["room"] = room
             entry["data"] = data
@@ -207,6 +216,8 @@ class ShowDataRecorder:
                 self.events += 1
                 if time.monotonic() - self._last_flush >= self._flush_seconds:
                     self._flush()
+                return True
+            return False
 
     def _write(self, obj: Dict[str, Any]) -> bool:
         try:
@@ -537,6 +548,13 @@ class ModeTake:
             logger.error("Show data for %s could not be started: %s", self.session_id, exc)
             return
         self.data = recorder
+        for provider in list(self.controller.snapshot_providers):
+            try:
+                snapshot = provider()
+                if snapshot is not None:
+                    recorder.record(snapshot[0], snapshot[1], at=recorder._t0)   # true at the take's first instant
+            except Exception:
+                logger.exception("A take-start snapshot could not be recorded for %s", self.session_id)
         self.controller.recording.attach_data_file(self.session_id, recorder.path)
 
     async def _start_sound(self) -> List[str]:
@@ -891,6 +909,11 @@ class ModeTake:
                     keys.pop(seg.key, None)
                     seg.stop_requested_at = self.pauses[-1][0]     # its file ends where the pause began
             problems: List[Dict[str, Any]] = []
+            # The pause window is the one the take record keeps: [when pause was asked, when resume was asked].
+            # Show data uses the same instants, so picture, sound and performer data all agree on it.
+            mono_at = time.monotonic() - (time.time() - at)
+            if not paused and self.data is not None:
+                self.data.paused = False          # frames sent while the encoders restart are take time
             if engine is not None and keys:
                 if paused:
                     results = await asyncio.gather(*(engine.set_paused(key, True) for key in keys), return_exceptions=True)
@@ -912,7 +935,7 @@ class ModeTake:
                 self.state = "paused"
                 if self.data is not None:
                     self.data.record("take.paused", {"paused_seconds_before": round(self.paused_seconds(), 3)},
-                                     during_pause=True)
+                                     during_pause=True, at=mono_at)
                     self.data.paused = True
             else:
                 self._paused_keys = {}
@@ -920,14 +943,21 @@ class ModeTake:
                 self.state = "recording"
                 preview = cameras.get_preview_source()
                 if self.data is not None:
-                    self.data.paused = False
                     # Camera moves while paused were not kept, so the record says where every camera stands now.
-                    self.data.record("take.resumed", {
+                    self.data.record("take.resumed", at=mono_at, data={
                         "paused_seconds": round(self.paused_seconds(), 3),
                         "program": program.source_id if program else None,
                         "preview": preview.source_id if preview else None,
                         "cameras": [{"source_id": c.source_id, "position": list(c.position), "rotation": list(c.rotation),
                                      "fov": c.fov, "focus": getattr(c, "focus", None)} for c in cameras.list_sources()]})
+                    # What changed on stage while paused was not kept: the take resumes on the stage as it is.
+                    for provider in list(self.controller.snapshot_providers):
+                        try:
+                            snapshot = provider()
+                            if snapshot is not None:
+                                self.data.record(snapshot[0], snapshot[1], at=mono_at)
+                        except Exception:
+                            logger.exception("A resume snapshot could not be recorded for %s", self.session_id)
                 if self.mode == "main_camera":
                     current = self.intervals[-1].source_id if self.intervals else None
                     if program is not None and program.source_id != current:
@@ -1234,6 +1264,9 @@ class RecordingModeController:
         self._assemblies: Dict[str, asyncio.Task] = {}
         self._camera_token: Optional[int] = None
         self._hub_token: Optional[int] = None
+        # Each returns (kind, data) or None: what is already true when a take begins (the stage, say),
+        # written as the take's first events so a take started mid-show begins with the show as it is.
+        self.snapshot_providers: List[Callable[[], Optional[Tuple[str, Any]]]] = []
 
     # -- wiring --------------------------------------------------------------------------------------------
     def _subscribe(self) -> None:
@@ -1260,8 +1293,10 @@ class RecordingModeController:
                 logger.exception("Recording mode %s could not take a camera event", take.session_id)
 
     def _on_hub_message(self, kind: str, room: Optional[str], message: Dict[str, Any]) -> None:
+        if kind == "system" and isinstance(message, dict) and message.get("type") in NATIVE_SYSTEM_EVENTS:
+            return                       # already kept, in full, by record_event
         for take in list(self._takes.values()):
-            if take.data is None or take.state == "paused":
+            if take.data is None or take.data.paused:
                 continue
             if kind == "system":
                 take.data.record("hub.system", message)
@@ -1285,6 +1320,18 @@ class RecordingModeController:
             logger.exception("BlackBox could not witness recording mode %s", event)
 
     # -- what routes call ----------------------------------------------------------------------------------
+    def record_event(self, kind: str, data: Any, *, at: Optional[float] = None) -> int:
+        """Keep a production event (performer data, say) in every take that is recording now.
+
+        Paused takes keep nothing, the same as for hub messages. Returns how many takes kept it.
+        """
+        kept = 0
+        for take in list(self._takes.values()):
+            # The recorder's own pause flag decides (it turns back on as resume begins, before encoders restart).
+            if take.data is not None and take.data.record(kind, data, at=at):
+                kept += 1
+        return kept
+
     def owns_capture(self, session_id: str) -> bool:
         """True when this mode, not the camcorder path, decides what picture and sound are recorded."""
         take = self._takes.get(session_id) or self._finished.get(session_id)

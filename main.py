@@ -831,6 +831,10 @@ async def _finish_recordings_at_shutdown(application: FastAPI) -> None:
     finish = getattr(router, "shutdown_captures", None)
     if callable(finish):
         await finish()
+    # A reconstruction in progress stops cleanly; its half-made file is removed, never added to a take.
+    service = getattr(application.state, "reconstruction_service", None)
+    if service is not None:
+        await service.shutdown()
 
 
 @asynccontextmanager
@@ -1199,6 +1203,26 @@ async def lifespan(application: FastAPI):
     application.include_router(production_router)
     # Kept so shutdown (first entry or a re-entry) can finish the files of takes still recording.
     application.state.production_router = production_router
+    # Performer data: where each 2.5D performer stands and moves, mouth weights, gestures and
+    # on-screen graphics, written into every live take's show data (modules/performance_capture.py).
+    from modules.performance_capture import PerformanceAuthority, create_performance_router
+    _performance_sends: set = set()
+
+    def _broadcast_performance(message: dict) -> None:
+        task = asyncio.get_running_loop().create_task(hub.broadcast_system_event(message))
+        _performance_sends.add(task)
+        task.add_done_callback(_performance_sends.discard)
+
+    performance_authority = PerformanceAuthority(record=production_router.recording_modes.record_event,
+                                                 broadcast=_broadcast_performance)
+    application.state.performance_authority = performance_authority
+    production_router.recording_modes.snapshot_providers.append(performance_authority.snapshot)
+    application.include_router(create_performance_router(performance_authority))
+    # Reconstruction: render a stopped take from its show data, from any camera (modules/reconstruction.py).
+    from modules.reconstruction_routes import ReconstructionService, create_reconstruction_router
+    reconstruction_service = ReconstructionService(recording)
+    application.state.reconstruction_service = reconstruction_service
+    application.include_router(create_reconstruction_router(reconstruction_service))
     from modules.studio25d_recording_ingest import create_studio25d_recording_router
     application.include_router(create_studio25d_recording_router(recording))
     slate_router = create_slate_router(DATA_DIR / "production_slates.sqlite3")

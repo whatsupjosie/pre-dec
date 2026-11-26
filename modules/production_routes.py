@@ -414,6 +414,8 @@ def create_production_router(
     router.begin_take = begin_take
     router.end_take = end_take
     router.shutdown_captures = shutdown_captures
+    # The one recording-mode controller, for modules that add events to live takes (performer data).
+    router.recording_modes = recording_modes
 
     # —
     # CAMERAS

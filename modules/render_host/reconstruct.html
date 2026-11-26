@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PubCast reconstruction render host</title>
+<!--
+  Headless render host used only by modules/reconstruction.py.
+  It is never served by the PubCast web server: the reconstruction driver loads it into a
+  headless browser and answers every request itself from the repository (static/ and this folder).
+  It draws with the same, unchanged studio code the live 2.5D production uses:
+  static/production25d_core.js, static/production25d_renderer.js and static/world_walk_glb.js.
+-->
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body>
+<canvas id="out" width="1280" height="720"></canvas>
+<script src="/static/production25d_core.js"></script>
+<script src="/static/production25d_renderer.js"></script>
+<script type="importmap">{"imports":{"three":"/static/vendor/three-0.160.0/build/three.module.js","three/addons/":"/static/vendor/three-0.160.0/examples/jsm/"}}</script>
+<script type="module" src="/static/world_walk_glb.js"></script>
+<script src="/__render__/reconstruct.js"></script>
+</body></html>
