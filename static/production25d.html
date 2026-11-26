@@ -90,6 +90,15 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 </section>
 <section style="margin-top:12px"><h2>VISION MIXER</h2>
 <div id="cameras" class="camera-grid" aria-label="Camera shot selection"></div>
+<div id="cameraFraming" style="margin-top:12px">
+<h3>CAMERA FRAMING</h3>
+<label>Adjust <select data-framing-target aria-label="Camera to frame"><option value="preview">Preview (off air)</option><option value="program">Program (on air)</option></select></label>
+<div class="row"><button type="button" data-framing-action="up">↑ W</button><button type="button" data-framing-action="left">← A</button><button type="button" data-framing-action="down">↓ S</button><button type="button" data-framing-action="right">→ D</button></div>
+<div class="row"><button type="button" data-framing-action="in">ZOOM +</button><button type="button" data-framing-action="out">ZOOM −</button><button type="button" data-framing-action="reset">RESET PRESET</button></div>
+<label><input type="checkbox" data-framing-keys> Enable WASD / + / − / 0 camera keys</label>
+<output data-framing-status role="status" style="display:block"></output>
+<small>Local 2.5D framing; changes affect the rendered picture and local take event log. Pool cameras require canonical distributed framing and cannot be adjusted here.</small>
+</div>
 <small>Choose a camera for preview, then CUT or DISSOLVE to program. Program and preview use separate genuine camera framing.</small>
 </section>
 <section style="margin-top:12px"><h2>PERFORMERS & CUES</h2>
@@ -148,6 +157,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <script src="./production25d_audio_panel.js"></script>
 <script type="importmap">{"imports":{"three":"./vendor/three-0.160.0/build/three.module.js","three/addons/":"./vendor/three-0.160.0/examples/jsm/"}}</script>
 <script type="module" src="./world_walk_glb.js"></script>
+<script src="./operator_camera_framing.js"></script>
 <script src="./production25d_app.js"></script>
 <script src="./camera_pool_controller.js"></script>
 <script src="./camera_pool_panel.js" defer></script>

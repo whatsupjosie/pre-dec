@@ -1,0 +1,15 @@
+"use strict";const assert=require("node:assert/strict");const {adjust}=require("../static/operator_camera_framing.js");
+const original={id:"a",label:"Camera",center:[.5,.5],zoom:2};
+assert.ok(adjust(original,"left").center[0]<.5);
+assert.ok(adjust(original,"right").center[0]>.5);
+assert.ok(adjust(original,"up").center[1]<.5);
+assert.ok(adjust(original,"down").center[1]>.5);
+assert.equal(adjust(original,"in").zoom,2.2);
+assert.equal(adjust(original,"out").zoom,1.8);
+assert.equal(adjust({...original,zoom:4},"in").zoom,4);
+assert.equal(adjust({...original,zoom:1},"out").zoom,1);
+assert.deepEqual(adjust({...original,zoom:1},"left").center,[.5,.5]);
+assert.deepEqual(original.center,[.5,.5]);
+assert.throws(()=>adjust({...original,center:[NaN,.5]},"left"));
+assert.throws(()=>adjust(original,"unknown"));
+console.log("Camera framing: 12 assertions passed");

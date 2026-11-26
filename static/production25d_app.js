@@ -28,6 +28,8 @@ sharedSwitcher:null,remoteProgram:null,remotePreview:null,programMixSource:null,
 avatarGeneration:0,avatarLoadingGeneration:-1,loadedActorIds:new Set(),
 previewBars:false,lastPanicSeq:0,lastBlackoutSeq:0,lastBarsSeq:0,cuePollBusy:false};
 let selectedServer=null,selectionVersion=0;
+const framingOverrides=new Map();let framingControls=null;
+const effectiveShot=id=>framingOverrides.get(id)||Core.shot(state.pkg,id);
 const archive=window.PubCast25DArchive?.create({store:Store,onState:report=>{
  $("archiveStatus").textContent=report.message;
  $("archivePause").disabled=!(archive.status().busy||report.state==="downloading");
@@ -72,6 +74,7 @@ async function safe(fn){
 }
 function setControls(){
  const active=!!state.session&&!state.startingProduction,rec=!!state.recorder,stopping=!!state.recordingPromise,starting=!!state.recordingStarting;
+ framingControls?.refresh();
  el.start.disabled=!!state.session||state.startingProduction||state.castingPete||!!state.voxelSaving;el.genre.disabled=el.start.disabled||!!Core.PACKAGES[state.slate?.packageId];el.stop.disabled=!active||stopping||state.endingProduction;
  el.record.disabled=!active||state.endingProduction||state.panicActive||!!state.remoteProgram||rec||stopping||starting||!state.storageReady;
  $("cut").disabled=$("fade").disabled=!active||!!state.endingProduction;
@@ -110,6 +113,7 @@ function buildCameras(){
 }
 function refreshCameraUI(){
  if(!state.pkg)return;
+ framingControls?.refresh();
  for(const btn of el.camera.children){
   const s=btn.dataset.shot;
   btn.classList.toggle("selected",!state.remotePreview&&s===state.previewId);
@@ -192,7 +196,7 @@ function loadGenre(id){
  $("peteStatus").textContent="";
  if(state.avatarBridge?.clear)for(const id of state.loadedActorIds)state.avatarBridge.clear(id);
  state.loadedActorIds.clear();
- state.pkg=pkg;
+ state.pkg=pkg;framingOverrides.clear();
  state.voxelProp=null;refreshVoxelPlacement();
  state.performers=pkg.performers.map(p=>({id:"p25d-"+pkg.id+"-"+p.id,slot:p.slot,position:p.position.slice(),
  avatar:p.avatar,moving:false,vx:0,vy:0,motionUntil:0}));
@@ -363,7 +367,7 @@ async function startProduction(){
   const sess=Core.makeSession(state.pkg,Date.now());state.session=sess;
   if(state.voxelProp)sess.voxelPlacement=voxelPlacementReceipt(state.voxelProp);
   if(state.slate)sess.slate=state.slate;
-  emit("production.start",{package:state.pkg.id,program:state.programId});
+  emit("production.start",{package:state.pkg.id,program:state.programId,cameraFraming:[...framingOverrides.values()].map(s=>({id:s.id,center:s.center,zoom:s.zoom}))});
   try{if(state.storageReady)await Store.save(sess)}catch(e){state.session=null;throw Error("Cannot persist session start: "+e.message);}
   state.remoteProgram=null;state.remotePreview=null;state.switcherError=null;
   const Shared=window.PubCast25DSharedSwitcher;
@@ -890,11 +894,11 @@ function frame(now){
  try{
   updatePeteMouth();
   state.actorFrameStamp=now;
-  Render.renderCamera(pr,pkg,Core.shot(pkg,state.programId),state,world,dt);
+  Render.renderCamera(pr,pkg,effectiveShot(state.programId),state,world,dt);
   const previewState=Object.assign({},state,{blackout:false,lowerThird:false,reuseActorFrame:true});
-  const pooledPreview=!state.voxelProp&&window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
+  const pooledPreview=!state.voxelProp&&!framingOverrides.has(state.previewId)&&window.PubCastCameraPool?.previewFor?.("p25d_"+pkg.id+"_"+state.previewId);
   if(pooledPreview)pv.drawImage(pooledPreview,0,0,Core.W,Core.H);
-  else Render.renderCamera(pv,pkg,Core.shot(pkg,state.previewId),previewState,world,0);
+  else Render.renderCamera(pv,pkg,effectiveShot(state.previewId),previewState,world,0);
   if(state.previewBars)drawPreviewBars(pv);
   if(state.remoteProgram){
     pr.fillStyle="#000";pr.fillRect(0,0,Core.W,Core.H);
@@ -935,6 +939,27 @@ function frame(now){
  }
 }
 function initializeControls(){
+ const selectedCamera=role=>role==="program"?state.programId:state.previewId;
+ const framingReason=role=>{
+   if(!state.pkg)return "Load a studio set first";
+   if(state.startingProduction||state.endingProduction)return "Production transition in progress";
+   if(state.panicActive)return "PANIC active";
+   if(role==="program"&&state.remoteProgram||role==="preview"&&state.remotePreview)return "Selected source is external";
+   if(window.PubCastCameraPool?.isActive?.())return "Close the camera pool before adjusting local framing";
+   return "";
+ };
+ framingControls=window.PubCastCameraFraming.mount({panel:$("cameraFraming"),
+   current:role=>state.pkg&&selectedCamera(role)?effectiveShot(selectedCamera(role)):null,
+   allowed:framingReason,
+   change:(role,action)=>{
+     const id=selectedCamera(role),shot=window.PubCastCameraFraming.adjust(effectiveShot(id),action);
+     framingOverrides.set(id,shot);emit("camera.framing",{id,role,center:shot.center,zoom:shot.zoom});log("FRAME "+id+" "+shot.zoom.toFixed(2)+"x");
+   },
+   reset:role=>{
+     const id=selectedCamera(role);framingOverrides.delete(id);const shot=effectiveShot(id);
+     emit("camera.framing",{id,role,center:shot.center,zoom:shot.zoom,reset:true});log("FRAME RESET "+id);
+   }
+ });
  $("archiveSave").onclick=()=>safe(async()=>{
   if(state.recorder||state.recordingStarting)throw Error("Finish recording before transferring a saved take");
   const selected=state.selected;if(!selected?.blob||!selected.take)throw Error("Select a saved local take first");
@@ -1041,6 +1066,7 @@ async function init(){
  window.PubCast25DStudio={state:()=>({package:state.pkg?.id,program:state.programId,preview:state.previewId,recording:!!state.recorder,recordingStarting:!!state.recordingStarting,journal:state.captureWriter?.status()||null,session:state.session?.id||null,storage:state.storageReady}),
  loadGenre,choosePreview,cut,startProduction,stopProduction,startRecording,stopRecording,recoverCapture,
  poolSnapshot:()=>{
+  if(framingOverrides.size)throw Error("Reset adjusted camera presets before creating a distributed camera pool");
   if(state.voxelProp||Object.values(state.assets).some(Boolean))throw Error("Pooled camera jobs require the bundled set assets. This set is rendered locally.");
   for(const p of state.performers){
    const expected=new URL("./world/test_avatars/MakeHuman_"+(p.avatar==="female"?"Female":"Male")+".glb",location.href).href;
