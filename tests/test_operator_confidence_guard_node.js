@@ -1,0 +1,12 @@
+"use strict";
+const assert=require("node:assert/strict");const {sources}=require("../static/operator_confidence_guard.js");
+const state={program:"p",preview:"v",sources:[{id:"p"},{id:"v"}]};
+assert.deepEqual(sources(state,{}),["p","v"]);
+assert.deepEqual(sources(state,null),[null,null]);
+assert.deepEqual(sources(null,{}),[null,null]);
+assert.deepEqual(sources(state,{blackout:true}),[null,"v"]);
+assert.deepEqual(sources(state,{panic_seq:4,blackout_seq:3}),[null,"v"]);
+assert.deepEqual(sources(state,{panic_seq:4,blackout_seq:5,blackout:false}),["p","v"]);
+assert.deepEqual(sources(state,{preview_bars:true}),["p",null]);
+assert.deepEqual(sources({...state,program:"not-registered"},{}),[null,"v"]);
+console.log("Confidence guard: 8 assertions passed");

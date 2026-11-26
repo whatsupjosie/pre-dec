@@ -687,6 +687,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
+<script src="/static/operator_confidence_guard.js"></script>
 <script>
 const cameras = []; // Populate only with acknowledged server camera IDs.
 const recordingOptions=window.PubCastRecordingControls.mount("operatorRecordingOptions");
@@ -757,6 +758,7 @@ function createRemoteViewer(){
   return window.PubCast25DRemoteFeed.create({targets});
 }
 const remoteViewer=createRemoteViewer();
+const confidenceGuard=window.PubCastConfidenceGuard.create(remoteViewer,()=>backendTruth.switcher);
 const studioActions = window.PubCastStudioConsoleHotspots
   ? new window.PubCastStudioConsoleHotspots.StudioConsoleHotspots()
   : null;
@@ -971,12 +973,9 @@ async function refreshAudioTruth() {
 function updateMonitors() {
   $("programName").textContent = cameraById(program).label;
   $("previewName").textContent = cameraById(preview).label;
-  $("programSource").textContent = backendTruth.switcher?.sources ? "SERVER SWITCH STATE — VIDEO FEED UNBOUND" : "SWITCHER UNVERIFIED — NO LIVE FEED";
-  $("programSource").className = "feed-source unavailable";
-  $("previewSource").textContent = backendTruth.switcher?.sources ? "SERVER PREVIEW STATE — VIDEO FEED UNBOUND" : "PREVIEW UNVERIFIED — NO LIVE FEED";
-  $("previewSource").className = "feed-source unavailable";
+  if(!backendTruth.switcher?.sources){$("programSource").textContent="SWITCHER UNVERIFIED — NO LIVE FEED";$("previewSource").textContent="PREVIEW UNVERIFIED — NO LIVE FEED";}
   setTruthCard("truthScene","warn",`${cameraById(program).shot} / ${cameraById(preview).shot}`,
-    backendTruth.switcher?.sources ? "Shared camera state confirmed; video decoder not connected" : "Switcher unavailable; no live video claimed");
+    backendTruth.switcher?.sources ? "Shared camera state confirmed; JPEG confidence is not broadcast capture" : "Switcher unavailable; no live video claimed");
   renderButtons();
 }
 
@@ -994,7 +993,7 @@ function syncVideoSwitcherState(snapshot){
   program=cameras.find(c=>c.sourceId===snapshot.program)?.id||"";
   preview=cameras.find(c=>c.sourceId===snapshot.preview)?.id||"";
   backendTruth.switcher=snapshot;
-  remoteViewer?.setSources(snapshot.program,snapshot.preview);
+  confidenceGuard.apply();
   updateMonitors();
   renderAux("auxLeft",0);renderAux("auxRight",2);
   return true;
@@ -1003,12 +1002,12 @@ let lastSwitcherSignature="";
 async function refreshSwitcherState() {
   try {
     const response=await fetch("/api/switcher/state",{cache:"no-store"});
-    if(!response.ok)return;
+    if(!response.ok)throw Error("HTTP "+response.status);
     const data=await response.json();
-    if(!Array.isArray(data.sources))return;
+    if(!Array.isArray(data.sources))throw Error("Invalid camera registry");
     const signature=JSON.stringify({program:data.program,preview:data.preview,sources:data.sources.map(x=>[x.id,x.name])});
     if(signature!==lastSwitcherSignature){lastSwitcherSignature=signature;syncVideoSwitcherState(data);}
-  }catch(_) { /* 10-second truth refresh owns visible connection diagnostics. */ }
+  }catch(_) {lastSwitcherSignature="";backendTruth.switcher=null;cameras.splice(0);program="";preview="";confidenceGuard.apply();updateMonitors();}
 }
 async function videoAction(path,payload,description){
   const result=await postJSON(path,payload);
@@ -1132,6 +1131,7 @@ async function marker() {
 async function panic() {
   // Do not update the local video source or claim recording stopped until
   // the backend has actually attempted the stop, black cue, and audio mute.
+  confidenceGuard.invalidate();
   const result=await postJSON("/api/production/panic",{});
   if(!result){setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
   if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
@@ -1147,6 +1147,7 @@ async function panic() {
 
 async function bars() {
   const desired=!directorPreviewBars;
+  confidenceGuard.invalidate();
   const result=await postJSON("/api/production/video-cue",{cue:"preview_bars",enabled:desired});
   if(!result?.ok){log("Preview bars command failed; no local-only success state");toast("BARS FAILED");return;}
   directorPreviewBars=desired;$("previewMode").textContent=desired?"BARS":"Ready";
@@ -1199,7 +1200,7 @@ async function refreshTruth() {
     getJSON("/api/switcher/state")
   ]);
   backendTruth = {health, studio, cameras: camerasState, recordingStorage, mocap, timeline, voxel, ai, switcher, programAudio:backendTruth.programAudio, failures: backendTruth.failures};
-  if(!switcher.error) syncVideoSwitcherState(switcher);
+  if(!switcher.error) syncVideoSwitcherState(switcher);else {backendTruth.switcher=null;cameras.splice(0);program="";preview="";confidenceGuard.apply();}
   setTruthCard("truthHealth", health.error ? "bad" : "ok", health.error ? "Offline" : "OK", health.error || `cameras=${health.systems?.cameras ?? "?"} recording_profiles=${health.systems?.recording_profiles ?? "?"}`);
   const studioState = studio.state || studio.status || (studio.available ? "available" : "unavailable");
   if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture problems with " + failedRecordingSources.join(", "));
@@ -1282,6 +1283,7 @@ function init() {
   $("barsBtn").onclick = (ev) => { clickFlash(ev.currentTarget); bars(); };
   $("blackoutBtn").onclick = async ()=>{
     const desired=!directorBlackout;
+    confidenceGuard.invalidate();
     const result=await postJSON("/api/production/video-cue",{cue:"blackout",enabled:desired});
     if(!result?.ok){toast("BLACKOUT FAILED");log("Blackout command not acknowledged");return;}
     directorBlackout=desired;
@@ -1317,8 +1319,9 @@ function init() {
   refreshTruth();
   setInterval(refreshTruth, 10000);
   setInterval(refreshSwitcherState, 1000);
+  confidenceGuard.poll();const confidencePoll=setInterval(()=>confidenceGuard.poll(),800);
   setInterval(()=>remoteViewer?.refresh().catch(e=>log("Confidence preview: "+e.message)),350);
-  window.addEventListener("pagehide",()=>remoteViewer?.stop());
+  window.addEventListener("pagehide",()=>{clearInterval(confidencePoll);confidenceGuard.stop();});
   tick();
 }
 init();

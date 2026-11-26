@@ -72,6 +72,8 @@ body{
   <img class="console-img" src="controlroom.jpg" alt="PubCast Control Room" id="consoleImg" draggable="false">
   <!-- PROGRAM monitor (large framed, back right wall) -->
   <div class="monitor-overlay" style="left:60%;top:10%;width:22%;height:28%">
+    <img id="operatorProgramImage" alt="Program confidence image" hidden style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:-1;background:#000">
+    <div id="operatorProgramStatus" style="font-size:clamp(.28rem,.65vw,.55rem);max-width:100%;overflow:hidden">VIDEO UNVERIFIED</div>
     <div class="mon-tc" id="pgmTc">00:00:00:00</div>
     <div class="mon-cam" id="pgmCamText">CAM 1</div>
     <div class="mon-text" id="pgmFeedText" style="color:var(--cream)">WIDE</div>
@@ -82,7 +84,7 @@ body{
   <div class="monitor-overlay" style="left:60%;top:41%;width:7%;height:10%"><div class="mon-cam" style="font-size:clamp(.4rem,.8vw,.55rem)">1</div></div>
   <div class="monitor-overlay" style="left:67%;top:41%;width:7%;height:10%"><div class="mon-cam" style="font-size:clamp(.4rem,.8vw,.55rem)">2</div></div>
   <div class="monitor-overlay" style="left:74%;top:41%;width:7%;height:10%"><div class="mon-cam" style="font-size:clamp(.4rem,.8vw,.55rem)">3</div></div>
-  <div class="monitor-overlay" style="left:60%;top:52%;width:7%;height:10%"><div class="mon-tc" id="pvwTc" style="font-size:clamp(.28rem,.55vw,.38rem);color:var(--crt-green);opacity:.5"></div><div class="mon-cam" id="pvwCamText" style="font-size:clamp(.4rem,.8vw,.55rem)">PVW</div><div class="mon-label pvw">PVW</div></div>
+  <div class="monitor-overlay" style="left:60%;top:52%;width:7%;height:10%"><img id="operatorPreviewImage" alt="Preview confidence image" hidden style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:-1;background:#000"><div id="operatorPreviewStatus" style="font-size:clamp(.22rem,.45vw,.42rem);max-width:100%;overflow:hidden">UNVERIFIED</div><div class="mon-tc" id="pvwTc" style="font-size:clamp(.28rem,.55vw,.38rem);color:var(--crt-green);opacity:.5"></div><div class="mon-cam" id="pvwCamText" style="font-size:clamp(.4rem,.8vw,.55rem)">PVW</div><div class="mon-label pvw">PVW</div></div>
   <div class="monitor-overlay" style="left:67%;top:52%;width:7%;height:10%"><div class="mon-tc" id="chkTc" style="font-size:clamp(.28rem,.55vw,.38rem);color:var(--crt-green);opacity:.5"></div><div class="mon-cam" id="chkCamText" style="font-size:clamp(.4rem,.8vw,.55rem)">CHK</div><div class="mon-label chk">CHK</div></div>
   <!-- PGM row (center console) -->
   <button class="hotspot round" id="pgm1" style="left:38%;top:46%;width:3.5%;height:5%" onclick="setPGM('cam1')"><span class="tooltip" style="bottom:110%;left:50%;transform:translateX(-50%)">CAM 1 â€” WIDE</span></button>
@@ -138,12 +140,14 @@ body{
 <div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1â€“5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
 <div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="operatorRecordingOptions"></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button id="operatorPause" onclick="togglePause()">PAUSE</button> <button onclick="toggleRec()">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
 <div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
-<div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
+<div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button> <a href="/static/pubcast_teleprompter.html" target="_blank" rel="noopener">Full teleprompter</a><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div></div>
 <div id="station-timeline" class="station-panel hidden"><h3>SHOW TIMELINE</h3><div data-operator-timeline></div></div>
 <div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
+<script src="/static/studio25d_remote_feed.js"></script>
+<script src="/static/operator_confidence_guard.js"></script>
 <script>
 "use strict";
 const CAMS=[]; // Never expose guessed camera IDs before the server responds.
@@ -159,10 +163,16 @@ let pgm='',pvw='',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSess
 let audioMuted=[false,false,false,false,false];
 let controlBlackout=false,lastPanic=0,lastBlackout=0;
 let cameraBank=0,cameraGroup="",activeSourceList=[],lastSwitcherSnapshot=null;
+const confidenceViewer=window.PubCast25DRemoteFeed?.create({targets:{
+  program:{image:document.getElementById("operatorProgramImage"),status:document.getElementById("operatorProgramStatus")},
+  preview:{image:document.getElementById("operatorPreviewImage"),status:document.getElementById("operatorPreviewStatus")}
+}});
+const confidenceGuard=window.PubCastConfidenceGuard.create(confidenceViewer,()=>lastSwitcherSnapshot);
+let switcherPollBusy=false,switcherRevision=0;
 function cam(id){return CAMS.find(c=>c.id===id)||null}
 async function syncSwitcherState(snapshot){
   if(!snapshot||!Array.isArray(snapshot.sources))throw Error("Canonical switcher state unavailable");
-  lastSwitcherSnapshot=snapshot;
+  lastSwitcherSnapshot=snapshot;confidenceGuard.apply();
   recordingOptions.setSnapshot(snapshot);
   const activeId=String(snapshot.program||snapshot.preview||"");
   const prefix=activeId.startsWith("p25d_")&&activeId.lastIndexOf("_")>5
@@ -185,17 +195,20 @@ async function syncSwitcherState(snapshot){
   if(!preview&&snapshot.preview)document.getElementById("pvwCamText").textContent="EXTERNAL PVW";
 }
 async function sharedSwitcher(path){
+  const revision=++switcherRevision;
   const response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"}});
   if(!response.ok)throw Error(path+" HTTP "+response.status);
-  const payload=await response.json();await syncSwitcherState(payload);
+  const payload=await response.json();if(revision===switcherRevision)await syncSwitcherState(payload);
   return payload;
 }
 async function refreshCanonical(){
+  if(switcherPollBusy)return;switcherPollBusy=true;const revision=switcherRevision;
   try{
     const response=await fetch("/api/switcher/state",{cache:"no-store"});
     if(!response.ok)throw Error("HTTP "+response.status);
-    await syncSwitcherState(await response.json());
-  }catch(e){const sr=document.getElementById("srCam");if(sr)sr.textContent="SWITCHER UNVERIFIED: "+e.message;}
+    const state=await response.json();if(revision===switcherRevision)await syncSwitcherState(state);
+  }catch(e){if(revision===switcherRevision){lastSwitcherSnapshot=null;CAMS.splice(0);pgm="";pvw="";confidenceGuard.apply();updateUI();document.getElementById("srCam").textContent="SWITCHER UNVERIFIED: "+e.message;}}
+  finally{switcherPollBusy=false;}
 }
 async function runStudioAction(actionId,payload={},spec=null){
   try{
@@ -271,6 +284,7 @@ async function togglePause(){
   finally{recordingBusy=false;}
 }
 async function panic(){
+  confidenceGuard.invalidate();
   try{
     const response=await fetch("/api/production/panic",{method:"POST"});
     if(!response.ok)throw Error("HTTP "+response.status);
@@ -347,7 +361,9 @@ async function refreshAudioTruth(){
 setInterval(()=>refreshCanonical().catch(()=>{}),1200);
 setInterval(()=>refreshProductionTruth().catch(()=>{}),900);
 setInterval(()=>refreshAudioTruth().catch(()=>{}),3500);
-refreshCanonical();refreshProductionTruth();refreshAudioTruth();
+refreshCanonical();refreshProductionTruth();refreshAudioTruth();confidenceGuard.poll();
+const confidencePoll=setInterval(()=>confidenceGuard.poll(),800),framePoll=setInterval(()=>confidenceViewer?.refresh().catch(()=>{}),350);
+window.addEventListener("pagehide",()=>{clearInterval(confidencePoll);clearInterval(framePoll);confidenceGuard.stop();});
 function connectWS(){try{ws=new WebSocket(window.ReachAuth.websocketURL('/ws/controlroom'));ws.onmessage=e=>{try{const m=JSON.parse(e.data);handleWsEvent(m);if(typeof window.__pubcastStationsHook==='function'&&(!m.type?.startsWith('recording_')||m.payload?.session_id===activeRecordingSessionId))window.__pubcastStationsHook(m)}catch{}};ws.onclose=()=>setTimeout(connectWS,3000)}catch{}}
 function handleWsEvent(m){
   switch(m.type){
@@ -361,7 +377,7 @@ function handleWsEvent(m){
       break;
     case 'production_panic':
       // A panic broadcast alone does not prove this particular take stopped.
-      refreshProductionTruth();refreshCanonical();
+      confidenceGuard.invalidate();refreshProductionTruth();refreshCanonical();
       break;
     case 'lighting_preset':{
       const badge=document.getElementById('srMode');
