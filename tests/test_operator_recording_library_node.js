@@ -1,0 +1,11 @@
+"use strict";const assert=require("node:assert/strict");const api=require("../static/operator_recording_library.js");
+assert.equal(api.closed({state:"active"}),false);
+assert.equal(api.closed({state:"stopped"}),true);
+assert.equal(api.closed({state:"archived"}),true);
+assert.equal(api.closed({state:"paused"}),false);
+assert.deepEqual(api.ordered([{session_id:"a",started_at:1},{session_id:"b",started_at:2},null]).map(x=>x.session_id),["b","a"]);
+assert.equal(api.filename("../a/b"),".._a_b.zip");
+assert.equal(api.formatBytes(1048576),"1.0 MiB");
+assert.ok(api.reportLines({state:"stopped",mode:"data_only",capture_errors:[{source_id:"cam",error:"offline"}]},null).some(x=>x.includes("CAPTURE ERROR: cam")));
+assert.ok(api.reportLines({state:"stopped",mode:"data_only"},{show_data:{events:42,complete:false}}).some(x=>x.includes("not confirmed complete")));
+console.log("Recording library: 9 assertions passed");

@@ -664,9 +664,11 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
   </main>
 </div>
 <div class="utility-dock">
+  <button type="button" id="openTakeLibrary">Take library</button>
   <button type="button" id="selfTestBtn">Run Console Self-Test</button>
   <button type="button" id="refreshTruthBtn">Refresh Truth</button>
 </div>
+<aside class="side-panel" id="takeLibraryPanel" aria-label="Recording library"><div class="panel-head"><span>Recording library</span><button type="button" data-close="takeLibraryPanel">Close</button></div><div class="panel-body" id="operatorTakeLibrary"></div></aside>
 <aside class="side-panel" id="dangerPanel" aria-label="Status and danger panel">
   <div class="panel-head"><span>Status / Danger</span><button type="button" data-close="dangerPanel">Close</button></div>
   <div class="panel-body" id="dangerBody"></div>
@@ -686,11 +688,13 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
+<script src="/static/operator_recording_library.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
 <script src="/static/operator_confidence_guard.js"></script>
 <script>
 const cameras = []; // Populate only with acknowledged server camera IDs.
 const recordingOptions=window.PubCastRecordingControls.mount("operatorRecordingOptions");
+const takeLibrary=window.PubCastRecordingLibrary.mount(document.getElementById("operatorTakeLibrary"));
 let recordingBusy=false,lastPostError="";
 // One audio mixer shared by all studios. These are real server buses, NOT a
 // fabricated separation of individual speakers (host/guest/Pete routing is future work).
@@ -1180,10 +1184,14 @@ async function exportRecording(btn) {
     toast("NO EXPORT SESSION");
     return;
   }
-  const result = await postJSON(`/api/recording/${encodeURIComponent(activeRecordingSessionId)}/export`, {format: "mp4"});
-  setTruthCard("truthExport", result ? "ok" : "bad", result ? "Requested" : "Failed", result ? `Export requested for ${activeRecordingSessionId}` : "Backend export unavailable or returned a file response not handled by this static fetch");
-  log("export requested for " + activeRecordingSessionId);
-  toast("EXPORT CHECK");
+  btn.disabled=true;
+  try{
+    const result=await window.PubCastRecordingLibrary.download(activeRecordingSessionId,"mp4",message=>setTruthCard("truthExport","warn","Exporting",message));
+    if(result.canceled){setTruthCard("truthExport","warn","Canceled","No export saved");return;}
+    setTruthCard("truthExport","ok",result.saved?"Saved":"Download started",window.PubCastRecordingLibrary.formatBytes(result.bytes)+" ZIP bundle");
+    toast(result.saved?"EXPORT SAVED":"DOWNLOAD STARTED");
+  }catch(e){setTruthCard("truthExport","bad","Export failed",e.message);log("Export failed: "+e.message);toast("EXPORT FAILED");}
+  finally{btn.disabled=false;}
 }
 
 async function refreshTruth() {
@@ -1296,6 +1304,7 @@ function init() {
   $("controlChatBtn").onclick = () => togglePanel("controlChatPanel");
   $("selfTestBtn").onclick = runSelfTest;
   $("refreshTruthBtn").onclick = refreshTruth;
+  $("openTakeLibrary").onclick=()=>{togglePanel("takeLibraryPanel",true);takeLibrary.refresh(activeRecordingSessionId);};
   document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => togglePanel(btn.dataset.close, false));
   $("publicChatForm").onsubmit = (ev) => { ev.preventDefault(); sendLocalChat("public", "publicChatInput", "publicChatLog"); };
   $("controlChatForm").onsubmit = (ev) => { ev.preventDefault(); sendLocalChat("control", "controlChatInput", "controlChatLog"); };

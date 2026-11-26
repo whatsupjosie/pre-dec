@@ -132,6 +132,7 @@ body{
   <button type="button" id="cameraBank" aria-label="Cycle camera source bank">CAM BANK 1</button>
   <button data-station="director">DIRECTOR</button>
   <button data-station="recorder">RECORDER</button>
+  <button data-station="library">TAKE LIBRARY</button>
   <button data-station="chyron">CHYRON</button>
   <button data-station="prompter">TELEPROMPTER</button>
   <button data-station="vtr">VTR</button>
@@ -142,6 +143,7 @@ body{
 <div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button></div>
 <div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button> <a href="/static/pubcast_teleprompter.html" target="_blank" rel="noopener">Full teleprompter</a><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div></div>
+<div id="station-library" class="station-panel hidden"><h3>SERVER RECORDINGS</h3><div id="operatorTakeLibrary"></div></div>
 <div id="station-timeline" class="station-panel hidden"><h3>SHOW TIMELINE</h3><div data-operator-timeline></div></div>
 <div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
@@ -447,6 +449,8 @@ updateUI();connectWS();
 </script>
 <script src="control_stations.js"></script>
 <script src="/static/operator_timeline_controls.js" defer></script>
+<script src="/static/operator_recording_library.js"></script>
+<script>const takeLibrary=window.PubCastRecordingLibrary.mount(document.getElementById("operatorTakeLibrary"));document.querySelector('[data-station="library"]').addEventListener("click",()=>takeLibrary.refresh());</script>
 <script src="./camera_pool_async.js"></script>
 <script src="./camera_pool_controller.js"></script>
 <script src="camera_pool_panel.js" defer></script>
