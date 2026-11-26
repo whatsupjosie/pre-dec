@@ -1,0 +1,12 @@
+"use strict";
+const assert=require("node:assert/strict");
+const {actionPayload}=require("../static/console_hotspot_renderer.js");
+const gain={payload:{action:"set_volume",bus:"dialogue"}};
+assert.equal(actionPayload(gain,{level:0}).volume,0);
+assert.equal(actionPayload(gain,{value:0.25}).volume,0.25);
+assert.equal(actionPayload(gain,{volume:0.73,level:0.2}).volume,0.73);
+assert.equal(actionPayload(gain,{level:2}).volume,1);
+assert.equal(actionPayload(gain,{level:-0.5}).volume,0);
+assert.throws(()=>actionPayload(gain,{level:NaN}));
+assert.deepEqual(actionPayload({payload:{action:"mute",bus:"music"}}),{action:"mute",bus:"music"});
+console.log("Image console gain contract: 7 assertions passed");
