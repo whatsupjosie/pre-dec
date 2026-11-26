@@ -105,7 +105,8 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 <div class="field"><label for="performer">Selected performer</label><select id="performer"></select></div>
 <div class="row"><button id="moveLeft">← MOVE</button><button id="moveRight">MOVE →</button><button id="gesture">PLAY REAL GESTURE</button><button id="reset">RESET BLOCKING</button></div>
 <div class="row"><button id="scoreLeft">SCORE +1 PLAYER 1</button><button id="scoreRight">SCORE +1 PLAYER 2</button></div>
-<div class="row"><button id="lower">TOGGLE LOWER THIRD</button><button id="black">BLACK / RETURN</button></div>
+<label class="field">Lower-third text <input id="lowerThirdText" type="text" maxlength="240" placeholder="Name / title"></label>
+<div class="row"><button id="lower">SHOW LOWER THIRD</button><button id="black">BLACK / RETURN</button></div>
 <small>Moving changes stage coordinates. A loaded GLB uses actual rig animation; if a model is unavailable the output reports that failure instead of pretending a substitute is 3D.</small>
 <div class="row"><button id="castPete" type="button">Cast Pete in selected slot</button></div>
 <div class="field"><label for="peteLine">Pete’s dialogue</label><input id="peteLine" type="text" maxlength="1800"></div>

@@ -84,7 +84,11 @@ function drawOverlay(c,pkg,state){
  if(state?.lowerThird){
    rect(c,42,580,775,100,"#0b172add");rect(c,42,580,9,100,pkg.theme[2]);
    text(c,pkg.graphics,72,619,22,pkg.theme[2],"left");
-   text(c,state.lowerText||"LIVE FROM BELLA FAUX PAS",72,660,27,"#f8faff","left");
+   c.save();c.beginPath();c.rect(72,630,727,42);c.clip();
+   c.font="bold 27px system-ui,sans-serif";let label=String(state.lowerText||"");
+   while(label.length&&c.measureText(label).width>727)label=label.slice(0,-1);
+   if(label!==String(state.lowerText||"")){while(label.length&&c.measureText(label+"…").width>727)label=label.slice(0,-1);label+="…";}
+   text(c,label,72,660,27,"#f8faff","left");c.restore();
  }
  if(pkg.id==="game"){
    rect(c,1002,27,240,92,"#101827e8");

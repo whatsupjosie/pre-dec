@@ -294,6 +294,25 @@ function sharedSwitcherWarning(reason) {
 function cue(type,payload){
  emit("cue."+type,payload||{});log("CUE "+type+(payload?.performer?" "+payload.performer:""));
 }
+function applyLowerThird(value,shared){
+ const text=String(value||"").trim().slice(0,240);
+ const enabled=!!text;
+ $("lower").textContent=enabled?"CLEAR LOWER THIRD":"SHOW LOWER THIRD";
+ if(state.lowerThird===enabled&&(!enabled||state.lowerText===text))return;
+ state.lowerThird=enabled;
+ if(enabled)state.lowerText=text;
+ cue("lower_third",{enabled,text,shared});
+}
+async function setLowerThird(value){
+ const text=String(value||"").trim().slice(0,240);
+ if(state.sharedSwitcher?.connected()){
+   const response=await fetch("/api/state/production",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lower_third:text})});
+   if(!response.ok)throw Error("Lower-third command rejected: HTTP "+response.status);
+   const result=await response.json();
+   if(result.lower_third!==text)throw Error("Lower-third command not confirmed");
+   applyLowerThird(result.lower_third,true);
+ }else applyLowerThird(text,false);
+}
 function drawPreviewBars(c){
  const colors=["#ddd","#f0db34","#16dade","#31da4e","#d146e3","#e24f42","#225bec","#161616"];
  for(let i=0;i<colors.length;i++){c.fillStyle=colors[i];c.fillRect(i*Core.W/colors.length,0,Core.W/colors.length,Core.H*.72);}
@@ -333,6 +352,7 @@ async function syncServerVideoCues(){
      state.lastBarsSeq=barsSeq;state.previewBars=remote.preview_bars===true;
      cue("preview_bars",{enabled:state.previewBars});
    }
+   if(state.sharedSwitcher?.connected()&&typeof remote.lower_third==="string")applyLowerThird(remote.lower_third,true);
    setControls();
  }catch(e){if(state.sharedSwitcher?.connected())log("VIDEO CUE POLL ERROR "+e.message);}
  finally{state.cuePollBusy=false;}
@@ -945,6 +965,7 @@ function initializeControls(){
    if(state.startingProduction||state.endingProduction)return "Production transition in progress";
    if(state.panicActive)return "PANIC active";
    if(role==="program"&&state.remoteProgram||role==="preview"&&state.remotePreview)return "Selected source is external";
+   if(role==="preview"&&!state.remoteProgram&&state.previewId===state.programId)return "Preview is also on air; select Program to adjust it deliberately";
    if(window.PubCastCameraPool?.isActive?.())return "Close the camera pool before adjusting local framing";
    return "";
  };
@@ -993,7 +1014,7 @@ function initializeControls(){
  $("moveRight").addEventListener("click",()=>safe(()=>move(.07)));
  $("gesture").addEventListener("click",()=>safe(animate));
  $("reset").addEventListener("click",()=>safe(reset));
- $("lower").addEventListener("click",()=>safe(()=>{state.lowerThird=!state.lowerThird;cue("lower_third",{enabled:state.lowerThird,text:state.lowerText})}));
+ $("lower").addEventListener("click",()=>safe(async()=>{const btn=$("lower");if(btn.disabled)return;btn.disabled=true;try{const text=state.lowerThird?"":$("lowerThirdText").value.trim()||state.lowerText;await setLowerThird(text);}finally{btn.disabled=false;}}));
  $("castPete").addEventListener("click",()=>safe(castPete));
  $("speakPete").addEventListener("click",()=>safe(speakPete));
  $("stopPete").addEventListener("click",()=>window.PubcastSpeech?.stop());

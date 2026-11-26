@@ -507,6 +507,7 @@
   </section>
 </div>
 
+<script src="/static/operator_prompter_handoff.js"></script>
 <script>
   "use strict";
 
@@ -591,6 +592,7 @@
     restoreMirrorPreference();
     checkSavedScript();
     seedSampleScript();
+    window.PubCastPrompterHandoff?.receive(script=>{dom.scriptInput.value=script;loadScript(true);setStatus("Script received from Control Room. Existing saved draft has not been overwritten.","ok");});
     applyFont(appState.fontSize);
 
     // Round 6: clean shutdown and visibility handling.

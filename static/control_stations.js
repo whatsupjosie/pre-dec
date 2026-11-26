@@ -193,7 +193,13 @@ document.getElementById('chy-apply')?.addEventListener('click', () => stationAct
   }, 'Graphics confirmed in the shared production state'
 ));
 
+document.getElementById('chy-clear')?.addEventListener('click',()=>stationAction('chyron','chy-clear',()=>prodPatch({lower_third:''}),'Lower third cleared in shared production state'));
+
 // ── Teleprompter ──────────────────────────────────────────────────────────────
+document.getElementById('pro-handoff')?.addEventListener('click',()=>{
+  const script=document.getElementById('pro-script')?.value||'';
+  window.PubCastPrompterHandoff.send(script,(message,failed)=>stationFeedback('prompter',message,failed));
+});
 let _proTimer = null;
 document.getElementById('pro-start')?.addEventListener('click', () => {
   const el = document.getElementById('pro-script');
@@ -253,7 +259,8 @@ document.getElementById('vtr-load')?.addEventListener('click', () => stationActi
     await requireReplayAsset(path);
     await prodPatch({mode: 'REPLAY', replay_asset: path, on_air: false});
     document.getElementById('vtr-asset').value = path;
-  }, 'Replay asset verified and loaded; press Play to put it on air'
+    const preview=document.getElementById('vtr-confidence');if(preview){preview.pause();preview.src='/assets/'+path.split('/').map(encodeURIComponent).join('/');preview.hidden=false;}
+  }, 'Replay asset verified and loaded for confidence preview; Play sends the shared replay cue'
 ));
 document.getElementById('vtr-play')?.addEventListener('click', () => stationAction(
   'vtr', 'vtr-play', async () => {
@@ -261,7 +268,7 @@ document.getElementById('vtr-play')?.addEventListener('click', () => stationActi
     if (state.mode !== 'REPLAY' || !state.replay_asset) throw Error('Load a replay asset first');
     await requireReplayAsset(replayAsset(state.replay_asset));
     await prodPatch({on_air: true});
-  }, 'Replay on air (browser playback may require interaction)'
+  }, 'Replay cue acknowledged by host; actual Program playback is not verified'
 ));
 document.getElementById('vtr-stop')?.addEventListener('click', () => stationAction(
   'vtr', 'vtr-stop', () => prodPatch({on_air: false}), 'Replay taken off air'
