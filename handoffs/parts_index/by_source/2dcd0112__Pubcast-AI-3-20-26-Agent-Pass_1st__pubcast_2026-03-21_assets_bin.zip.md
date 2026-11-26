@@ -2,7 +2,7 @@
 
 Where: GitHub Pubcast-AI-3-20-26-Agent-Pass branch 1st: pubcast_2026-03-21_assets_bin.zip ; GitHub Pubcast-AI-3-20-26-Agent-Pass branch 2nd: pubcast_2026-03-21_assets_bin.zip ; GitHub Pubcast-AI-3-20-26-Agent-Pass branch main: pubcast_2026-03-21_assets_bin.zip
 
-31 files. Status counts: IN CURRENT BUILD: 10, IN A GIT BRANCH, NOT IN THE CURRENT BUILD: 12, NOT IN ANY REPO BRANCH: 9
+31 files. Status counts: IN CURRENT BUILD: 9, IN A GIT BRANCH, NOT IN THE CURRENT BUILD: 12, NOT IN ANY REPO BRANCH: 9, IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/: 1
 
 | File (path inside the zip) | What it is | Status | Quality | Potential |
 |---|---|---|---|---|
@@ -36,4 +36,4 @@ Where: GitHub Pubcast-AI-3-20-26-Agent-Pass branch 1st: pubcast_2026-03-21_asset
 | pubcast_work/assets/rooms/studio.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/world/rooms/studio_director.jpg | JPEG image; 202874 bytes | Already in the build; nothing to harvest. |
 | pubcast_work/assets/rooms/vortex.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/world/rooms/vortex_bar.jpg | JPEG image; 1157923 bytes | Already in the build; nothing to harvest. |
 | pubcast_work/assets/rooms/writers.jpg | JPEG image | IN CURRENT BUILD (identical content) at static/world/rooms/writers_room.jpg | JPEG image; 467495 bytes | Already in the build; nothing to harvest. |
-| pubcast_work/bin/ws_renderer | ELF executable | IN CURRENT BUILD (identical content) at recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/bin/ws_renderer | ELF executable; 9687192 bytes | Already in the build; nothing to harvest. |
+| pubcast_work/bin/ws_renderer | ELF executable | IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/ (identical content) at recovery/2026-11-23/rediscovery/pubpartner_horizon_prebeta12/bin/ws_renderer | ELF executable; 9687192 bytes | Parked under recovery/, not live: check whether it should be wired in. |

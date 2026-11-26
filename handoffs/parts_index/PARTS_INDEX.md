@@ -33,6 +33,9 @@ TSV files open in Excel/LibreOffice or any text editor (tab-separated). In Power
 - **status**, one of:
   - `IN CURRENT BUILD`: identical content, or identical apart from line endings, somewhere in
     `finish/control-room-engine` (path given);
+  - `IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/`: in the tree, but only as a copy under `recovery/`
+    that nothing live imports. Its potential reads "check whether it should be wired in". In
+    `branch_files_index.tsv` the same case reads "only as a parked copy, not live";
   - `IN A GIT BRANCH, NOT IN THE CURRENT BUILD`: an example branch:path is given;
   - `NOT IN ANY REPO BRANCH`: exists only inside the zip.
 

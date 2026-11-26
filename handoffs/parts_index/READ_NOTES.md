@@ -200,3 +200,45 @@ this branch. They are listed so the operator side can find them, and for the bac
 | `control_room_ui.html` (`36e49dfa`) | The-Prime assembled-pubcast (in a branch) | Resizable trays, telemetry, layout persisted at `/api/layout` | Not compared further. |
 | `mocap.html` (`8546daf5`), `pubcast-control.html` (`47253231`), `Enhanced_control_room_HTML_integration_-_Claude.html` (`31845a16`) | 2026-03-21 code zip; Drive `Slightly older still good` zip; Thursday- breakfast zip | A mocap status panel; a procedural-avatar canvas; a 1,945-line launcher page | Not compared further. |
 | `studio.js` (8 versions) | avatar rebuild zips (section 6) | The browser side of the avatar tools: geometry, GLB load, rest pose, edge-stretch measure | With section 6. |
+
+## 8. Engine parts already in the tree but parked (under `recovery/`, not wired), 2026-11-26
+
+The index used to call these "IN CURRENT BUILD; nothing to harvest". They are in the tree only as copies under
+`recovery/`, and nothing live imports them. The index now says "IN CURRENT BUILD ONLY AS A PARKED COPY under
+recovery/" (zips) and "only as a parked copy, not live" (branches). That covers 585 distinct contents from the zips
+and 738 branch files.
+
+READ (structure; for intercom.py, the module docstring in full). Each was checked against the live code for an
+equivalent (git grep for its key names, outside `recovery/`, `evidence/` and the index).
+
+| File (in the tree at) | What it is | Live equivalent? | Verdict |
+|---|---|---|---|
+| `recovery/2026-11-23/rediscovery/intercom_and_camera_bus/modules/intercom.py` (376 lines; originally NowCurtsey `pubcast_run_bundle.zip`, 2026-08-24) | The director's PA: announcements to one room or all rooms; mod and above always may; mod can grant access to named users (scoped by room, revocable; a grantee can't grant). Every announcement is transcribed into the chat of each targeted room. Audio passes through a loudspeaker filter (bandpass 400 Hz to 4 kHz, soft-knee compression, light saturation). Routes in that bundle's main.py: `/api/intercom/{announce,grant,revoke,grants,history}`. | None. `modules/studio_slate.py` has a live floor microphone, but no announcements, grants or transcripts. | **Harvest candidate, audio authority (Phase 4).** Wire it as a channel of program audio, kept out of the recording unless chosen, with its routes behind the current auth. |
+| `.../intercom_and_camera_bus/modules/virtual_camera_bus.py` (253 lines) | The latest rendered frame of each virtual camera, fanned out to monitors; measured fps; a feed counts as live with a frame in the last 2 s; accepts a browser canvas `toDataURL`; "taps" write every frame of a camera to disk as numbered images. Served in that bundle at `/api/cameras/feeds` and `/api/cameras/{id}/frame`. | None: no frame bus or multiview feed in the live code. | **Harvest candidate** for multiview monitors and an ISO tap per camera (camcorder mode). The disk tap as numbered images should go to the capture engine instead. |
+| `.../intercom_and_camera_bus/modules/studio_camera_preflight.py` (191 lines) | Checks before capture, without capturing: is every camera's view vector valid, is each camera visible, is the studio ready to record. | None live (the names appear only in old evidence XMLs). | **Harvest candidate, reliability (Phase 5)**: a preflight before recording starts. |
+| `.../intercom_and_camera_bus/modules/camera_engine_bridge.py` (198 lines) | When the program or preview source is a VOXEL_3D camera, it sends CAMERA_MODE_SWITCH to the Rust CameraEngine over the ws_renderer WebSocket; registers voxel cameras at boot. | None live; mentioned only in handoffs (`handoffs/recovered_progress/CAMERA_RENDERER_CONTRACT_V1.md`). | Goes with the Rust camera JSON server (section 2). Decide them together. |
+| `recovery/2026-11-23/rediscovery/camera_files/video_switcher.py` (608 lines), `camera_router.py`, `camera_integration.py`, `camera_manager.py` (`a6ab4d86`), `camera_control_ui.js` | A vision mixer ("Camera 1 is hot. Ready 2. Take 2."): inputs, program, preview, timed transitions, recording sessions, input health. | `modules/cameras.py` CameraManager plus `modules/switcher_routes.py` (now with dissolves on the switch event, from this branch). | Superseded as authority. The input-health monitoring loop is worth comparing against CameraManager. |
+| `recovery/2026-11-23/rediscovery/thursday_animation/...`: `behavior_motion_pipeline.py`, `.js`, `glb_motion_retargeter.py`, `avatar_glb_motion_consumer.js`, `avatar_motion_runtime.js` | Behavior-to-motion pipeline and GLB motion retargeting. | The live renderer drives GLB actors through `static/world_walk_glb.js`. | Not judged: needs a full read against the live actor path. |
+| `recovery/.../pubpartner_horizon_prebeta12/modules/` (`cameras.py`, `cameras_advanced.py`, `recording.py`, `recording_pipeline*.py`, `timeline*.py`, `mocap_*.py`, `performance_manager.py`) | An older whole build (PubPartner Horizon prebeta 12) parked for reference. | The live `modules/` files of the same names. | Older. This is why "closest current file" sometimes names a file in this folder: see PARTS_INDEX.md. |
+
+## Not yet read (as of 2026-11-26)
+
+Of the 599 engine-related candidates (the selection rule is in `tools/parts_index/candidates.py`):
+
+- **Tests (103).** Not read yet. Each is a test file in no branch or not in the build.
+- **Iteration Wallet and BlackBox family (about 150 files)**: `canonical_evidence.py`, `runtime_continuity.py`,
+  `passkey_gate.py`, `outbox.py`, `recorder.py`, `sentinel.py`, `migration.py`, `server.py` (6 versions with
+  `/api/v21/...` routes) and their tests. The engine word list caught them ("record", "blackbox"), but they are the
+  Iteration Wallet / BlackBox product, not the control room. They need their own read, and that is Josie's call to
+  prioritize.
+- **Monolith main.py variants (13 `main.py`, plus `main_UPDATED*.py`, `main_comprehensive.py`, `main_temp.py`).** Only
+  their routes were compared. Routes in them the live build lacks, besides those above:
+  - `/api/intercom/*`, `/api/cameras/feeds`, `/api/cameras/{id}/frame` and `/api/cameras/{id}/aim` (NowCurtsey
+    run_bundle, 2026-08-24);
+  - `/api/purfluous/scenes` (five versions);
+  - `/api/mode/{status,override,clear_override}` (`7d05dd9f`);
+  - `/api/controlroom/{slate,ready,action,cut,cancel,status}` and `/api/cameras/{id}/{fallback,recover}`
+    (`production_routes.py` `370d190b`, the April ControlRoom).
+
+  The full list is in `missing_routes.json`, made by the route comparison in this folder.
+- **Everything else in the 599** not named in sections 1 to 8.

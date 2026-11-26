@@ -2,12 +2,12 @@
 
 Where: GitHub Beyond-October branch 11-12-merge: recovery/2026-10-21/avatars/retrieved/avatar_extra/Lena_Hart_Cosmetic_Pass1_Review.zip ; GitHub Beyond-October branch 2i-beta-polish: recovery/2026-10-21/avatars/retrieved/avatar_extra/Lena_Hart_Cosmetic_Pass1_Review.zip ; GitHub Beyond-October branch audit/standard-first-2026-11-19: recovery/2026-10-21/avatars/retrieved/avatar_extra/Lena_Hart_Cosmetic_Pass1_Review.zip ; and 114 more (see branch_files_index.tsv, fingerprint of the zip e87f94ef)
 
-14 files. Status counts: NOT IN ANY REPO BRANCH: 13, IN CURRENT BUILD: 1
+14 files. Status counts: NOT IN ANY REPO BRANCH: 13, IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/: 1
 
 | File (path inside the zip) | What it is | Status | Quality | Potential |
 |---|---|---|---|---|
 | Lena_Cosmetic_Pass1_Front.png | PNG image | NOT IN ANY REPO BRANCH (exists only inside this zip) | PNG image; 34037 bytes | Media asset not in the build: check whether a screen or set still needs it. |
-| Lena_Reference_Comparison_Pass1.png | PNG image | IN CURRENT BUILD (identical content) at recovery/2026-10-21/avatars/retrieved/avatar_extra/Lena_Reference_Comparison_Pass1.png | PNG image; 209395 bytes | Already in the build; nothing to harvest. |
+| Lena_Reference_Comparison_Pass1.png | PNG image | IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/ (identical content) at recovery/2026-10-21/avatars/retrieved/avatar_extra/Lena_Reference_Comparison_Pass1... | PNG image; 209395 bytes | Parked under recovery/, not live: check whether it should be wired in. |
 | START_OFFLINE_VIEWER.bat | @echo off / setlocal / cd /d "%~dp0 | NOT IN ANY REPO BRANCH (exists only inside this zip) | text (.bat); 19 lines | Data/other file not in the build. |
 | VERIFICATION.md | Second-pass verification: GLB independently parsed by trimesh; 71 skin joints and 5 animation channels inspected. JS syntax checked with node --check. Corrected | NOT IN ANY REPO BRANCH (exists only inside this zip) | document; 2 lines | Notes/handoff not in the build: read for decisions or lost context. |
 | assets/lena_character_sheet.png | JPEG image | NOT IN ANY REPO BRANCH (exists only inside this zip) | JPEG image; 435132 bytes | Media asset not in the build: check whether a screen or set still needs it. |

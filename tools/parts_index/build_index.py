@@ -156,8 +156,14 @@ for r in recs:
     if org != "project file" and r["status"] != "A_current":
         pot = "Third-party library, vendored copy or build output bundled in the zip, not PubCast code: no harvest value."
     if r["status"] == "A_current":
-        cp = (sorted(cur_by_blob.get(r["blob"], []), key=lambda q: (q.startswith("recovery/"), len(q))) or [None])[0]
+        paths = cur_by_blob.get(r["blob"], [])
+        cp = (sorted(paths, key=lambda q: (q.startswith("recovery/"), len(q))) or [None])[0]
         st += f" at {cp}" if cp else " (same text apart from line endings)"
+        if paths and all(q.startswith("recovery/") for q in paths):
+            # In the tree, but only as a parked recovery copy: not live, nothing imports it from there.
+            st = st.replace("IN CURRENT BUILD (identical content)", "IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/ (identical content)")
+            if org == "project file":
+                pot = "Parked under recovery/, not live: check whether it should be wired in."
     elif r["status"] == "B_other_branch":
         first = bident.get(r["blob"], {}).get("locations", ["?"])[0]
         st += f" (e.g. {first})"
@@ -186,6 +192,16 @@ for top, items in by_source.items():
             f.write(f"| {clean(inner, 400)} | {clean(i['what_it_is'], 200)} | {clean(i['status'], 160)} | {clean(i['quality'], 120)} | {clean(i['potential'], 120)} |\n")
 
 # ---- every file in every branch tip ---------------------------------------------------------------------------
+def in_current_text(blob, e):
+    paths = cur_by_blob.get(blob, [])
+    if not paths:
+        return "yes (same text apart from line endings): " + str(e.get("current_path")) if e.get("in_current") else "no"
+    live = sorted(paths, key=lambda q: (q.startswith("recovery/"), len(q)))[0]
+    if all(q.startswith("recovery/") for q in paths):
+        return "only as a parked copy, not live: " + live
+    return "yes: " + live
+
+
 bcols = ["name", "locations", "n_locations", "size", "kind", "what_it_is", "in_current_build", "quality", "fingerprint", "also_inside_zips"]
 with open(os.path.join(OUT, "branch_files_index.tsv"), "w", encoding="utf-8") as f:
     f.write("\t".join(bcols) + "\n")
@@ -193,7 +209,7 @@ with open(os.path.join(OUT, "branch_files_index.tsv"), "w", encoding="utf-8") as
         name = os.path.basename(e["locations"][0].split(":", 1)[1])
         locs = " ; ".join(e["locations"][:40]) + (f" ; and {len(e['locations']) - 40} more" if len(e["locations"]) > 40 else "")
         vals = [name, locs, e["n_locations"], e["size"], e.get("kind", ""), what_it_is(e),
-                ("yes: " + e["current_path"]) if e.get("in_current") else "no", quality(e), blob, "yes" if e.get("also_in_zips") else "no"]
+                in_current_text(blob, e), quality(e), blob, "yes" if e.get("also_in_zips") else "no"]
         f.write("\t".join(clean(v, 4000) if isinstance(v, str) else str(v) for v in vals) + "\n")
 
 # ---- counts for the summary -----------------------------------------------------------------------------------

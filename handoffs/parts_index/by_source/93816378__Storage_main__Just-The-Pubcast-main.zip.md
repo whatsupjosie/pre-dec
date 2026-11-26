@@ -2,7 +2,7 @@
 
 Where: GitHub Storage branch main: Just-The-Pubcast-main.zip
 
-2903 files. Status counts: IN A GIT BRANCH, NOT IN THE CURRENT BUILD: 2826, IN CURRENT BUILD: 77
+2903 files. Status counts: IN A GIT BRANCH, NOT IN THE CURRENT BUILD: 2826, IN CURRENT BUILD: 76, IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/: 1
 
 | File (path inside the zip) | What it is | Status | Quality | Potential |
 |---|---|---|---|---|
@@ -2757,7 +2757,7 @@ Where: GitHub Storage branch main: Just-The-Pubcast-main.zip
 | Just-The-Pubcast-main/.venv/Scripts/python.exe | Windows executable/DLL | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:.venv/Scripts/python.exe) | Windows executable/DLL; 274424 bytes | Third-party library, vendored copy or build output bundled in the zip, not PubCast code: no harvest value. |
 | Just-The-Pubcast-main/.venv/Scripts/pythonw.exe | Windows executable/DLL | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:.venv/Scripts/pythonw.exe) | Windows executable/DLL; 263400 bytes | Third-party library, vendored copy or build output bundled in the zip, not PubCast code: no harvest value. |
 | Just-The-Pubcast-main/.venv/pyvenv.cfg | home = C:\Users\hardc\OneDrive\Documents\Playground\Python312 / include-system-site-packages = false / version = 3.12.10 | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:.venv/pyvenv.cfg) | text (.cfg); 6 lines | Third-party library, vendored copy or build output bundled in the zip, not PubCast code: no harvest value. |
-| Just-The-Pubcast-main/ANIMATION_EXPANSION_GUIDE.md | document: Animation System Expansion Guide / Overview / What's Inside | IN CURRENT BUILD (identical content) at recovery/2026-11-23/rediscovery/thursday_animation/ANIMATION_EXPANSION_GUIDE.md | document; 456 lines | Already in the build; nothing to harvest. |
+| Just-The-Pubcast-main/ANIMATION_EXPANSION_GUIDE.md | document: Animation System Expansion Guide / Overview / What's Inside | IN CURRENT BUILD ONLY AS A PARKED COPY under recovery/ (identical content) at recovery/2026-11-23/rediscovery/thursday_animation/ANIMATION_EXPANSION_GUIDE.md | document; 456 lines | Parked under recovery/, not live: check whether it should be wired in. |
 | Just-The-Pubcast-main/CODEX_PUBCAST_AUTONOMOUS_SPINE (1).md | document: PubCast AI — Codex Autonomous Runtime Spine Prompt / MISSION / CRITICAL CONSTRAINTS | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:CODEX_PUBCAST_AUTONOMOUS_SPINE (1).md) | document; 640 lines | Notes/handoff not in the build: read for decisions or lost context. |
 | Just-The-Pubcast-main/CODEX_PUBCAST_AUTONOMOUS_SPINE (2).md | document: PubCast AI — Codex Autonomous Runtime Spine Prompt / MISSION / CRITICAL CONSTRAINTS | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:CODEX_PUBCAST_AUTONOMOUS_SPINE (1).md) | document; 640 lines | Notes/handoff not in the build: read for decisions or lost context. |
 | Just-The-Pubcast-main/CODEX_PUBCAST_AUTONOMOUS_SPINE.md | document: PubCast AI — Codex Autonomous Runtime Spine Prompt / MISSION / CRITICAL CONSTRAINTS | IN A GIT BRANCH, NOT IN THE CURRENT BUILD (e.g. Just-The-Pubcast/main:CODEX_PUBCAST_AUTONOMOUS_SPINE (1).md) | document; 640 lines | Notes/handoff not in the build: read for decisions or lost context. |
