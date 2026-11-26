@@ -1938,9 +1938,10 @@ async def lifespan(application: FastAPI):
     if cameras and production_log:
         try:
             original_set_program = cameras.set_program_source
-            def logged_set_program(source_id: str) -> bool:
+            def logged_set_program(source_id: str, **how) -> bool:
+                # **how passes the switcher's transition through (CameraManager.set_program_source).
                 from_cam = cameras.get_program_source()
-                result = original_set_program(source_id)
+                result = original_set_program(source_id, **how)
                 emit("cameras", "switch", {"from": from_cam.source_id if from_cam else "unknown", "to": source_id})
                 return result
             cameras.set_program_source = logged_set_program

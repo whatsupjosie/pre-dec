@@ -38,11 +38,14 @@ class SwitcherService:
     def cut(self,camera_id:Optional[str]=None, *, retain_transition:bool=False)->bool:
         # A take without an explicit source is an actual Program/Preview exchange,
         # not setting Program while leaving Preview stuck on the same camera.
+        # A dissolve in progress travels on the camera event, so show data and every page see it.
+        how=self.transition if retain_transition and self.transition.get("type")=="dissolve" else None
+        how={"type":"dissolve","duration_ms":how["duration_ms"]} if how else None
         if camera_id is None:
-            ok=self.cameras.take()
+            ok=self.cameras.take(transition=how)
             target=self.cameras.get_program_source().source_id if ok else None
         else:
-            ok=self.cameras.set_program_source(camera_id)
+            ok=self.cameras.set_program_source(camera_id,transition=how)
             target=camera_id if ok else None
         if ok and target: self.director.manual_cut(target)
         if ok and not retain_transition: self.transition={"type":"cut","duration_ms":0}

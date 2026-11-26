@@ -68,6 +68,9 @@ class CameraBroadcastBridge:
                 "program": program.source_id if program else None,
                 "preview": preview.source_id if preview else None,
                 "timestamp": event.timestamp or time.time(),
+                # Added 2026-11-26: how Program changed, so pages can dissolve exactly as the switcher did.
+                "transition": dict(event.transition) if getattr(event, "transition", None)
+                else {"type": "cut", "duration_ms": 0},
             },
         }
 

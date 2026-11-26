@@ -15,7 +15,7 @@ import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 
 class CameraTransport(str, Enum):
@@ -59,6 +59,10 @@ class CameraSwitchEvent:
     source_id: str
     previous_source_id: Optional[str]
     timestamp: float = field(default_factory=time.time)
+    # How Program changed: None for a plain cut, else {"type": "dissolve", "duration_ms": n}.
+    # Carried on the event itself so show data, the stage pages and reconstruction all see the
+    # same transition the switcher performed (it used to live only inside the switcher).
+    transition: Optional[Dict[str, Any]] = None
 
 
 @dataclass(frozen=True)
@@ -84,6 +88,18 @@ class CameraStatus:
     latency_ms: Optional[float] = None
     frame_rate: Optional[float] = None
     notes: Optional[str] = None
+
+
+def _transition(value: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """A copy of a dissolve description, or None for a cut. Anything else is refused before Program moves."""
+    if value is None or value.get("type", "cut") == "cut":
+        return None
+    if value.get("type") != "dissolve":
+        raise ValueError("unsupported transition")
+    duration = value.get("duration_ms")
+    if isinstance(duration, bool) or not isinstance(duration, int) or not 0 <= duration <= 4000:
+        raise ValueError("transition duration must be 0 to 4000 ms")
+    return {"type": "dissolve", "duration_ms": duration} if duration else None
 
 
 class CameraManager:
@@ -153,15 +169,20 @@ class CameraManager:
                 # Camera state is authoritative; diagnostics may not roll it back.
                 pass
 
-    def set_program_source(self, source_id: str) -> bool:
-        """Set Program. Invalid/idempotent changes do not emit an event."""
+    def set_program_source(self, source_id: str, *, transition: Optional[Dict[str, Any]] = None) -> bool:
+        """Set Program. Invalid/idempotent changes do not emit an event.
+
+        ``transition`` describes how Program changed ({"type": "dissolve", "duration_ms": 600});
+        None, or type "cut", is a plain cut. It travels on the switch event.
+        """
+        how = _transition(transition)        # checked before anything moves
         if source_id not in self._sources:
             return False
         previous = self._program_source
         if previous == source_id:
             return True
         self._program_source = source_id
-        self._emit(CameraSwitchEvent("program", source_id, previous))
+        self._emit(CameraSwitchEvent("program", source_id, previous, transition=how))
         return True
 
     def set_preview_source(self, source_id: str) -> bool:
@@ -212,8 +233,9 @@ class CameraManager:
             self._emit(CameraPoseEvent(source_id, list(source.position), list(source.rotation), source.fov, focus=source.focus))
         return True
 
-    def take(self) -> bool:
+    def take(self, *, transition: Optional[Dict[str, Any]] = None) -> bool:
         """Atomically exchange Program and Preview, then emit the resulting changes."""
+        how = _transition(transition)        # checked before anything moves
         if not self._program_source or not self._preview_source:
             return False
         old_program, old_preview = self._program_source, self._preview_source
@@ -221,7 +243,7 @@ class CameraManager:
             return True
         self._program_source, self._preview_source = old_preview, old_program
         now = time.time()
-        self._emit(CameraSwitchEvent("program", self._program_source, old_program, now))
+        self._emit(CameraSwitchEvent("program", self._program_source, old_program, now, transition=how))
         self._emit(CameraSwitchEvent("preview", self._preview_source, old_preview, now))
         return True
 

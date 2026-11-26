@@ -43,7 +43,9 @@ def test_show_data_reads_back_and_verifies(tmp_path):
     lines = list(iter_show_data(path))
     assert lines[0]["header"] and lines[0]["schema"] == "pubcast-show-data/1" and lines[0]["session_id"] == "t1"
     assert [line["kind"] for line in lines[1:4]] == ["camera.switch", "hub.system", "hub.room"]
-    assert lines[1]["data"] == {"destination": "program", "source_id": "cam_b", "previous_source_id": "cam_a", "timestamp": 123.0}
+    # "transition" added 2026-11-26 (finish/control-room-engine): None for a cut, the dissolve otherwise.
+    assert lines[1]["data"] == {"destination": "program", "source_id": "cam_b", "previous_source_id": "cam_a",
+                                "timestamp": 123.0, "transition": None}
     assert lines[3]["room"] == "studio" and [line["seq"] for line in lines[1:4]] == [0, 1, 2]
     assert lines[-1]["footer"] and lines[-1]["sha256"] == summary["sha256"]
     check = verify_show_data(path)
