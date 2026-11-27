@@ -255,3 +255,31 @@ READ (structure; for the report, its first 60 lines). These seven contents are i
 | `conftest.py` (`c4ac1517`), codex_construction | 1KGKU1JxHw91uNrduGsWhLW5xTkZgdb41 | structure | Test fixtures: an app client with no startup, and a client run through the real startup. Worth comparing with the build's `tests/conftest.py` before a test-infrastructure change. |
 | `test_beefed_up_recovery_wiring.py` (`1ffc6f0a`, 1,107 bytes), codex_construction_pubblocks | 1Uma9A5b84zsRsbX0w8EW-ZgHT0fvyCMC | structure | Four checks that the safe-console and Pub Manager routes are declared and their scripts load. Not engine. |
 | `DEBUGGING_REPORT.md` (`2d696b16`, 2026-05-08), at the top of pubcast_complete_debugged | 1NNLYV-FhGAOaOwT93233XaTDF1BDXOg7 | first 60 lines | It claims "No critical bugs found. System is production-ready" and lists eight avatar-performer fixes. That is a claim from its writer; nothing here verifies it. Its fix list is useful as a checklist for `avatar_performer.py`. |
+
+## 10. The engine-related test files in the zips, 2026-11-26
+
+READ (every import, and how many tests each holds) for all 142 test files among the 599 candidates. Eight of them
+were RUN against `finish/control-room-engine`: in a throwaway detached worktree, with the project venv. Nothing was
+committed from the run.
+
+**What they test**
+- 80 test the Iteration Wallet / BlackBox product (`iteration_wallet.*`). That package is not in the build, so they
+  cannot run here. Josie's call (see "Not yet read").
+- 6 need modules that are gone from the build: `runtime.pub_manager`, older `runtime.spine` names, `blackbox_plugin`.
+- 22 import modules that are live; 34 import no project module (static checks of files).
+
+**RAN, the eight whose subject is live and whose file name the build's tests/ doesn't have**
+
+| Test (fingerprint) | Result | Why |
+|---|---|---|
+| `tests__test_pub_manager_recovery.py` (`5d3645b5`) | 4 passed | The live `modules/pub_manager_recovery.py` still meets it. Could be added to the build's tests as it is. |
+| `tests__test_pub_partner_chat.py` (`3f5fe15e`) | 4 passed | Same: the live `modules/pub_partner_chat.py` meets it. |
+| `test_15_api_coverage.py` (`08d1faa4`) | 14 passed, 14 failed | Every failure is a 404 on a path the live build renamed or dropped. Checked by listing the live app's 641 routes after a real startup: `/api/pete/status` is now `/api/pete-enhanced/status` and `/api/internal/pete/status`; `/api/jeremy/status` is now `/api/jeremy/health`; `/api/memory/status` is gone (the live memory routes are per character); `/api/vs/*` (voxel studio) is not mounted. These are renames, not regressions, except that voxel studio has no live routes. |
+| `test_alex_foundation_pass.py` (`d9d5e465`) | 6 passed, 6 failed | The failures look for launcher and UI files at paths the build doesn't have (FileNotFoundError). |
+| `test_09_character_registration.py`, `test_08_memory_persistence.py` | 11 and 14 failed | They call methods that the live BotManager and UniversalMemorySystem no longer have (`set_memory_system`, `register_character`). Older API. |
+| `test_architecture_boundaries.py` (`665390a9`) | 1 passed, 1 failed | Needs `blackbox_plugin`. |
+| `test_sir_purfluous.py` (`ed49ce96`) | cannot import | Needs a module named `sir_purfluous`, which the build doesn't have. |
+
+None of the test files touch the control-room engine's recording, camera or audio authority in a way the build's own
+tests don't already cover. That was checked by their imports: none import `capture`, `recording_modes`, `cameras` or
+`program_audio`.
