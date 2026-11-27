@@ -19,6 +19,8 @@
 
   var STATUS_URL = "/api/timeline/status";
   var POLL_MS = 500;
+  var MAX_SAMPLE_AGE = 2000;
+  var STATES = ["idle","running","paused","complete","failed"];
   var DEFAULT_RATE = 24;
   var SUPPORTED_RATES = [24, 25, 30];
   var LABELS = { top: "IN", bottom: "LEFT" };
@@ -44,7 +46,7 @@
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
   function formatTimeCode(seconds, rate) {
     var p = splitTimeCode(seconds, rate);
-    if (!p) return null;
+    if (!p || p.hh > 99) return null;
     return (p.negative ? "-" : "") + pad2(p.hh) + ":" + pad2(p.mm) + ":" + pad2(p.ss) + ":" + pad2(p.ff);
   }
 
@@ -137,7 +139,7 @@
   function loadColor(row) {
     try {
       var saved = root.localStorage.getItem("pubcast.showClocks." + root.location.pathname + "." + row);
-      if (saved && COLORS[saved]) return saved;
+      if (saved && Object.prototype.hasOwnProperty.call(COLORS,saved)) return saved;
     } catch (e) { /* storage can be missing or blocked; the default colour stands */ }
     return DEFAULT_COLOR[row];
   }
@@ -154,7 +156,7 @@
     box.id = "pubcast-show-clocks";
     box.setAttribute("role", "timer");
     box.setAttribute("aria-label", "Show clocks");
-    box.style.cssText = "position:fixed;right:10px;bottom:10px;z-index:2147483000;background:" + PANEL +
+    box.style.cssText = "position:fixed;right:10px;bottom:10px;z-index:9000;background:" + PANEL +
       ";border:1px solid #26302d;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:5px;" +
       "font:600 10px/1 Consolas,'Courier New',monospace;letter-spacing:1px;color:#9aa5a1;user-select:none;" +
       "box-shadow:0 2px 10px rgba(0,0,0,.5);pointer-events:none";
@@ -168,7 +170,7 @@
       label.textContent = LABELS[row];
       label.style.cssText = "width:30px;text-align:right";
       var face = buildFace();
-      face.svg.style.cssText = "display:block;width:" + Math.round(face.width * 4.2) + "px;height:" + Math.round(face.height * 4.2) + "px";
+      face.svg.style.cssText = "display:block;width:min(" + Math.round(face.width * 4.2) + "px,calc(100vw - 110px));height:auto;aspect-ratio:" + face.width + "/" + face.height;
       var swatches = document.createElement("span");
       swatches.style.cssText = "display:flex;flex-direction:column;gap:2px";
       var state = { name: loadColor(row), buttons: {} };
@@ -177,7 +179,7 @@
         b.type = "button";
         b.title = LABELS[row] + " clock: " + name;
         b.setAttribute("aria-label", LABELS[row] + " clock " + name);
-        b.style.cssText = "all:unset;box-sizing:border-box;width:7px;height:7px;border-radius:50%;cursor:pointer;" +
+        b.style.cssText = "all:unset;box-sizing:border-box;width:14px;height:14px;border-radius:50%;cursor:pointer;" +
           "pointer-events:auto;background:" + COLORS[name] + ";opacity:.35";
         b.setAttribute("data-color", name);
         b.addEventListener("click", function () {
@@ -188,7 +190,7 @@
       });
       function apply() {
         face.setColor(COLORS[state.name]);
-        COLOR_ORDER.forEach(function (n) { state.buttons[n].style.opacity = n === state.name ? "1" : ".35"; });
+        COLOR_ORDER.forEach(function (n) { state.buttons[n].style.opacity = n === state.name ? "1" : ".35";state.buttons[n].setAttribute("aria-pressed",String(n===state.name)); });
       }
       apply();
       line.setAttribute("data-clock", row);
@@ -201,56 +203,56 @@
     return { box: box, rows: rows };
   }
 
+  function sample(j, requestedAt, receivedAt) {
+    if(!j||STATES.indexOf(j.state)<0||typeof j.elapsed!=="number"||!isFinite(j.elapsed)||j.elapsed<0)throw new Error("Invalid timeline sample");
+    if(!isFinite(requestedAt)||!isFinite(receivedAt)||receivedAt<requestedAt||receivedAt-requestedAt>MAX_SAMPLE_AGE)throw new Error("Timeline sample delayed");
+    return {state:j.state,loaded:typeof j.timeline_name==="string"&&!!j.timeline_name,
+      elapsed:j.elapsed,remaining:typeof j.remaining==="number"&&isFinite(j.remaining)?j.remaining:null,
+      rate:SUPPORTED_RATES.indexOf(j.frame_rate)>=0?j.frame_rate:DEFAULT_RATE,
+      at:receivedAt,requestedAt:requestedAt};
+  }
+  function display(s,now){
+    if(!s||!s.loaded||now-s.requestedAt>MAX_SAMPLE_AGE||now<s.at)return {top:null,bottom:null};
+    var delta=s.state==="running"?(now-s.at)/1000:0;
+    return {top:formatTimeCode(Math.max(0,s.elapsed+delta),s.rate),
+      bottom:s.remaining===null?null:formatTimeCode(s.remaining-delta,s.rate)};
+  }
   function start() {
-    var ui = mount();
-    if (!ui) return;
-    var snap = null; /* last good read: {state, elapsed, remaining, rate, setLength, at} */
-
-    function read() {
-      var ctrl = typeof AbortController === "function" ? new AbortController() : null;
-      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 4000) : null;
-      fetch(STATUS_URL, { credentials: "same-origin", cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
-        .then(function (r) { if (!r.ok) throw new Error("status " + r.status); return r.json(); })
-        .then(function (j) {
-          if (typeof j.elapsed !== "number" || !isFinite(j.elapsed)) throw new Error("no elapsed");
-          snap = {
-            state: j.state,
-            loaded: !!j.timeline_name,
-            elapsed: j.elapsed,
-            remaining: typeof j.remaining === "number" && isFinite(j.remaining) ? j.remaining : null,
-            rate: SUPPORTED_RATES.indexOf(j.frame_rate) >= 0 ? j.frame_rate : DEFAULT_RATE,
-            at: performance.now()
-          };
-        })
-        .catch(function () { snap = null; })
-        .then(function () { if (timer) clearTimeout(timer); });
+    var ui=mount();if(!ui)return;
+    var snap=null,controller=null,stopped=false,revision=0,pollTimer,frame,changing=false;
+    async function read(){
+      if(stopped||controller||changing)return;
+      var ctrl=new AbortController();controller=ctrl;var version=revision,requested=performance.now();
+      var timer=setTimeout(function(){ctrl.abort();},MAX_SAMPLE_AGE);
+      try{
+        var res=await fetch(STATUS_URL,{credentials:"same-origin",cache:"no-store",signal:ctrl.signal});
+        if(!res.ok)throw new Error("status "+res.status);
+        var data=await res.json();
+        if(!stopped&&version===revision&&!ctrl.signal.aborted)snap=sample(data,requested,performance.now());
+      }catch(e){if(!stopped&&version===revision)snap=null;}
+      finally{clearTimeout(timer);if(controller===ctrl)controller=null;}
     }
-
-    function paint() {
-      var top = ui.rows.top, bottom = ui.rows.bottom;
-      if (!snap || !snap.loaded) {
-        top.face.set(null); bottom.face.set(null);
-        bottom.line.style.display = "none";
-      } else {
-        var running = snap.state === "running";
-        var delta = running ? (performance.now() - snap.at) / 1000 : 0;
-        top.face.set(formatTimeCode(Math.max(0, snap.elapsed + delta), snap.rate));
-        if (snap.remaining === null) {
-          bottom.line.style.display = "none"; /* no set length: no time-left clock */
-        } else {
-          bottom.line.style.display = "flex";
-          bottom.face.set(formatTimeCode(snap.remaining - delta, snap.rate));
-        }
-      }
-      root.requestAnimationFrame(paint);
+    function invalidate(){revision++;snap=null;controller?.abort();}
+    function paint(){
+      if(stopped)return;
+      var value=display(snap,performance.now());
+      ui.rows.top.face.set(value.top);ui.rows.bottom.face.set(value.bottom);
+      ui.rows.bottom.line.style.display=value.bottom===null?"none":"flex";
+      ui.box.setAttribute("aria-label",value.top===null?"Show clocks unavailable":"Show elapsed "+value.top+(value.bottom===null?"":", remaining "+value.bottom));
+      frame=root.requestAnimationFrame(paint);
     }
-
-    read();
-    root.setInterval(read, POLL_MS);
-    root.requestAnimationFrame(paint);
+    function begin(){changing=true;invalidate();}
+    function changed(){changing=false;invalidate();read();}
+    root.addEventListener("pubcast:timeline-changing",begin);
+    root.addEventListener("pubcast:timeline-changed",changed);
+    function suspend(){stopped=true;invalidate();root.clearInterval(pollTimer);root.cancelAnimationFrame(frame);}
+    function resume(){if(!stopped)return;stopped=false;changing=false;read();pollTimer=root.setInterval(read,POLL_MS);frame=root.requestAnimationFrame(paint);}
+    root.addEventListener("pagehide",suspend);
+    root.addEventListener("pageshow",resume);
+    read();pollTimer=root.setInterval(read,POLL_MS);frame=root.requestAnimationFrame(paint);
   }
 
-  var api = { splitTimeCode: splitTimeCode, formatTimeCode: formatTimeCode, SEGMENTS: SEGMENTS, COLORS: COLORS };
+  var api = { splitTimeCode: splitTimeCode, formatTimeCode: formatTimeCode, sample:sample, display:display, SEGMENTS: SEGMENTS, COLORS: COLORS };
   root.PubCastShowClocks = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 

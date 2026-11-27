@@ -1,0 +1,14 @@
+"use strict";
+const assert=require("node:assert/strict"),a=require("../static/show_clocks.js");
+const s=a.sample({state:"running",elapsed:20.5,remaining:1429.5,timeline_name:"show",frame_rate:24},1000,1100);
+assert.deepEqual(a.display(s,1100),{top:"00:00:20:12",bottom:"00:23:49:12"});
+assert.deepEqual(a.display(s,1600),{top:"00:00:21:00",bottom:"00:23:49:00"});
+assert.deepEqual(a.display(s,3001),{top:null,bottom:null});
+assert.deepEqual(a.display({...s,state:"paused"},1600),{top:"00:00:20:12",bottom:"00:23:49:12"});
+assert.equal(a.display({...s,remaining:null},1600).bottom,null);
+assert.deepEqual(a.display({...s,loaded:false},1600),{top:null,bottom:null});
+assert.throws(()=>a.sample({state:"running",elapsed:5},0,2001));
+assert.throws(()=>a.sample({state:"?",elapsed:5},0,5));
+assert.throws(()=>a.sample({state:"running",elapsed:-1},0,5));
+assert.equal(a.formatTimeCode(360000,24),null);
+console.log("Show clock freshness: ten assertions passed");
