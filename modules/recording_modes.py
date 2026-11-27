@@ -58,6 +58,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from .persistence import write_json
+from . import child_lifetime
 
 logger = logging.getLogger("pubcast.recording_modes")
 
@@ -570,6 +571,7 @@ class ModeTake:
         self.pauses: List[List[Optional[float]]] = []
         # A cut, a pause and a resume never run at the same time: each sees the others finished.
         self._busy = asyncio.Lock()
+        self._closing: Dict[int, asyncio.Task] = {}   # segments closing in the background (see _close_later)
         self._paused_keys: Dict[str, str] = {}
 
     # -- start ---------------------------------------------------------------------------------------------
@@ -763,7 +765,7 @@ class ModeTake:
         if index is None:
             return
         seg = self.segments.get(index)
-        if seg is None or seg.state != "running":
+        if seg is None or seg.state not in ("running", "closing"):
             return
         engine = self.controller.capture_engine
         seg.stop_requested_at = seg.stop_requested_at or time.time()
@@ -914,7 +916,33 @@ class ModeTake:
             await self._set_preview(previous)
             self.segments[previous].roles.append(("preview", requested))
         elif previous is not None and previous != self._program:
-            await self._close_segment(previous)
+            # Closed in the background: stopping an encoder and reading its file back took 2.4 to 3 s on a
+            # loaded machine, and the next cut waited for it. With a cut every 3 s the cuts fell 13 s behind
+            # (median) in the endurance run of 2026-11-27. The file still ends where the join happened.
+            self._close_later(previous)
+
+    def _close_later(self, index: Optional[int]) -> None:
+        seg = self.segments.get(index) if index is not None else None
+        if seg is None or seg.state != "running":
+            return
+        seg.stop_requested_at = seg.stop_requested_at or time.time()
+        seg.state = "closing"
+
+        async def finish() -> None:
+            try:
+                await self._close_segment(index)
+            except Exception as exc:  # noqa: BLE001 — one camera's close must not take the take down
+                logger.exception("Recording mode %s could not close segment %s", self.session_id, index)
+                seg.state, seg.error = "stopped", seg.error or f"closing failed: {exc}"
+            finally:
+                self._closing.pop(index, None)
+                self._write_record()
+        self._closing[index] = asyncio.get_running_loop().create_task(finish(), name=f"close-segment-{index}")
+
+    async def _closes_finished(self) -> None:
+        """Wait for every segment still closing in the background."""
+        while self._closing:
+            await asyncio.gather(*list(self._closing.values()), return_exceptions=True)
 
     async def _set_preview(self, index: Optional[int]) -> None:
         """Make ``index`` the one armed preview; any other camera armed until now stops recording."""
@@ -1076,6 +1104,7 @@ class ModeTake:
         self._end_current(at=self.stopped_at)
         engine = self.controller.capture_engine
         media: List[Dict[str, Any]] = []
+        await self._closes_finished()
         for index in list(self.segments):
             await self._close_segment(index)
         for seg in self.segments.values():
@@ -1169,14 +1198,31 @@ class ModeTake:
         fmt = "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo"
         chains: List[str] = []
         labels: List[str] = []
+        # Every piece gets a whole number of frames on one grid laid over the program. Rounding each piece by itself
+        # let the joined program run 0.74 s long over 90 cuts in the 30-minute endurance run (2026-11-27), so the
+        # later a cut, the later it showed. On the grid each boundary sits within half a frame of its true time,
+        # however many cuts there are.
+        fps_value = float(rate)
+        grid: List[int] = []
+        cumulative = 0.0
+        for piece in pieces:
+            first = int(round(cumulative * fps_value))
+            cumulative += _piece_duration(piece)
+            grid.append(max(0, int(round(cumulative * fps_value)) - first))
+        total = sum(grid) / fps_value
         for i, piece in enumerate(pieces):
-            duration = _piece_duration(piece)
+            frames_here = grid[i]
+            duration = frames_here / fps_value
+            if frames_here == 0:
+                continue
             if piece["kind"] == "segment":
                 seg = self.segments[piece["segment"]]
                 k = input_of(seg.file)
-                chains.append(f"[{k}:v:0]trim=start={piece['in']}:end={piece['out']},setpts=PTS-STARTPTS,fps={rate},"
+                margin = piece["out"] + 2.0 / fps_value
+                chains.append(f"[{k}:v:0]trim=start={piece['in']}:end={margin:.6f},setpts=PTS-STARTPTS,fps={rate},"
                               f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-                              f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v{i}]")
+                              f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,"
+                              f"tpad=stop_mode=clone:stop=-1,trim=end_frame={frames_here},setpts=PTS-STARTPTS[v{i}]")
                 if mic_path is None:
                     if seg.has_audio:
                         chains.append(f"[{k}:a:0]atrim=start={piece['in']}:end={piece['out']},asetpts=PTS-STARTPTS,"
@@ -1184,13 +1230,14 @@ class ModeTake:
                     else:
                         chains.append(f"anullsrc=r=48000:cl=stereo,atrim=duration={duration:.6f}[a{i}]")
             else:
-                chains.append(f"color=c=black:s={width}x{height}:r={rate}:d={duration:.6f},format=yuv420p,setsar=1[v{i}]")
+                chains.append(f"color=c=black:s={width}x{height}:r={rate},trim=end_frame={frames_here},"
+                              f"format=yuv420p,setsar=1[v{i}]")
                 if mic_path is None:
                     chains.append(f"anullsrc=r=48000:cl=stereo,atrim=duration={duration:.6f}[a{i}]")
             labels.append(f"[v{i}]" + ("" if mic_path is not None else f"[a{i}]"))
         audio_note = "follows the picture: each camera's own sound"
         if mic_path is not None:
-            chains.append("".join(labels) + f"concat=n={len(pieces)}:v=1:a=0[vout]")
+            chains.append("".join(labels) + f"concat=n={len(labels)}:v=1:a=0[vout]")
             m = input_of(mic_path)
             mic_first = self._clock(mic["_stop_at"]) - mic["duration"]
             offset = origin - mic_first
@@ -1199,7 +1246,7 @@ class ModeTake:
             chains.append(f"[{m}:a:0]{lead}asetpts=PTS-STARTPTS,{delay}{fmt},apad,atrim=duration={total:.6f}[aout]")
             audio_note = "the microphone, for the whole program"
         else:
-            chains.append("".join(labels) + f"concat=n={len(pieces)}:v=1:a=1[vout][aout]")
+            chains.append("".join(labels) + f"concat=n={len(labels)}:v=1:a=1[vout][aout]")
         out_path = self.dir / f"{PROGRAM_STEM}.{profile.container.value}"
         if out_path.exists():
             return {"state": "failed", "error": f"{out_path.name} already exists; it is never overwritten"}
@@ -1212,7 +1259,18 @@ class ModeTake:
         log_path = self.dir / f"{out_path.name}.ffmpeg.log"
         started = time.time()
         with open(log_path, "wb") as log:
-            done = subprocess.run(cmd, cwd=str(self.dir), stdout=subprocess.DEVNULL, stderr=log, timeout=24 * 3600)
+            # Tied to the host: a host stopped mid-assembly left this encoder running on its own (found while
+            # the endurance run was restarted, 2026-11-27). Started from a worker thread that waits for it, so
+            # the tie holds until it ends. On Windows, adopt() runs after the start.
+            child = subprocess.Popen(cmd, cwd=str(self.dir), stdout=subprocess.DEVNULL, stderr=log,
+                                     **child_lifetime.spawn_kwargs())
+            child_lifetime.adopt(child.pid)
+            try:
+                child.wait(timeout=24 * 3600)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait()
+            done = child
         tail = " | ".join(log_path.read_text(errors="replace").strip().splitlines()[-4:])
         if done.returncode != 0 or not tmp.is_file():
             return {"state": "failed", "error": f"FFmpeg exited with status {done.returncode}: {tail}"[:600],

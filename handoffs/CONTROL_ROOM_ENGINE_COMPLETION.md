@@ -21,16 +21,24 @@ shell 1243 (software WebGL, SwiftShader); Playwright 1.56. **Nothing here ran on
 
 ## Exact next task
 
+Updated 2026-11-27. Josie approved this order ("break that up into a workflow and let's knock them off"):
+intercom → preflight → fault tests → 30-minute endurance → handoff. All five are done; see the Dated log.
+
 1. Read "Regression run" at the end; if any failure is listed as NEW, fix it first.
-2. Phase 5 reliability (not started): low disk during a take, renderer interruption (kill the headless browser mid-job:
-   the job must fail with its reason and leave no file), network-camera loss mid-take (`ended_early` in `timing`
-   and a `stalled` meter), restart recovery of a take and of a reconstruction job, and export of a take that has
-   reconstructions (artifact + manifest data file travel; checked by import).
-3. Main-camera and camcorder picture files of a paused take: they are still joined without their resume gaps (see
-   Known defects 2). Decide with Josie: pad on join (re-encode), or keep the files and give editors the `timing`.
-4. The three debugging rounds and the 30-minute endurance recording (section 9 and 10 of the assignment).
-5. Windows: run `tests/test_reconstruction_e2e.py` on Josie's laptop with `PUBCAST_RENDER_BROWSER` unset, so it uses
-   Microsoft Edge (find_browser picks channel "msedge" on Windows), and the pause test from the earlier handoff.
+2. Open defect A (Known defects 7): `tests/test_recording_modes_e2e.py::test_data_only_records_no_picture_every_sound_and_the_show_data`
+   fails most runs: a sound file is 7.06 s against a 7.0 s bound. It fails the same way at 8fc67042, before the
+   capture changes of 2026-11-27 (RAN 4 of 4), so it is not from them. Two explanations are in Known defects 8;
+   the likelier one is that the test times the take from after the start's 0.6 s startup check, so the file is
+   longer than the test's clock, not the take's. Tell them apart, then fix the cause or the test, with evidence.
+3. Josie's decision, still open: camcorder pause gaps (Known defects 2).
+4. Still not done from Phase 5: renderer interruption (kill the headless browser mid-reconstruction), network-camera
+   loss mid-take beyond an encoder dying (the source stops sending), a guest dropping, through the real host
+   (unit-tested only), restart recovery of a reconstruction job, and export of a take with reconstructions.
+5. Windows (Josie's laptop): run `tests/test_recording_faults_e2e.py` needs Linux (it uses /proc and tmpfs). On
+   Windows, check by hand: start a take, end the host in Task Manager, and see that no ffmpeg.exe stays running
+   (modules/child_lifetime.py, the job object, is NOT TESTED). Also open a fragmented MP4 take in the editor Josie
+   uses (GUESS: current editors read them; not checked).
+6. The three debugging rounds of the assignment: not yet run as separate rounds.
 
 ## Master checklist
 
@@ -76,7 +84,23 @@ Phase 4, audio authority
       microphones, network sources). A browser-side Program-mix recording exists (studio25d_recording_ingest).
       Server-side stems of browser-played music are NOT built.
 
-Phase 5 and the three debugging rounds: not started (Exact next task).
+Phase 4, added 2026-11-27
+- [x] NEW: the director's PA (intercom), ported from the NowCurtsey run bundle. See the 2026-11-27 log and commit 8fc67042.
+
+Phase 5, reliability (2026-11-27)
+- [x] Preflight before rolling, and a gate on every start path (route, studio action, timeline): no FFmpeg, an
+      unwritable folder, or disk for under 2 minutes refuse the take with the reason. RAN.
+- [x] An encoder killed mid-take, in each mode: named in the report; what it wrote is kept and plays; the program
+      covers the whole take with black from the death, and says so. RAN. FIXED: crash-safe live files; a dead program
+      encoder's picture was misplaced and the program cut short.
+- [x] The host killed mid-take: no encoder survives it (Linux, RAN); the take comes back interrupted, its files play.
+      FIXED: encoders and the program assembler used to outlive the host. Windows mechanism NOT TESTED.
+- [x] The disk filling mid-take: stop says "No space left ... retry", keeps every file; gate refuses; with room a
+      second stop finishes the take. RAN.
+- [x] 30-minute endurance, all three modes at once: see the Dated log for the result.
+- [ ] Renderer interruption, a source that stops sending, a guest dropping through the real host, export with
+      reconstructions (Exact next task 4).
+- [ ] The three debugging rounds as separate rounds.
 
 ## Recovery: what was compared and why this base
 
@@ -153,6 +177,16 @@ main.py, blackbox_media, recorded_slate_sync.
 | modules/render_host/reconstruct.html, reconstruct.js | NEW |
 | tests/test_performance_capture.py (27), tests/test_reconstruction_e2e.py (12), tests/test_participant_audio_resilience.py (5), tests/test_program_audio_channels.py (19) | NEW |
 | tests/test_recording_modes_unit.py | one expectation: a serialized switch has `"transition": null` |
+| modules/intercom.py, modules/intercom_routes.py | NEW 2026-11-27: the director's PA (ported; provenance in the module header) |
+| modules/hub.py | `post_chat_message(notify_ai=False)`: a line that does not wake the AI cast |
+| modules/studio_camera_preflight.py | 2026-11-27: `mode`, machine checks (FFmpeg, writable folder, disk), `gate`, `start_gate`, `PreflightRefusal` |
+| modules/recording.py | 2026-11-27: `start_session` runs the gate; `session.preflight` |
+| modules/capture.py | 2026-11-27: crash-safe live muxing (`_CRASH_SAFE_MUXING`, `live=`); encoders and joins tied to the host |
+| modules/child_lifetime.py | NEW 2026-11-27: encoders end with the host (Linux PR_SET_PDEATHSIG; Windows job object, untested) |
+| modules/segmented_capture.py, modules/reconstruction.py | 2026-11-27: their FFmpeg tied to the host |
+| modules/recording_modes.py | 2026-11-27: an ended-early segment is anchored where it died (`Segment.ended_early`), the assembly warns; the assembler is tied to the host; offline render `live=False` |
+| tests/test_intercom.py (17), tests/test_intercom_real_host.py (1), tests/test_recording_start_gate.py (10), tests/test_recording_faults_e2e.py (6), tests/test_capture_crash_safety.py (5) | NEW 2026-11-27 |
+| tools/acceptance/test_engine_endurance.py | NEW 2026-11-27: the 30-minute run, excluded from ordinary collection |
 
 ## API and event contracts for ChatGPT (frontend)
 
@@ -225,6 +259,25 @@ fell more than 8 MB behind. The frames' own sequence numbers show where the gap 
 - `POST /api/reconstruction/jobs/{job_id}/cancel`; `GET /api/recording/{session_id}/reconstructions`.
 - A finished video is a take artifact; its manifest is a take data file.
 
+### 6. Intercom (the director's PA), 2026-11-27
+- `POST /api/intercom/announce` `{text, rooms: [room ids] | null (every live room), audio: bool = true, voice: str}`
+  → `{ok, announcement_id, delivered: [...], failed: {room: reason}, had_audio, audio_note, ...}`.
+  Errors: 400/413 (bad body, text over 500 characters), 403 (no access to a named room; private rooms never),
+  409 (no live room), 429 (one per speaker every 2 s).
+- Each targeted room receives `{"type": "intercom", "payload": {announcement_id, speaker_id, speaker_name, text, room,
+  all_rooms, audio_b64 (base64 WAV, PA-filtered) | null, duration, at}}`, then its chat line from user `__intercom__`.
+  Play `audio_b64` when present; the text always arrives.
+- mod+: `POST /api/intercom/grant {user_id, rooms | null, note}`, `POST /api/intercom/revoke {user_id}`,
+  `GET /api/intercom/grants`, `GET /api/intercom/history`. Signed in: `GET /api/intercom/status`.
+
+### 7. Recording preflight and the start gate, 2026-11-27
+- `POST /api/recording/preflight` now also takes `mode`, `record_data`, `planned_minutes`, and answers `machine`
+  (ffmpeg, ffprobe, writable, free_bytes, estimated_bytes_per_minute, minutes_of_disk, outputs) and `gate`.
+- `POST /api/recording/start` may answer **409** `{"detail": {"message", "refusals": [{code, message}], "machine"}}`
+  (codes `no_ffmpeg`, `not_writable`, `disk_full`). A started take's response has `preflight: {warnings, issues,
+  minutes_of_disk}`: show these to the director (e.g. "the disk holds 12 minutes of this take").
+- A stop on a full disk answers 409 with "No space left ... stop the take again to retry": offer the retry.
+
 ## Test commands and results
 
 From the repository folder. On Windows, the same lines in PowerShell 5, with `python` from the PubCast environment:
@@ -256,6 +309,19 @@ RAN, 2026-11-26 (Linux):
    two GLB performers), so a 30-minute take at 30 fps takes about 70 minutes per angle. Not optimized yet.
 5. Windows: NOT RUN. The browser driver expects Edge there; untested.
 6. The Rust `ws_renderer` still renders nothing; reconstruction does not use it.
+7. (2026-11-27) The data-only e2e test fails most runs: a sound file 7.06 s against a 7.0 s bound. It fails the same
+   way at 8fc67042, before the capture changes (RAN 4 of 4). Exact next task 2. See 8 for a likely cause.
+8. (2026-11-27) Measured fact: in the 2-minute endurance trial each sound file ran 0.24 to 0.41 s longer than the
+   take as the test timed it (120.06 s). Two explanations, NOT yet told apart:
+   (a) the test starts its clock after `/api/recording/start` returns, and the start waits 0.6 s
+       (`_STARTUP_CHECK_SECONDS`) after spawning the encoders, so the files begin before the test's clock;
+   (b) FFmpeg's input analysis lets in sound from before the take.
+   (a) would also explain defect 7, whose overrun is the same each run (7.061333 s). Check against the take's own
+   `take_started_utc` and `stopped_at` before changing anything.
+9. (2026-11-27) Windows: `modules/child_lifetime.py`'s job object is NOT TESTED. If it fails, it logs one warning and
+   recording works as before, but encoders may outlive a killed host there.
+10. (2026-11-27) A live MP4/MOV is now a fragmented MP4. FFmpeg, browsers and the program assembly read it (RAN).
+    Josie's editor: NOT CHECKED.
 
 ## Commit checkpoints
 - a354092 Dissolves travel on the camera switch event
@@ -264,7 +330,12 @@ RAN, 2026-11-26 (Linux):
 - 896da9a Guest audio: stop dropping a guest after a stall or a slow desk
 - 5d5026c Capture: progress at FFmpeg's default interval; sound files written as they are made
 - c91b6e2 Program audio authority: independent channels, solo, meters, and the intended mix
-- (next) this handoff
+- c91b6e2 .. 9b47817: handoff; parts index (several commits)
+- 8fc67042 Intercom: the director's PA, ported into the build
+- 3fcdff9e Recording preflight: check the machine, and gate every start
+- c344d400 READ notes: correct the preflight row
+- 7c1809de Faults mid-take: crash-safe live files, encoders end with the host, a dead program encoder
+- (next) the assembler, the join and reconstruction tied to the host; the endurance tool; this handoff
 
 ## Dated log
 - 2026-11-26 07:58–10:30 (Los Angeles): recovery comparison; base moved to ec7895a; renderer proven; dissolve fix;

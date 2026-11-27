@@ -939,7 +939,9 @@ class FFmpegCaptureEngine:
                    "-map", "0", "-c", "copy", joining.name]
             with open(log_path, "ab") as log:
                 proc = await asyncio.create_subprocess_exec(*cmd, cwd=str(folder), stdin=asyncio.subprocess.DEVNULL,
-                                                            stdout=asyncio.subprocess.DEVNULL, stderr=log)
+                                                            stdout=asyncio.subprocess.DEVNULL, stderr=log,
+                                                            **child_lifetime.spawn_kwargs())
+                child_lifetime.adopt(proc.pid)
                 await asyncio.wait_for(proc.wait(), timeout=3600)
             if proc.returncode != 0 or not joining.is_file():
                 raise RuntimeError(f"FFmpeg exited with status {proc.returncode}: {self._log_tail(log_path, 2)}")

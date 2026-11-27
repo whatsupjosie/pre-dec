@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from modules.recording_modes import MODE_RECORD_FILE, SHOW_DATA_FILE, iter_show_data
+from . import child_lifetime
 
 logger = logging.getLogger("pubcast.reconstruction")
 
@@ -625,7 +626,9 @@ async def reconstruct(take_dir: Path, request: Request, *, progress: Optional[Ca
     frame_notes: Dict[str, int] = {}
     started = time.monotonic()
     encoder = await asyncio.create_subprocess_exec(*cmd, stdin=asyncio.subprocess.PIPE,
-                                                   stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
+                                                   stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE,
+                                                   **child_lifetime.spawn_kwargs())   # ends with the host
+    child_lifetime.adopt(encoder.pid)
     host_report: Dict[str, Any] = {}
     gesture_i = 0
     gestures = sorted(timeline.gestures, key=lambda g: g[0])
