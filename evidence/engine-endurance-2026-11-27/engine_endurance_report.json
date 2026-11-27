@@ -1,0 +1,3000 @@
+{
+ "seconds": 1800,
+ "minutes": [
+  {
+   "minute": 1.0,
+   "host_rss_mb": 195.3,
+   "host_alive": true,
+   "free_disk_mb": 24226,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 69186228,
+    "end_main": 48356563,
+    "end_data": 11276747
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 2.0,
+   "host_rss_mb": 195.6,
+   "host_alive": true,
+   "free_disk_mb": 24099,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 141308166,
+    "end_main": 98229015,
+    "end_data": 22865824
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 3.0,
+   "host_rss_mb": 195.9,
+   "host_alive": true,
+   "free_disk_mb": 23972,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 212737939,
+    "end_main": 147753317,
+    "end_data": 34374879
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 4.0,
+   "host_rss_mb": 196.0,
+   "host_alive": true,
+   "free_disk_mb": 23844,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 284599001,
+    "end_main": 198452693,
+    "end_data": 45906535
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 5.0,
+   "host_rss_mb": 196.0,
+   "host_alive": true,
+   "free_disk_mb": 23717,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 356299972,
+    "end_main": 248696160,
+    "end_data": 57460646
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 6.0,
+   "host_rss_mb": 196.1,
+   "host_alive": true,
+   "free_disk_mb": 23591,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 427757315,
+    "end_main": 297336733,
+    "end_data": 68969697
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 7.0,
+   "host_rss_mb": 196.2,
+   "host_alive": true,
+   "free_disk_mb": 23464,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 499243087,
+    "end_main": 347633149,
+    "end_data": 80476700
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 8.0,
+   "host_rss_mb": 196.2,
+   "host_alive": true,
+   "free_disk_mb": 23336,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 572068473,
+    "end_main": 397790469,
+    "end_data": 92014496
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 9.0,
+   "host_rss_mb": 196.2,
+   "host_alive": true,
+   "free_disk_mb": 23209,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 643432640,
+    "end_main": 448030397,
+    "end_data": 103554272
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 10.0,
+   "host_rss_mb": 196.6,
+   "host_alive": true,
+   "free_disk_mb": 23079,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 716227636,
+    "end_main": 499314350,
+    "end_data": 115133092
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 11.0,
+   "host_rss_mb": 196.7,
+   "host_alive": true,
+   "free_disk_mb": 22950,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 788681503,
+    "end_main": 551003063,
+    "end_data": 126677039
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 12.0,
+   "host_rss_mb": 196.8,
+   "host_alive": true,
+   "free_disk_mb": 22823,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 860093582,
+    "end_main": 600840041,
+    "end_data": 138202546
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 13.0,
+   "host_rss_mb": 196.8,
+   "host_alive": true,
+   "free_disk_mb": 22696,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 932231271,
+    "end_main": 650362153,
+    "end_data": 149725922
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 14.0,
+   "host_rss_mb": 196.9,
+   "host_alive": true,
+   "free_disk_mb": 22568,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1003171025,
+    "end_main": 701850419,
+    "end_data": 161257499
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 15.0,
+   "host_rss_mb": 196.9,
+   "host_alive": true,
+   "free_disk_mb": 22443,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1074953981,
+    "end_main": 750386149,
+    "end_data": 172793238
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 16.0,
+   "host_rss_mb": 196.9,
+   "host_alive": true,
+   "free_disk_mb": 22314,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1146716108,
+    "end_main": 801727938,
+    "end_data": 184324815
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 17.0,
+   "host_rss_mb": 196.9,
+   "host_alive": true,
+   "free_disk_mb": 22187,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1218594835,
+    "end_main": 852049909,
+    "end_data": 195860550
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 18.0,
+   "host_rss_mb": 196.9,
+   "host_alive": true,
+   "free_disk_mb": 22059,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1291300409,
+    "end_main": 901971557,
+    "end_data": 207392207
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 19.0,
+   "host_rss_mb": 197.0,
+   "host_alive": true,
+   "free_disk_mb": 21931,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1363039673,
+    "end_main": 952412752,
+    "end_data": 218919680
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 20.0,
+   "host_rss_mb": 197.0,
+   "host_alive": true,
+   "free_disk_mb": 21803,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1434892328,
+    "end_main": 1002869119,
+    "end_data": 230449208
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 21.0,
+   "host_rss_mb": 197.0,
+   "host_alive": true,
+   "free_disk_mb": 21676,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1506713232,
+    "end_main": 1052683649,
+    "end_data": 241993143
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 22.0,
+   "host_rss_mb": 197.0,
+   "host_alive": true,
+   "free_disk_mb": 21549,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1578327723,
+    "end_main": 1103013741,
+    "end_data": 253539119
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 23.0,
+   "host_rss_mb": 197.0,
+   "host_alive": true,
+   "free_disk_mb": 21419,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1651077413,
+    "end_main": 1154453314,
+    "end_data": 265044065
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 24.0,
+   "host_rss_mb": 197.4,
+   "host_alive": true,
+   "free_disk_mb": 21292,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1722639560,
+    "end_main": 1204433818,
+    "end_data": 276616678
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 25.0,
+   "host_rss_mb": 197.5,
+   "host_alive": true,
+   "free_disk_mb": 21164,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1794037029,
+    "end_main": 1255562917,
+    "end_data": 288109339
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 26.0,
+   "host_rss_mb": 197.6,
+   "host_alive": true,
+   "free_disk_mb": 21036,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1866301153,
+    "end_main": 1306076717,
+    "end_data": 299651230
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 27.0,
+   "host_rss_mb": 197.6,
+   "host_alive": true,
+   "free_disk_mb": 20909,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 1938158913,
+    "end_main": 1356033398,
+    "end_data": 311178702
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 28.0,
+   "host_rss_mb": 197.7,
+   "host_alive": true,
+   "free_disk_mb": 20782,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 2009570564,
+    "end_main": 1406144971,
+    "end_data": 322697986
+   },
+   "meters_status": 200
+  },
+  {
+   "minute": 29.0,
+   "host_rss_mb": 197.7,
+   "host_alive": true,
+   "free_disk_mb": 20654,
+   "encoders": {
+    "end_camcorder": 2,
+    "end_main": 4,
+    "end_data": 2
+   },
+   "bytes": {
+    "end_camcorder": 2081708391,
+    "end_main": 1457217758,
+    "end_data": 334233734
+   },
+   "meters_status": 200
+  }
+ ],
+ "cuts": [
+  {
+   "at": 20.193,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 40.134,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 60.048,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 80.157,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 100.099,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 120.194,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 140.014,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 160.162,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 180.069,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 200.064,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 220.175,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 240.091,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 260.112,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 280.063,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 300.197,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 320.079,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 340.011,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 360.081,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 380.175,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 400.103,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 420.004,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 440.174,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 460.136,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 480.011,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 500.16,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 520.116,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 540.055,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 560.098,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 580.061,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 600.181,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 620.052,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 640.005,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 660.11,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 680.115,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 700.017,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 720.141,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 740.037,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 760.172,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 780.068,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 800.05,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 820.018,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 840.105,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 860.114,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 880.059,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 900.184,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 920.126,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 940.089,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 960.195,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 980.114,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1000.042,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1020.162,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1040.163,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1060.06,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1080.162,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1100.189,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1120.161,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1140.092,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1160.107,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1180.088,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1200.023,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1220.117,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1240.037,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1260.168,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1280.114,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1300.042,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1320.138,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1340.01,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1360.146,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1380.055,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1400.164,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1420.05,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1440.165,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1460.101,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1480.041,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1500.169,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1520.058,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1540.026,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1560.133,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1580.081,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1600.194,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1620.152,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1640.081,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1660.003,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1680.069,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1700.017,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1720.155,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1740.059,
+   "to": "live_blue",
+   "status": 200
+  },
+  {
+   "at": 1760.171,
+   "to": "live_red",
+   "status": 200
+  },
+  {
+   "at": 1780.086,
+   "to": "live_blue",
+   "status": 200
+  }
+ ],
+ "pa": [
+  {
+   "at": 30.1,
+   "status": 200
+  },
+  {
+   "at": 90.0,
+   "status": 200
+  },
+  {
+   "at": 150.1,
+   "status": 200
+  },
+  {
+   "at": 210.1,
+   "status": 200
+  },
+  {
+   "at": 270.2,
+   "status": 200
+  },
+  {
+   "at": 330.2,
+   "status": 200
+  },
+  {
+   "at": 390.1,
+   "status": 200
+  },
+  {
+   "at": 450.1,
+   "status": 200
+  },
+  {
+   "at": 510.1,
+   "status": 200
+  },
+  {
+   "at": 570.2,
+   "status": 200
+  },
+  {
+   "at": 630.1,
+   "status": 200
+  },
+  {
+   "at": 690.2,
+   "status": 200
+  },
+  {
+   "at": 750.1,
+   "status": 200
+  },
+  {
+   "at": 810.2,
+   "status": 200
+  },
+  {
+   "at": 870.2,
+   "status": 200
+  },
+  {
+   "at": 930.0,
+   "status": 200
+  },
+  {
+   "at": 990.2,
+   "status": 200
+  },
+  {
+   "at": 1050.0,
+   "status": 200
+  },
+  {
+   "at": 1110.1,
+   "status": 200
+  },
+  {
+   "at": 1170.2,
+   "status": 200
+  },
+  {
+   "at": 1230.2,
+   "status": 200
+  },
+  {
+   "at": 1290.2,
+   "status": 200
+  },
+  {
+   "at": 1350.1,
+   "status": 200
+  },
+  {
+   "at": 1410.0,
+   "status": 200
+  },
+  {
+   "at": 1470.2,
+   "status": 200
+  },
+  {
+   "at": 1530.2,
+   "status": 200
+  },
+  {
+   "at": 1590.1,
+   "status": 200
+  },
+  {
+   "at": 1650.2,
+   "status": 200
+  },
+  {
+   "at": 1710.1,
+   "status": 200
+  },
+  {
+   "at": 1770.0,
+   "status": 200
+  }
+ ],
+ "result": {
+  "wall_seconds": 1800.17,
+  "files": [
+   {
+    "take": "end_camcorder",
+    "file": "live_red.webm",
+    "bytes": 1051957271,
+    "container_seconds": 1800.166,
+    "stream_ends": {
+     "video": 1800.166,
+     "audio": 1800.134
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.13,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_camcorder",
+    "file": "live_blue.webm",
+    "bytes": 1101122255,
+    "container_seconds": 1800.166,
+    "stream_ends": {
+     "video": 1800.166,
+     "audio": 1800.094
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.13,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_main",
+    "file": "program_0001_live_red.webm",
+    "bytes": 12725448,
+    "container_seconds": 22.066,
+    "stream_ends": {
+     "video": 22.066000000000003,
+     "audio": 21.954
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.03,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0002_live_blue.webm",
+    "bytes": 13558216,
+    "container_seconds": 22.621,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.614
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.6,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0003_live_red.webm",
+    "bytes": 12592687,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0004_live_blue.webm",
+    "bytes": 12913344,
+    "container_seconds": 22.766,
+    "stream_ends": {
+     "video": 22.766000000000002,
+     "audio": 22.694
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.73,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0005_live_red.webm",
+    "bytes": 13414191,
+    "container_seconds": 22.4,
+    "stream_ends": {
+     "video": 22.400000000000002,
+     "audio": 22.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.36,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0006_live_blue.webm",
+    "bytes": 12167015,
+    "container_seconds": 22.557,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0007_live_red.webm",
+    "bytes": 11904131,
+    "container_seconds": 22.066,
+    "stream_ends": {
+     "video": 22.066000000000003,
+     "audio": 21.894
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.03,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0008_live_blue.webm",
+    "bytes": 12654854,
+    "container_seconds": 23.282,
+    "stream_ends": {
+     "video": 23.266000000000002,
+     "audio": 23.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.28,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0009_live_red.webm",
+    "bytes": 13157630,
+    "container_seconds": 22.301,
+    "stream_ends": {
+     "video": 22.3,
+     "audio": 22.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.28,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0010_live_blue.webm",
+    "bytes": 14019515,
+    "container_seconds": 22.578,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.573999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.56,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0011_live_red.webm",
+    "bytes": 13006158,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.633000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0012_live_blue.webm",
+    "bytes": 12378243,
+    "container_seconds": 22.4,
+    "stream_ends": {
+     "video": 22.400000000000002,
+     "audio": 22.354
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.36,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0013_live_red.webm",
+    "bytes": 13065651,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0014_live_blue.webm",
+    "bytes": 13639434,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0015_live_red.webm",
+    "bytes": 11666705,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0016_live_blue.webm",
+    "bytes": 12256261,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.274
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0017_live_red.webm",
+    "bytes": 11851724,
+    "container_seconds": 23.197,
+    "stream_ends": {
+     "video": 23.133000000000003,
+     "audio": 23.194
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.18,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0018_live_blue.webm",
+    "bytes": 13361991,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.374
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.53,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0019_live_red.webm",
+    "bytes": 13874451,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0020_live_blue.webm",
+    "bytes": 12167829,
+    "container_seconds": 22.621,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.614
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.6,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0021_live_red.webm",
+    "bytes": 13204522,
+    "container_seconds": 22.92,
+    "stream_ends": {
+     "video": 22.866,
+     "audio": 22.913999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.9,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0022_live_blue.webm",
+    "bytes": 13171248,
+    "container_seconds": 22.833,
+    "stream_ends": {
+     "video": 22.833000000000002,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.8,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0023_live_red.webm",
+    "bytes": 13412235,
+    "container_seconds": 22.366,
+    "stream_ends": {
+     "video": 22.366,
+     "audio": 22.214
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.33,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0024_live_blue.webm",
+    "bytes": 12113525,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0025_live_red.webm",
+    "bytes": 11758186,
+    "container_seconds": 23.266,
+    "stream_ends": {
+     "video": 23.266000000000002,
+     "audio": 23.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.24,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0026_live_blue.webm",
+    "bytes": 13600465,
+    "container_seconds": 22.333,
+    "stream_ends": {
+     "video": 22.333000000000002,
+     "audio": 22.334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.32,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0027_live_red.webm",
+    "bytes": 12391158,
+    "container_seconds": 22.533,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.514
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.5,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0028_live_blue.webm",
+    "bytes": 13738981,
+    "container_seconds": 22.536,
+    "stream_ends": {
+     "video": 22.5,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.52,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0029_live_red.webm",
+    "bytes": 13024594,
+    "container_seconds": 22.557,
+    "stream_ends": {
+     "video": 22.5,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0030_live_blue.webm",
+    "bytes": 13166614,
+    "container_seconds": 22.578,
+    "stream_ends": {
+     "video": 22.5,
+     "audio": 22.573999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.56,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0031_live_red.webm",
+    "bytes": 13058757,
+    "container_seconds": 22.533,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.374
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.5,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0032_live_blue.webm",
+    "bytes": 13734730,
+    "container_seconds": 22.5,
+    "stream_ends": {
+     "video": 22.5,
+     "audio": 22.374
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.46,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0033_live_red.webm",
+    "bytes": 13112149,
+    "container_seconds": 22.666,
+    "stream_ends": {
+     "video": 22.666,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.63,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0034_live_blue.webm",
+    "bytes": 13233429,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.5,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0035_live_red.webm",
+    "bytes": 12249740,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0036_live_blue.webm",
+    "bytes": 13175747,
+    "container_seconds": 22.8,
+    "stream_ends": {
+     "video": 22.8,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.76,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0037_live_red.webm",
+    "bytes": 12176012,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0038_live_blue.webm",
+    "bytes": 13368266,
+    "container_seconds": 23.282,
+    "stream_ends": {
+     "video": 23.166,
+     "audio": 23.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.28,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0039_live_red.webm",
+    "bytes": 11967971,
+    "container_seconds": 22.166,
+    "stream_ends": {
+     "video": 22.166,
+     "audio": 21.974
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.13,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0040_live_blue.webm",
+    "bytes": 13857145,
+    "container_seconds": 22.664,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.674
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0041_live_red.webm",
+    "bytes": 13001360,
+    "container_seconds": 22.557,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0042_live_blue.webm",
+    "bytes": 13612863,
+    "container_seconds": 22.92,
+    "stream_ends": {
+     "video": 22.833000000000002,
+     "audio": 22.913999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.9,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0043_live_red.webm",
+    "bytes": 12425112,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0044_live_blue.webm",
+    "bytes": 12511277,
+    "container_seconds": 22.578,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.573999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.56,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0045_live_red.webm",
+    "bytes": 11757192,
+    "container_seconds": 23.3,
+    "stream_ends": {
+     "video": 23.3,
+     "audio": 23.214
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.26,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0046_live_blue.webm",
+    "bytes": 12687160,
+    "container_seconds": 22.941,
+    "stream_ends": {
+     "video": 22.900000000000002,
+     "audio": 22.934
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.92,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0047_live_red.webm",
+    "bytes": 13244976,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0048_live_blue.webm",
+    "bytes": 14124666,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0049_live_red.webm",
+    "bytes": 13194914,
+    "container_seconds": 22.366,
+    "stream_ends": {
+     "video": 22.366,
+     "audio": 22.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.33,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0050_live_blue.webm",
+    "bytes": 12509569,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0051_live_red.webm",
+    "bytes": 12659079,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.614
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0052_live_blue.webm",
+    "bytes": 13073919,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0053_live_red.webm",
+    "bytes": 12206658,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.6,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0054_live_blue.webm",
+    "bytes": 13391830,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0055_live_red.webm",
+    "bytes": 13441092,
+    "container_seconds": 22.578,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.573999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.56,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0056_live_blue.webm",
+    "bytes": 12897824,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.694
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0057_live_red.webm",
+    "bytes": 12402377,
+    "container_seconds": 22.966,
+    "stream_ends": {
+     "video": 22.966,
+     "audio": 22.814
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.93,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0058_live_blue.webm",
+    "bytes": 12917472,
+    "container_seconds": 23.154,
+    "stream_ends": {
+     "video": 23.133000000000003,
+     "audio": 23.154
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.14,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0059_live_red.webm",
+    "bytes": 13212420,
+    "container_seconds": 22.433,
+    "stream_ends": {
+     "video": 22.433,
+     "audio": 22.233999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.4,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0060_live_blue.webm",
+    "bytes": 12895847,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.614
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0061_live_red.webm",
+    "bytes": 12990396,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0062_live_blue.webm",
+    "bytes": 12505696,
+    "container_seconds": 22.533,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.374
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.5,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0063_live_red.webm",
+    "bytes": 12505104,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0064_live_blue.webm",
+    "bytes": 13925685,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0065_live_red.webm",
+    "bytes": 12555024,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0066_live_blue.webm",
+    "bytes": 12588859,
+    "container_seconds": 22.666,
+    "stream_ends": {
+     "video": 22.666,
+     "audio": 22.573999999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.63,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0067_live_red.webm",
+    "bytes": 12891205,
+    "container_seconds": 22.6,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.58,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0068_live_blue.webm",
+    "bytes": 13433611,
+    "container_seconds": 23.3,
+    "stream_ends": {
+     "video": 23.3,
+     "audio": 23.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.28,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0069_live_red.webm",
+    "bytes": 13155695,
+    "container_seconds": 22.333,
+    "stream_ends": {
+     "video": 22.333000000000002,
+     "audio": 22.274
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.3,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0070_live_blue.webm",
+    "bytes": 14018525,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0071_live_red.webm",
+    "bytes": 12045576,
+    "container_seconds": 22.366,
+    "stream_ends": {
+     "video": 22.366,
+     "audio": 22.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.33,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0072_live_blue.webm",
+    "bytes": 12852026,
+    "container_seconds": 23.266,
+    "stream_ends": {
+     "video": 23.266000000000002,
+     "audio": 23.214
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 23.23,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0073_live_red.webm",
+    "bytes": 13507191,
+    "container_seconds": 22.941,
+    "stream_ends": {
+     "video": 22.866,
+     "audio": 22.934
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.92,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0074_live_blue.webm",
+    "bytes": 12474228,
+    "container_seconds": 22.433,
+    "stream_ends": {
+     "video": 22.433,
+     "audio": 22.254
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.4,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0075_live_red.webm",
+    "bytes": 13115244,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.534
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.53,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0076_live_blue.webm",
+    "bytes": 13527650,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.694
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.68,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0077_live_red.webm",
+    "bytes": 13080933,
+    "container_seconds": 22.533,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.5,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0078_live_blue.webm",
+    "bytes": 12659284,
+    "container_seconds": 22.9,
+    "stream_ends": {
+     "video": 22.900000000000002,
+     "audio": 22.694
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.86,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0079_live_red.webm",
+    "bytes": 12957201,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0080_live_blue.webm",
+    "bytes": 12110477,
+    "container_seconds": 22.466,
+    "stream_ends": {
+     "video": 22.466,
+     "audio": 22.294
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.43,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0081_live_red.webm",
+    "bytes": 13311763,
+    "container_seconds": 22.966,
+    "stream_ends": {
+     "video": 22.966,
+     "audio": 22.874
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.93,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0082_live_blue.webm",
+    "bytes": 12476030,
+    "container_seconds": 22.433,
+    "stream_ends": {
+     "video": 22.433,
+     "audio": 22.334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.4,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0083_live_red.webm",
+    "bytes": 12557853,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0084_live_blue.webm",
+    "bytes": 13528366,
+    "container_seconds": 22.766,
+    "stream_ends": {
+     "video": 22.766000000000002,
+     "audio": 22.674
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.73,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0085_live_red.webm",
+    "bytes": 12657326,
+    "container_seconds": 22.7,
+    "stream_ends": {
+     "video": 22.700000000000003,
+     "audio": 22.594
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.66,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0086_live_blue.webm",
+    "bytes": 13447649,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0087_live_red.webm",
+    "bytes": 13115363,
+    "container_seconds": 22.566,
+    "stream_ends": {
+     "video": 22.566000000000003,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.54,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0088_live_blue.webm",
+    "bytes": 12467183,
+    "container_seconds": 22.642,
+    "stream_ends": {
+     "video": 22.533,
+     "audio": 22.654
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.64,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0089_live_red.webm",
+    "bytes": 13119798,
+    "container_seconds": 22.733,
+    "stream_ends": {
+     "video": 22.733,
+     "audio": 22.554
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 22.7,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "program_0090_live_blue.webm",
+    "bytes": 12162378,
+    "container_seconds": 20.766,
+    "stream_ends": {
+     "video": 20.766000000000002,
+     "audio": 20.754
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 20.74,
+    "clean_decode": true,
+    "piece": true
+   },
+   {
+    "take": "end_main",
+    "file": "sound_live_red.wav",
+    "bytes": 172845134,
+    "container_seconds": 1800.469333,
+    "stream_ends": {
+     "video": null,
+     "audio": 1800.469333
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.44,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_main",
+    "file": "sound_live_blue.wav",
+    "bytes": 172869710,
+    "container_seconds": 1800.725333,
+    "stream_ends": {
+     "video": null,
+     "audio": 1800.7253329999999
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.7,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_data",
+    "file": "sound_live_red.wav",
+    "bytes": 172873806,
+    "container_seconds": 1800.768,
+    "stream_ends": {
+     "video": null,
+     "audio": 1800.7679999999998
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.74,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_data",
+    "file": "sound_live_blue.wav",
+    "bytes": 172900430,
+    "container_seconds": 1801.045333,
+    "stream_ends": {
+     "video": null,
+     "audio": 1801.045334
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1801.0,
+    "clean_decode": true,
+    "piece": false
+   },
+   {
+    "take": "end_main",
+    "file": "program.webm",
+    "bytes": 1083517871,
+    "container_seconds": 1800.141,
+    "stream_ends": {
+     "video": 1800.1329999999998,
+     "audio": 1800.134
+    },
+    "decode_exit": 0,
+    "decoded_seconds": 1800.12,
+    "clean_decode": true,
+    "piece": false
+   }
+  ],
+  "assembly": {
+   "state": "complete",
+   "file": "program.webm",
+   "duration": 1800.141,
+   "expected_duration": 1800.1333,
+   "origin": 0.0055,
+   "pieces": [
+    {
+     "kind": "segment",
+     "segment": 1,
+     "in": 0.010856,
+     "out": 19.571377
+    },
+    {
+     "kind": "segment",
+     "segment": 2,
+     "in": 0.076574,
+     "out": 20.021425
+    },
+    {
+     "kind": "segment",
+     "segment": 3,
+     "in": 0.096964,
+     "out": 19.996156
+    },
+    {
+     "kind": "segment",
+     "segment": 4,
+     "in": 0.096593,
+     "out": 20.302557
+    },
+    {
+     "kind": "segment",
+     "segment": 5,
+     "in": 0.0,
+     "out": 19.846553
+    },
+    {
+     "kind": "segment",
+     "segment": 6,
+     "in": 0.014467,
+     "out": 20.226981
+    },
+    {
+     "kind": "segment",
+     "segment": 7,
+     "in": 0.0,
+     "out": 19.701512
+    },
+    {
+     "kind": "segment",
+     "segment": 8,
+     "in": 0.116834,
+     "out": 20.459573
+    },
+    {
+     "kind": "segment",
+     "segment": 9,
+     "in": 0.0,
+     "out": 19.72997
+    },
+    {
+     "kind": "segment",
+     "segment": 10,
+     "in": 0.0,
+     "out": 19.977343
+    },
+    {
+     "kind": "segment",
+     "segment": 11,
+     "in": 0.031787,
+     "out": 20.24339
+    },
+    {
+     "kind": "segment",
+     "segment": 12,
+     "in": 0.0,
+     "out": 19.816279
+    },
+    {
+     "kind": "segment",
+     "segment": 13,
+     "in": 0.033262,
+     "out": 20.058211
+    },
+    {
+     "kind": "segment",
+     "segment": 14,
+     "in": 0.182111,
+     "out": 20.125886
+    },
+    {
+     "kind": "segment",
+     "segment": 15,
+     "in": 0.149226,
+     "out": 20.290796
+    },
+    {
+     "kind": "segment",
+     "segment": 16,
+     "in": 0.026948,
+     "out": 19.917217
+    },
+    {
+     "kind": "segment",
+     "segment": 17,
+     "in": 0.261214,
+     "out": 20.192818
+    },
+    {
+     "kind": "segment",
+     "segment": 18,
+     "in": 0.0,
+     "out": 20.075972
+    },
+    {
+     "kind": "segment",
+     "segment": 19,
+     "in": 0.137139,
+     "out": 20.221538
+    },
+    {
+     "kind": "segment",
+     "segment": 20,
+     "in": 0.143695,
+     "out": 20.071773
+    },
+    {
+     "kind": "segment",
+     "segment": 21,
+     "in": 0.093994,
+     "out": 19.985678
+    },
+    {
+     "kind": "segment",
+     "segment": 22,
+     "in": 0.072504,
+     "out": 20.327737
+    },
+    {
+     "kind": "segment",
+     "segment": 23,
+     "in": 0.0,
+     "out": 19.942729
+    },
+    {
+     "kind": "segment",
+     "segment": 24,
+     "in": 0.0,
+     "out": 19.824656
+    },
+    {
+     "kind": "segment",
+     "segment": 25,
+     "in": 0.110289,
+     "out": 20.495127
+    },
+    {
+     "kind": "segment",
+     "segment": 26,
+     "in": 0.0,
+     "out": 19.724722
+    },
+    {
+     "kind": "segment",
+     "segment": 27,
+     "in": 0.077304,
+     "out": 20.041483
+    },
+    {
+     "kind": "segment",
+     "segment": 28,
+     "in": 0.0,
+     "out": 20.026005
+    },
+    {
+     "kind": "segment",
+     "segment": 29,
+     "in": 0.100576,
+     "out": 20.142425
+    },
+    {
+     "kind": "segment",
+     "segment": 30,
+     "in": 0.0,
+     "out": 20.013609
+    },
+    {
+     "kind": "segment",
+     "segment": 31,
+     "in": 0.105134,
+     "out": 20.088705
+    },
+    {
+     "kind": "segment",
+     "segment": 32,
+     "in": 0.0,
+     "out": 19.856846
+    },
+    {
+     "kind": "segment",
+     "segment": 33,
+     "in": 0.031852,
+     "out": 20.173401
+    },
+    {
+     "kind": "segment",
+     "segment": 34,
+     "in": 0.055115,
+     "out": 20.154257
+    },
+    {
+     "kind": "segment",
+     "segment": 35,
+     "in": 0.0,
+     "out": 19.777721
+    },
+    {
+     "kind": "segment",
+     "segment": 36,
+     "in": 0.015983,
+     "out": 20.245678
+    },
+    {
+     "kind": "segment",
+     "segment": 37,
+     "in": 0.0,
+     "out": 19.771787
+    },
+    {
+     "kind": "segment",
+     "segment": 38,
+     "in": 0.126723,
+     "out": 20.589891
+    },
+    {
+     "kind": "segment",
+     "segment": 39,
+     "in": 0.0,
+     "out": 19.564239
+    },
+    {
+     "kind": "segment",
+     "segment": 40,
+     "in": 0.050752,
+     "out": 20.060122
+    },
+    {
+     "kind": "segment",
+     "segment": 41,
+     "in": 0.013067,
+     "out": 19.965906
+    },
+    {
+     "kind": "segment",
+     "segment": 42,
+     "in": 0.107117,
+     "out": 20.27533
+    },
+    {
+     "kind": "segment",
+     "segment": 43,
+     "in": 0.0,
+     "out": 19.945225
+    },
+    {
+     "kind": "segment",
+     "segment": 44,
+     "in": 0.0,
+     "out": 19.921932
+    },
+    {
+     "kind": "segment",
+     "segment": 45,
+     "in": 0.208902,
+     "out": 20.518071
+    },
+    {
+     "kind": "segment",
+     "segment": 46,
+     "in": 0.0,
+     "out": 19.875796
+    },
+    {
+     "kind": "segment",
+     "segment": 47,
+     "in": 0.0,
+     "out": 19.834003
+    },
+    {
+     "kind": "segment",
+     "segment": 48,
+     "in": 0.022568,
+     "out": 20.251121
+    },
+    {
+     "kind": "segment",
+     "segment": 49,
+     "in": 0.0,
+     "out": 19.940737
+    },
+    {
+     "kind": "segment",
+     "segment": 50,
+     "in": 0.0,
+     "out": 19.803186
+    },
+    {
+     "kind": "segment",
+     "segment": 51,
+     "in": 0.109929,
+     "out": 20.260663
+    },
+    {
+     "kind": "segment",
+     "segment": 52,
+     "in": 0.0,
+     "out": 19.956156
+    },
+    {
+     "kind": "segment",
+     "segment": 53,
+     "in": 0.189261,
+     "out": 20.101258
+    },
+    {
+     "kind": "segment",
+     "segment": 54,
+     "in": 0.053276,
+     "out": 20.167312
+    },
+    {
+     "kind": "segment",
+     "segment": 55,
+     "in": 0.094259,
+     "out": 20.129327
+    },
+    {
+     "kind": "segment",
+     "segment": 56,
+     "in": 0.201321,
+     "out": 20.20137
+    },
+    {
+     "kind": "segment",
+     "segment": 57,
+     "in": 0.0,
+     "out": 20.07831
+    },
+    {
+     "kind": "segment",
+     "segment": 58,
+     "in": 0.0,
+     "out": 19.977326
+    },
+    {
+     "kind": "segment",
+     "segment": 59,
+     "in": 0.0,
+     "out": 19.833607
+    },
+    {
+     "kind": "segment",
+     "segment": 60,
+     "in": 0.110505,
+     "out": 20.075597
+    },
+    {
+     "kind": "segment",
+     "segment": 61,
+     "in": 0.0,
+     "out": 20.163316
+    },
+    {
+     "kind": "segment",
+     "segment": 62,
+     "in": 0.0,
+     "out": 19.857833
+    },
+    {
+     "kind": "segment",
+     "segment": 63,
+     "in": 0.0,
+     "out": 20.113879
+    },
+    {
+     "kind": "segment",
+     "segment": 64,
+     "in": 0.126602,
+     "out": 20.118891
+    },
+    {
+     "kind": "segment",
+     "segment": 65,
+     "in": 0.0,
+     "out": 19.98929
+    },
+    {
+     "kind": "segment",
+     "segment": 66,
+     "in": 0.0,
+     "out": 19.971394
+    },
+    {
+     "kind": "segment",
+     "segment": 67,
+     "in": 0.0,
+     "out": 19.843504
+    },
+    {
+     "kind": "segment",
+     "segment": 68,
+     "in": 0.033128,
+     "out": 20.340407
+    },
+    {
+     "kind": "segment",
+     "segment": 69,
+     "in": 0.0,
+     "out": 19.817736
+    },
+    {
+     "kind": "segment",
+     "segment": 70,
+     "in": 0.0,
+     "out": 20.035459
+    },
+    {
+     "kind": "segment",
+     "segment": 71,
+     "in": 0.0,
+     "out": 19.88746
+    },
+    {
+     "kind": "segment",
+     "segment": 72,
+     "in": 0.12084,
+     "out": 20.261664
+    },
+    {
+     "kind": "segment",
+     "segment": 73,
+     "in": 0.0,
+     "out": 20.136281
+    },
+    {
+     "kind": "segment",
+     "segment": 74,
+     "in": 0.0,
+     "out": 19.725058
+    },
+    {
+     "kind": "segment",
+     "segment": 75,
+     "in": 0.000991,
+     "out": 20.115597
+    },
+    {
+     "kind": "segment",
+     "segment": 76,
+     "in": 0.177946,
+     "out": 20.103344
+    },
+    {
+     "kind": "segment",
+     "segment": 77,
+     "in": 0.096905,
+     "out": 20.035229
+    },
+    {
+     "kind": "segment",
+     "segment": 78,
+     "in": 0.154989,
+     "out": 20.259108
+    },
+    {
+     "kind": "segment",
+     "segment": 79,
+     "in": 0.012761,
+     "out": 20.043574
+    },
+    {
+     "kind": "segment",
+     "segment": 80,
+     "in": 0.0,
+     "out": 20.042864
+    },
+    {
+     "kind": "segment",
+     "segment": 81,
+     "in": 0.098304,
+     "out": 20.170898
+    },
+    {
+     "kind": "segment",
+     "segment": 82,
+     "in": 0.0,
+     "out": 19.822832
+    },
+    {
+     "kind": "segment",
+     "segment": 83,
+     "in": 0.413094,
+     "out": 20.308278
+    },
+    {
+     "kind": "segment",
+     "segment": 84,
+     "in": 0.197181,
+     "out": 20.26034
+    },
+    {
+     "kind": "segment",
+     "segment": 85,
+     "in": 0.140901,
+     "out": 20.107009
+    },
+    {
+     "kind": "segment",
+     "segment": 86,
+     "in": 0.066331,
+     "out": 20.201819
+    },
+    {
+     "kind": "segment",
+     "segment": 87,
+     "in": 0.11611,
+     "out": 20.057853
+    },
+    {
+     "kind": "segment",
+     "segment": 88,
+     "in": 0.0,
+     "out": 20.053735
+    },
+    {
+     "kind": "segment",
+     "segment": 89,
+     "in": 0.003758,
+     "out": 19.917119
+    },
+    {
+     "kind": "segment",
+     "segment": 90,
+     "in": 0.069752,
+     "out": 20.765917
+    }
+   ],
+   "audio": "follows the picture: each camera's own sound",
+   "warnings": [],
+   "render_seconds": 533.66,
+   "log": "program.webm.ffmpeg.log",
+   "filter": "program.webm.ffmpeg.filter",
+   "largest_cut_delay_ms": 340,
+   "finished_utc": 1795783505.7023692
+  },
+  "cut_failures": [],
+  "pa_failures": [],
+  "rss_first_mb": 195.3,
+  "rss_last_mb": 197.7,
+  "cut_lateness_ms": {
+   "count": 89,
+   "max": 340,
+   "median": 29
+  }
+ },
+ "encoders_at_start": {
+  "end_camcorder": 2,
+  "end_main": 3,
+  "end_data": 2
+ }
+}

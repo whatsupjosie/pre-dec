@@ -1,0 +1,6414 @@
+{
+  "schema": "pubcast-recording-mode/1",
+  "session_id": "end_main",
+  "mode": "main_camera",
+  "description": "Only the camera on the live screen records picture; each cut switches which camera records. Every sound source records for the whole take. The pieces are joined into one program file.",
+  "record_data": true,
+  "arm_preview": false,
+  "state": "stopped",
+  "take_started_utc": 1795781170.6772366,
+  "stopped_at": 1800.1419,
+  "times": "seconds from take_started_utc, wall clock; a segment's media_offset and first_frame_at, and a started cut's effective_at, are take time: wall time with the pauses before them taken out",
+  "pauses": [],
+  "paused_seconds": 0,
+  "program": {
+    "cuts": [
+      {
+        "requested_at": 0.0054,
+        "from": null,
+        "to": "live_red",
+        "kind": "start",
+        "segment": 1,
+        "handled": "started",
+        "effective_at": 0.0055
+      },
+      {
+        "requested_at": 19.5519,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 2,
+        "effective_at": 19.566,
+        "late_by_ms": 14
+      },
+      {
+        "requested_at": 39.5065,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 3,
+        "effective_at": 39.5109,
+        "late_by_ms": 4
+      },
+      {
+        "requested_at": 59.4059,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 4,
+        "effective_at": 59.4101,
+        "late_by_ms": 4
+      },
+      {
+        "requested_at": 79.5142,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 5,
+        "effective_at": 79.616,
+        "late_by_ms": 102
+      },
+      {
+        "requested_at": 99.4558,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 6,
+        "effective_at": 99.4626,
+        "late_by_ms": 7
+      },
+      {
+        "requested_at": 119.5546,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 7,
+        "effective_at": 119.6751,
+        "late_by_ms": 121
+      },
+      {
+        "requested_at": 139.3733,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 8,
+        "effective_at": 139.3766,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 159.5201,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 9,
+        "effective_at": 159.7193,
+        "late_by_ms": 199
+      },
+      {
+        "requested_at": 179.4263,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 10,
+        "effective_at": 179.4493,
+        "late_by_ms": 23
+      },
+      {
+        "requested_at": 199.4211,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 11,
+        "effective_at": 199.4267,
+        "late_by_ms": 6
+      },
+      {
+        "requested_at": 219.5352,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 12,
+        "effective_at": 219.6383,
+        "late_by_ms": 103
+      },
+      {
+        "requested_at": 239.4515,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 13,
+        "effective_at": 239.4545,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 259.4701,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 14,
+        "effective_at": 259.4795,
+        "late_by_ms": 9
+      },
+      {
+        "requested_at": 279.4202,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 15,
+        "effective_at": 279.4233,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 299.5544,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 16,
+        "effective_at": 299.5648,
+        "late_by_ms": 10
+      },
+      {
+        "requested_at": 319.4393,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 17,
+        "effective_at": 319.4551,
+        "late_by_ms": 16
+      },
+      {
+        "requested_at": 339.3677,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 18,
+        "effective_at": 339.3867,
+        "late_by_ms": 19
+      },
+      {
+        "requested_at": 359.4404,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 19,
+        "effective_at": 359.4627,
+        "late_by_ms": 22
+      },
+      {
+        "requested_at": 379.5391,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 20,
+        "effective_at": 379.5471,
+        "late_by_ms": 8
+      },
+      {
+        "requested_at": 399.4616,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 21,
+        "effective_at": 399.4751,
+        "late_by_ms": 14
+      },
+      {
+        "requested_at": 419.3638,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 22,
+        "effective_at": 419.3668,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 439.5325,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 23,
+        "effective_at": 439.6221,
+        "late_by_ms": 90
+      },
+      {
+        "requested_at": 459.4935,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 24,
+        "effective_at": 459.5648,
+        "late_by_ms": 71
+      },
+      {
+        "requested_at": 479.3831,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 25,
+        "effective_at": 479.3895,
+        "late_by_ms": 6
+      },
+      {
+        "requested_at": 499.5179,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 26,
+        "effective_at": 499.7743,
+        "late_by_ms": 256
+      },
+      {
+        "requested_at": 519.4739,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 27,
+        "effective_at": 519.499,
+        "late_by_ms": 25
+      },
+      {
+        "requested_at": 539.4122,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 28,
+        "effective_at": 539.4632,
+        "late_by_ms": 51
+      },
+      {
+        "requested_at": 559.4554,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 29,
+        "effective_at": 559.4892,
+        "late_by_ms": 34
+      },
+      {
+        "requested_at": 579.4187,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 30,
+        "effective_at": 579.531,
+        "late_by_ms": 112
+      },
+      {
+        "requested_at": 599.5407,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 31,
+        "effective_at": 599.5447,
+        "late_by_ms": 4
+      },
+      {
+        "requested_at": 619.4098,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 32,
+        "effective_at": 619.5282,
+        "late_by_ms": 118
+      },
+      {
+        "requested_at": 639.3621,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 33,
+        "effective_at": 639.3851,
+        "late_by_ms": 23
+      },
+      {
+        "requested_at": 659.4713,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 34,
+        "effective_at": 659.5266,
+        "late_by_ms": 55
+      },
+      {
+        "requested_at": 679.4717,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 35,
+        "effective_at": 679.6258,
+        "late_by_ms": 154
+      },
+      {
+        "requested_at": 699.3749,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 36,
+        "effective_at": 699.4035,
+        "late_by_ms": 29
+      },
+      {
+        "requested_at": 719.5077,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 37,
+        "effective_at": 719.6332,
+        "late_by_ms": 125
+      },
+      {
+        "requested_at": 739.3977,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 38,
+        "effective_at": 739.405,
+        "late_by_ms": 7
+      },
+      {
+        "requested_at": 759.5283,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 39,
+        "effective_at": 759.8681,
+        "late_by_ms": 340
+      },
+      {
+        "requested_at": 779.4284,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 40,
+        "effective_at": 779.4324,
+        "late_by_ms": 4
+      },
+      {
+        "requested_at": 799.408,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 41,
+        "effective_at": 799.4417,
+        "late_by_ms": 34
+      },
+      {
+        "requested_at": 819.3751,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 42,
+        "effective_at": 819.3946,
+        "late_by_ms": 19
+      },
+      {
+        "requested_at": 839.464,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 43,
+        "effective_at": 839.5628,
+        "late_by_ms": 99
+      },
+      {
+        "requested_at": 859.4795,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 44,
+        "effective_at": 859.508,
+        "late_by_ms": 29
+      },
+      {
+        "requested_at": 879.4156,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 45,
+        "effective_at": 879.4299,
+        "late_by_ms": 14
+      },
+      {
+        "requested_at": 899.5429,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 46,
+        "effective_at": 899.7391,
+        "late_by_ms": 196
+      },
+      {
+        "requested_at": 919.4864,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 47,
+        "effective_at": 919.6149,
+        "late_by_ms": 128
+      },
+      {
+        "requested_at": 939.446,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 48,
+        "effective_at": 939.4489,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 959.5536,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 49,
+        "effective_at": 959.6775,
+        "late_by_ms": 124
+      },
+      {
+        "requested_at": 979.4721,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 50,
+        "effective_at": 979.6182,
+        "late_by_ms": 146
+      },
+      {
+        "requested_at": 999.4004,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 51,
+        "effective_at": 999.4214,
+        "late_by_ms": 21
+      },
+      {
+        "requested_at": 1019.5192,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 52,
+        "effective_at": 1019.5721,
+        "late_by_ms": 53
+      },
+      {
+        "requested_at": 1039.5207,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 53,
+        "effective_at": 1039.5283,
+        "late_by_ms": 8
+      },
+      {
+        "requested_at": 1059.417,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 54,
+        "effective_at": 1059.4403,
+        "late_by_ms": 23
+      },
+      {
+        "requested_at": 1079.5238,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 55,
+        "effective_at": 1079.5543,
+        "late_by_ms": 31
+      },
+      {
+        "requested_at": 1099.5544,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 56,
+        "effective_at": 1099.5894,
+        "late_by_ms": 35
+      },
+      {
+        "requested_at": 1119.5205,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 57,
+        "effective_at": 1119.5894,
+        "late_by_ms": 69
+      },
+      {
+        "requested_at": 1139.455,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 58,
+        "effective_at": 1139.6677,
+        "late_by_ms": 213
+      },
+      {
+        "requested_at": 1159.4649,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 59,
+        "effective_at": 1159.6451,
+        "late_by_ms": 180
+      },
+      {
+        "requested_at": 1179.4463,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 60,
+        "effective_at": 1179.4787,
+        "late_by_ms": 32
+      },
+      {
+        "requested_at": 1199.3833,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 61,
+        "effective_at": 1199.4438,
+        "late_by_ms": 60
+      },
+      {
+        "requested_at": 1219.4803,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 62,
+        "effective_at": 1219.6071,
+        "late_by_ms": 127
+      },
+      {
+        "requested_at": 1239.3973,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 63,
+        "effective_at": 1239.4649,
+        "late_by_ms": 68
+      },
+      {
+        "requested_at": 1259.5456,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 64,
+        "effective_at": 1259.5788,
+        "late_by_ms": 33
+      },
+      {
+        "requested_at": 1279.4714,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 65,
+        "effective_at": 1279.5711,
+        "late_by_ms": 100
+      },
+      {
+        "requested_at": 1299.3995,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 66,
+        "effective_at": 1299.5604,
+        "late_by_ms": 161
+      },
+      {
+        "requested_at": 1319.5029,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 67,
+        "effective_at": 1319.5318,
+        "late_by_ms": 29
+      },
+      {
+        "requested_at": 1339.3711,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 68,
+        "effective_at": 1339.3753,
+        "late_by_ms": 4
+      },
+      {
+        "requested_at": 1359.5049,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 69,
+        "effective_at": 1359.6825,
+        "late_by_ms": 178
+      },
+      {
+        "requested_at": 1379.4155,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 70,
+        "effective_at": 1379.5003,
+        "late_by_ms": 85
+      },
+      {
+        "requested_at": 1399.5245,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 71,
+        "effective_at": 1399.5357,
+        "late_by_ms": 11
+      },
+      {
+        "requested_at": 1419.4079,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 72,
+        "effective_at": 1419.4232,
+        "late_by_ms": 15
+      },
+      {
+        "requested_at": 1439.5283,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 73,
+        "effective_at": 1439.564,
+        "late_by_ms": 36
+      },
+      {
+        "requested_at": 1459.462,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 74,
+        "effective_at": 1459.7003,
+        "late_by_ms": 238
+      },
+      {
+        "requested_at": 1479.3979,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 75,
+        "effective_at": 1479.4254,
+        "late_by_ms": 27
+      },
+      {
+        "requested_at": 1499.531,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 76,
+        "effective_at": 1499.54,
+        "late_by_ms": 9
+      },
+      {
+        "requested_at": 1519.4215,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 77,
+        "effective_at": 1519.4654,
+        "late_by_ms": 44
+      },
+      {
+        "requested_at": 1539.3849,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 78,
+        "effective_at": 1539.4037,
+        "late_by_ms": 19
+      },
+      {
+        "requested_at": 1559.4967,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 79,
+        "effective_at": 1559.5078,
+        "late_by_ms": 11
+      },
+      {
+        "requested_at": 1579.4383,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 80,
+        "effective_at": 1579.5386,
+        "late_by_ms": 100
+      },
+      {
+        "requested_at": 1599.5546,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 81,
+        "effective_at": 1599.5815,
+        "late_by_ms": 27
+      },
+      {
+        "requested_at": 1619.5097,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 82,
+        "effective_at": 1619.6541,
+        "late_by_ms": 144
+      },
+      {
+        "requested_at": 1639.441,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 83,
+        "effective_at": 1639.4769,
+        "late_by_ms": 36
+      },
+      {
+        "requested_at": 1659.3602,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 84,
+        "effective_at": 1659.3721,
+        "late_by_ms": 12
+      },
+      {
+        "requested_at": 1679.4268,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 85,
+        "effective_at": 1679.4353,
+        "late_by_ms": 8
+      },
+      {
+        "requested_at": 1699.3738,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 86,
+        "effective_at": 1699.4014,
+        "late_by_ms": 28
+      },
+      {
+        "requested_at": 1719.5116,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 87,
+        "effective_at": 1719.5369,
+        "late_by_ms": 25
+      },
+      {
+        "requested_at": 1739.4184,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 88,
+        "effective_at": 1739.4786,
+        "late_by_ms": 60
+      },
+      {
+        "requested_at": 1759.529,
+        "from": "live_blue",
+        "to": "live_red",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 89,
+        "effective_at": 1759.5323,
+        "late_by_ms": 3
+      },
+      {
+        "requested_at": 1779.4427,
+        "from": "live_red",
+        "to": "live_blue",
+        "kind": "cut",
+        "handled": "started",
+        "segment": 90,
+        "effective_at": 1779.4457,
+        "late_by_ms": 3
+      }
+    ],
+    "intervals": [
+      {
+        "source_id": "live_red",
+        "segment": 1,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 1,
+        "end": null,
+        "end_at_first_frame_of": 2
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 2,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 2,
+        "end": null,
+        "end_at_first_frame_of": 3
+      },
+      {
+        "source_id": "live_red",
+        "segment": 3,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 3,
+        "end": null,
+        "end_at_first_frame_of": 4
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 4,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 4,
+        "end": null,
+        "end_at_first_frame_of": 5
+      },
+      {
+        "source_id": "live_red",
+        "segment": 5,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 5,
+        "end": null,
+        "end_at_first_frame_of": 6
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 6,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 6,
+        "end": null,
+        "end_at_first_frame_of": 7
+      },
+      {
+        "source_id": "live_red",
+        "segment": 7,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 7,
+        "end": null,
+        "end_at_first_frame_of": 8
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 8,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 8,
+        "end": null,
+        "end_at_first_frame_of": 9
+      },
+      {
+        "source_id": "live_red",
+        "segment": 9,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 9,
+        "end": null,
+        "end_at_first_frame_of": 10
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 10,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 10,
+        "end": null,
+        "end_at_first_frame_of": 11
+      },
+      {
+        "source_id": "live_red",
+        "segment": 11,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 11,
+        "end": null,
+        "end_at_first_frame_of": 12
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 12,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 12,
+        "end": null,
+        "end_at_first_frame_of": 13
+      },
+      {
+        "source_id": "live_red",
+        "segment": 13,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 13,
+        "end": null,
+        "end_at_first_frame_of": 14
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 14,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 14,
+        "end": null,
+        "end_at_first_frame_of": 15
+      },
+      {
+        "source_id": "live_red",
+        "segment": 15,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 15,
+        "end": null,
+        "end_at_first_frame_of": 16
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 16,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 16,
+        "end": null,
+        "end_at_first_frame_of": 17
+      },
+      {
+        "source_id": "live_red",
+        "segment": 17,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 17,
+        "end": null,
+        "end_at_first_frame_of": 18
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 18,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 18,
+        "end": null,
+        "end_at_first_frame_of": 19
+      },
+      {
+        "source_id": "live_red",
+        "segment": 19,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 19,
+        "end": null,
+        "end_at_first_frame_of": 20
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 20,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 20,
+        "end": null,
+        "end_at_first_frame_of": 21
+      },
+      {
+        "source_id": "live_red",
+        "segment": 21,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 21,
+        "end": null,
+        "end_at_first_frame_of": 22
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 22,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 22,
+        "end": null,
+        "end_at_first_frame_of": 23
+      },
+      {
+        "source_id": "live_red",
+        "segment": 23,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 23,
+        "end": null,
+        "end_at_first_frame_of": 24
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 24,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 24,
+        "end": null,
+        "end_at_first_frame_of": 25
+      },
+      {
+        "source_id": "live_red",
+        "segment": 25,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 25,
+        "end": null,
+        "end_at_first_frame_of": 26
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 26,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 26,
+        "end": null,
+        "end_at_first_frame_of": 27
+      },
+      {
+        "source_id": "live_red",
+        "segment": 27,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 27,
+        "end": null,
+        "end_at_first_frame_of": 28
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 28,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 28,
+        "end": null,
+        "end_at_first_frame_of": 29
+      },
+      {
+        "source_id": "live_red",
+        "segment": 29,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 29,
+        "end": null,
+        "end_at_first_frame_of": 30
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 30,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 30,
+        "end": null,
+        "end_at_first_frame_of": 31
+      },
+      {
+        "source_id": "live_red",
+        "segment": 31,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 31,
+        "end": null,
+        "end_at_first_frame_of": 32
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 32,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 32,
+        "end": null,
+        "end_at_first_frame_of": 33
+      },
+      {
+        "source_id": "live_red",
+        "segment": 33,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 33,
+        "end": null,
+        "end_at_first_frame_of": 34
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 34,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 34,
+        "end": null,
+        "end_at_first_frame_of": 35
+      },
+      {
+        "source_id": "live_red",
+        "segment": 35,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 35,
+        "end": null,
+        "end_at_first_frame_of": 36
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 36,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 36,
+        "end": null,
+        "end_at_first_frame_of": 37
+      },
+      {
+        "source_id": "live_red",
+        "segment": 37,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 37,
+        "end": null,
+        "end_at_first_frame_of": 38
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 38,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 38,
+        "end": null,
+        "end_at_first_frame_of": 39
+      },
+      {
+        "source_id": "live_red",
+        "segment": 39,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 39,
+        "end": null,
+        "end_at_first_frame_of": 40
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 40,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 40,
+        "end": null,
+        "end_at_first_frame_of": 41
+      },
+      {
+        "source_id": "live_red",
+        "segment": 41,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 41,
+        "end": null,
+        "end_at_first_frame_of": 42
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 42,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 42,
+        "end": null,
+        "end_at_first_frame_of": 43
+      },
+      {
+        "source_id": "live_red",
+        "segment": 43,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 43,
+        "end": null,
+        "end_at_first_frame_of": 44
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 44,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 44,
+        "end": null,
+        "end_at_first_frame_of": 45
+      },
+      {
+        "source_id": "live_red",
+        "segment": 45,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 45,
+        "end": null,
+        "end_at_first_frame_of": 46
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 46,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 46,
+        "end": null,
+        "end_at_first_frame_of": 47
+      },
+      {
+        "source_id": "live_red",
+        "segment": 47,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 47,
+        "end": null,
+        "end_at_first_frame_of": 48
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 48,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 48,
+        "end": null,
+        "end_at_first_frame_of": 49
+      },
+      {
+        "source_id": "live_red",
+        "segment": 49,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 49,
+        "end": null,
+        "end_at_first_frame_of": 50
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 50,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 50,
+        "end": null,
+        "end_at_first_frame_of": 51
+      },
+      {
+        "source_id": "live_red",
+        "segment": 51,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 51,
+        "end": null,
+        "end_at_first_frame_of": 52
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 52,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 52,
+        "end": null,
+        "end_at_first_frame_of": 53
+      },
+      {
+        "source_id": "live_red",
+        "segment": 53,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 53,
+        "end": null,
+        "end_at_first_frame_of": 54
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 54,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 54,
+        "end": null,
+        "end_at_first_frame_of": 55
+      },
+      {
+        "source_id": "live_red",
+        "segment": 55,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 55,
+        "end": null,
+        "end_at_first_frame_of": 56
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 56,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 56,
+        "end": null,
+        "end_at_first_frame_of": 57
+      },
+      {
+        "source_id": "live_red",
+        "segment": 57,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 57,
+        "end": null,
+        "end_at_first_frame_of": 58
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 58,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 58,
+        "end": null,
+        "end_at_first_frame_of": 59
+      },
+      {
+        "source_id": "live_red",
+        "segment": 59,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 59,
+        "end": null,
+        "end_at_first_frame_of": 60
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 60,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 60,
+        "end": null,
+        "end_at_first_frame_of": 61
+      },
+      {
+        "source_id": "live_red",
+        "segment": 61,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 61,
+        "end": null,
+        "end_at_first_frame_of": 62
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 62,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 62,
+        "end": null,
+        "end_at_first_frame_of": 63
+      },
+      {
+        "source_id": "live_red",
+        "segment": 63,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 63,
+        "end": null,
+        "end_at_first_frame_of": 64
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 64,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 64,
+        "end": null,
+        "end_at_first_frame_of": 65
+      },
+      {
+        "source_id": "live_red",
+        "segment": 65,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 65,
+        "end": null,
+        "end_at_first_frame_of": 66
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 66,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 66,
+        "end": null,
+        "end_at_first_frame_of": 67
+      },
+      {
+        "source_id": "live_red",
+        "segment": 67,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 67,
+        "end": null,
+        "end_at_first_frame_of": 68
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 68,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 68,
+        "end": null,
+        "end_at_first_frame_of": 69
+      },
+      {
+        "source_id": "live_red",
+        "segment": 69,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 69,
+        "end": null,
+        "end_at_first_frame_of": 70
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 70,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 70,
+        "end": null,
+        "end_at_first_frame_of": 71
+      },
+      {
+        "source_id": "live_red",
+        "segment": 71,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 71,
+        "end": null,
+        "end_at_first_frame_of": 72
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 72,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 72,
+        "end": null,
+        "end_at_first_frame_of": 73
+      },
+      {
+        "source_id": "live_red",
+        "segment": 73,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 73,
+        "end": null,
+        "end_at_first_frame_of": 74
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 74,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 74,
+        "end": null,
+        "end_at_first_frame_of": 75
+      },
+      {
+        "source_id": "live_red",
+        "segment": 75,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 75,
+        "end": null,
+        "end_at_first_frame_of": 76
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 76,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 76,
+        "end": null,
+        "end_at_first_frame_of": 77
+      },
+      {
+        "source_id": "live_red",
+        "segment": 77,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 77,
+        "end": null,
+        "end_at_first_frame_of": 78
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 78,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 78,
+        "end": null,
+        "end_at_first_frame_of": 79
+      },
+      {
+        "source_id": "live_red",
+        "segment": 79,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 79,
+        "end": null,
+        "end_at_first_frame_of": 80
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 80,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 80,
+        "end": null,
+        "end_at_first_frame_of": 81
+      },
+      {
+        "source_id": "live_red",
+        "segment": 81,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 81,
+        "end": null,
+        "end_at_first_frame_of": 82
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 82,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 82,
+        "end": null,
+        "end_at_first_frame_of": 83
+      },
+      {
+        "source_id": "live_red",
+        "segment": 83,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 83,
+        "end": null,
+        "end_at_first_frame_of": 84
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 84,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 84,
+        "end": null,
+        "end_at_first_frame_of": 85
+      },
+      {
+        "source_id": "live_red",
+        "segment": 85,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 85,
+        "end": null,
+        "end_at_first_frame_of": 86
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 86,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 86,
+        "end": null,
+        "end_at_first_frame_of": 87
+      },
+      {
+        "source_id": "live_red",
+        "segment": 87,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 87,
+        "end": null,
+        "end_at_first_frame_of": 88
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 88,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 88,
+        "end": null,
+        "end_at_first_frame_of": 89
+      },
+      {
+        "source_id": "live_red",
+        "segment": 89,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 89,
+        "end": null,
+        "end_at_first_frame_of": 90
+      },
+      {
+        "source_id": "live_blue",
+        "segment": 90,
+        "reason": "program",
+        "start": null,
+        "start_at_first_frame_of": 90,
+        "end": 1800.1419,
+        "end_at_first_frame_of": null
+      }
+    ],
+    "segments": [
+      {
+        "index": 1,
+        "source_id": "live_red",
+        "file": "program_0001_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 0.0055,
+        "stopped_at": 22.0606,
+        "media_offset": -0.0054,
+        "first_frame_at": 0.0055,
+        "duration": 22.066,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 0.0055
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0001_live_red",
+          "returncode": 0,
+          "output_bytes": 12725448,
+          "wall_seconds": 22.06,
+          "encoded_seconds": 22.03,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0001_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0001_live_red.webm",
+              "spawned_at": 1795781170.683,
+              "media_seconds": 22.066,
+              "ended_early": false,
+              "start": 1795781170.6909,
+              "end": 1795781192.7569,
+              "anchored": "measured",
+              "startup_seconds": 0.0078,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 2,
+        "source_id": "live_blue",
+        "file": "program_0002_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 19.566,
+        "stopped_at": 42.1104,
+        "media_offset": 19.4894,
+        "first_frame_at": 19.566,
+        "duration": 22.621,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 19.566
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0002_live_blue",
+          "returncode": 0,
+          "output_bytes": 13558216,
+          "wall_seconds": 22.56,
+          "encoded_seconds": 22.59,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0002_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0002_live_blue.webm",
+              "spawned_at": 1795781190.244,
+              "media_seconds": 22.621,
+              "ended_early": false,
+              "start": 1795781190.244,
+              "end": 1795781212.865,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "source_id": "live_red",
+        "file": "program_0003_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 39.5109,
+        "stopped_at": 62.0559,
+        "media_offset": 39.4139,
+        "first_frame_at": 39.5109,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 39.5109
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0003_live_red",
+          "returncode": 0,
+          "output_bytes": 12592687,
+          "wall_seconds": 22.55,
+          "encoded_seconds": 22.63,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0003_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0003_live_red.webm",
+              "spawned_at": 1795781210.1888,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795781210.1888,
+              "end": 1795781232.8308,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 4,
+        "source_id": "live_blue",
+        "file": "program_0004_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 59.4101,
+        "stopped_at": 82.0795,
+        "media_offset": 59.3135,
+        "first_frame_at": 59.4101,
+        "duration": 22.766,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 59.4101
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0004_live_blue",
+          "returncode": 0,
+          "output_bytes": 12913344,
+          "wall_seconds": 22.67,
+          "encoded_seconds": 22.73,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0004_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0004_live_blue.webm",
+              "spawned_at": 1795781230.0878,
+              "media_seconds": 22.766,
+              "ended_early": false,
+              "start": 1795781230.0878,
+              "end": 1795781252.8538,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 5,
+        "source_id": "live_red",
+        "file": "program_0005_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 79.528,
+        "stopped_at": 102.016,
+        "media_offset": 79.616,
+        "first_frame_at": 79.616,
+        "duration": 22.4,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 79.528
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0005_live_red",
+          "returncode": 0,
+          "output_bytes": 13414191,
+          "wall_seconds": 22.49,
+          "encoded_seconds": 22.36,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0005_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0005_live_red.webm",
+              "spawned_at": 1795781250.2059,
+              "media_seconds": 22.4,
+              "ended_early": false,
+              "start": 1795781250.2915,
+              "end": 1795781272.6915,
+              "anchored": "measured",
+              "startup_seconds": 0.0856,
+              "tail_lost_seconds": 0.0062
+            }
+          ]
+        }
+      },
+      {
+        "index": 6,
+        "source_id": "live_blue",
+        "file": "program_0006_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 99.4626,
+        "stopped_at": 122.0051,
+        "media_offset": 99.4481,
+        "first_frame_at": 99.4626,
+        "duration": 22.557,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 99.4626
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0006_live_blue",
+          "returncode": 0,
+          "output_bytes": 12167015,
+          "wall_seconds": 22.54,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0006_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0006_live_blue.webm",
+              "spawned_at": 1795781270.1404,
+              "media_seconds": 22.557,
+              "ended_early": false,
+              "start": 1795781270.2152,
+              "end": 1795781292.7722,
+              "anchored": "measured",
+              "startup_seconds": 0.0748,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 7,
+        "source_id": "live_red",
+        "file": "program_0007_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 119.5614,
+        "stopped_at": 141.7411,
+        "media_offset": 119.6751,
+        "first_frame_at": 119.6751,
+        "duration": 22.066,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 119.5614
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0007_live_red",
+          "returncode": 0,
+          "output_bytes": 11904131,
+          "wall_seconds": 22.18,
+          "encoded_seconds": 22.03,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0007_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0007_live_red.webm",
+              "spawned_at": 1795781290.2392,
+              "media_seconds": 22.066,
+              "ended_early": false,
+              "start": 1795781290.3215,
+              "end": 1795781312.3875,
+              "anchored": "measured",
+              "startup_seconds": 0.0823,
+              "tail_lost_seconds": 0.0335
+            }
+          ]
+        }
+      },
+      {
+        "index": 8,
+        "source_id": "live_blue",
+        "file": "program_0008_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 139.3766,
+        "stopped_at": 162.5418,
+        "media_offset": 139.2598,
+        "first_frame_at": 139.3766,
+        "duration": 23.282,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 139.3766
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0008_live_blue",
+          "returncode": 0,
+          "output_bytes": 12654854,
+          "wall_seconds": 23.17,
+          "encoded_seconds": 23.27,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0008_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0008_live_blue.webm",
+              "spawned_at": 1795781310.0544,
+              "media_seconds": 23.282,
+              "ended_early": false,
+              "start": 1795781310.0544,
+              "end": 1795781333.3364,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 9,
+        "source_id": "live_red",
+        "file": "program_0009_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 159.5245,
+        "stopped_at": 182.0203,
+        "media_offset": 159.7193,
+        "first_frame_at": 159.7193,
+        "duration": 22.301,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 159.5245
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0009_live_red",
+          "returncode": 0,
+          "output_bytes": 13157630,
+          "wall_seconds": 22.5,
+          "encoded_seconds": 22.27,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0009_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0009_live_red.webm",
+              "spawned_at": 1795781330.2024,
+              "media_seconds": 22.301,
+              "ended_early": false,
+              "start": 1795781330.3809,
+              "end": 1795781352.6819,
+              "anchored": "measured",
+              "startup_seconds": 0.1785,
+              "tail_lost_seconds": 0.0252
+            }
+          ]
+        }
+      },
+      {
+        "index": 10,
+        "source_id": "live_blue",
+        "file": "program_0010_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 179.4293,
+        "stopped_at": 202.0273,
+        "media_offset": 179.4493,
+        "first_frame_at": 179.4493,
+        "duration": 22.578,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 179.4293
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0010_live_blue",
+          "returncode": 0,
+          "output_bytes": 14019515,
+          "wall_seconds": 22.6,
+          "encoded_seconds": 22.55,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0010_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0010_live_blue.webm",
+              "spawned_at": 1795781350.1073,
+              "media_seconds": 22.578,
+              "ended_early": false,
+              "start": 1795781350.1682,
+              "end": 1795781372.7462,
+              "anchored": "measured",
+              "startup_seconds": 0.0609,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 11,
+        "source_id": "live_red",
+        "file": "program_0011_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 199.4267,
+        "stopped_at": 222.0369,
+        "media_offset": 199.3949,
+        "first_frame_at": 199.4267,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 199.4267
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0011_live_red",
+          "returncode": 0,
+          "output_bytes": 13006158,
+          "wall_seconds": 22.63,
+          "encoded_seconds": 22.63,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0011_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0011_live_red.webm",
+              "spawned_at": 1795781370.1045,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795781370.1045,
+              "end": 1795781392.7465,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 12,
+        "source_id": "live_blue",
+        "file": "program_0012_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 219.5452,
+        "stopped_at": 242.0383,
+        "media_offset": 219.6383,
+        "first_frame_at": 219.6383,
+        "duration": 22.4,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 219.5452
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0012_live_blue",
+          "returncode": 0,
+          "output_bytes": 12378243,
+          "wall_seconds": 22.5,
+          "encoded_seconds": 22.36,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0012_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0012_live_blue.webm",
+              "spawned_at": 1795781390.2233,
+              "media_seconds": 22.4,
+              "ended_early": false,
+              "start": 1795781390.2777,
+              "end": 1795781412.6777,
+              "anchored": "measured",
+              "startup_seconds": 0.0544,
+              "tail_lost_seconds": 0.0456
+            }
+          ]
+        }
+      },
+      {
+        "index": 13,
+        "source_id": "live_red",
+        "file": "program_0013_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 239.4545,
+        "stopped_at": 262.0633,
+        "media_offset": 239.4213,
+        "first_frame_at": 239.4545,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 239.4545
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0013_live_red",
+          "returncode": 0,
+          "output_bytes": 13065651,
+          "wall_seconds": 22.64,
+          "encoded_seconds": 22.63,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0013_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0013_live_red.webm",
+              "spawned_at": 1795781410.1326,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795781410.2168,
+              "end": 1795781432.8588,
+              "anchored": "measured",
+              "startup_seconds": 0.0842,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 14,
+        "source_id": "live_blue",
+        "file": "program_0014_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 259.4795,
+        "stopped_at": 281.8974,
+        "media_offset": 259.2974,
+        "first_frame_at": 259.4795,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 259.4795
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0014_live_blue",
+          "returncode": 0,
+          "output_bytes": 13639434,
+          "wall_seconds": 22.43,
+          "encoded_seconds": 22.57,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0014_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0014_live_blue.webm",
+              "spawned_at": 1795781430.1576,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795781430.1576,
+              "end": 1795781452.7576,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 15,
+        "source_id": "live_red",
+        "file": "program_0015_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 279.4233,
+        "stopped_at": 302.007,
+        "media_offset": 279.274,
+        "first_frame_at": 279.4233,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 279.4233
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0015_live_red",
+          "returncode": 0,
+          "output_bytes": 11666705,
+          "wall_seconds": 22.59,
+          "encoded_seconds": 22.7,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0015_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0015_live_red.webm",
+              "spawned_at": 1795781450.1016,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795781450.1016,
+              "end": 1795781472.8346,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 16,
+        "source_id": "live_blue",
+        "file": "program_0016_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 299.5648,
+        "stopped_at": 322.0039,
+        "media_offset": 299.5379,
+        "first_frame_at": 299.5648,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 299.5648
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0016_live_blue",
+          "returncode": 0,
+          "output_bytes": 12256261,
+          "wall_seconds": 22.44,
+          "encoded_seconds": 22.43,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0016_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0016_live_blue.webm",
+              "spawned_at": 1795781470.2427,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795781470.2427,
+              "end": 1795781492.7087,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 17,
+        "source_id": "live_red",
+        "file": "program_0017_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 319.4551,
+        "stopped_at": 342.3909,
+        "media_offset": 319.1939,
+        "first_frame_at": 319.4551,
+        "duration": 23.197,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 319.4551
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0017_live_red",
+          "returncode": 0,
+          "output_bytes": 11851724,
+          "wall_seconds": 22.94,
+          "encoded_seconds": 23.17,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0017_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0017_live_red.webm",
+              "spawned_at": 1795781490.133,
+              "media_seconds": 23.197,
+              "ended_early": false,
+              "start": 1795781490.133,
+              "end": 1795781513.33,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 18,
+        "source_id": "live_blue",
+        "file": "program_0018_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 339.3704,
+        "stopped_at": 361.9527,
+        "media_offset": 339.3867,
+        "first_frame_at": 339.3867,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 339.3704
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0018_live_blue",
+          "returncode": 0,
+          "output_bytes": 13361991,
+          "wall_seconds": 22.59,
+          "encoded_seconds": 22.53,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0018_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0018_live_blue.webm",
+              "spawned_at": 1795781510.0483,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795781510.0819,
+              "end": 1795781532.6479,
+              "anchored": "measured",
+              "startup_seconds": 0.0336,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 19,
+        "source_id": "live_red",
+        "file": "program_0019_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 359.4627,
+        "stopped_at": 382.0255,
+        "media_offset": 359.3255,
+        "first_frame_at": 359.4627,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 359.4627
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0019_live_red",
+          "returncode": 0,
+          "output_bytes": 13874451,
+          "wall_seconds": 22.57,
+          "encoded_seconds": 22.66,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0019_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0019_live_red.webm",
+              "spawned_at": 1795781530.1406,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795781530.1406,
+              "end": 1795781552.8406,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 20,
+        "source_id": "live_blue",
+        "file": "program_0020_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 379.5471,
+        "stopped_at": 402.0244,
+        "media_offset": 379.4034,
+        "first_frame_at": 379.5471,
+        "duration": 22.621,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 379.5471
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0020_live_blue",
+          "returncode": 0,
+          "output_bytes": 12167829,
+          "wall_seconds": 22.48,
+          "encoded_seconds": 22.59,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0020_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0020_live_blue.webm",
+              "spawned_at": 1795781550.2255,
+              "media_seconds": 22.621,
+              "ended_early": false,
+              "start": 1795781550.2255,
+              "end": 1795781572.8465,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 21,
+        "source_id": "live_red",
+        "file": "program_0021_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 399.4751,
+        "stopped_at": 422.3012,
+        "media_offset": 399.3812,
+        "first_frame_at": 399.4751,
+        "duration": 22.92,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 399.4751
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0021_live_red",
+          "returncode": 0,
+          "output_bytes": 13204522,
+          "wall_seconds": 22.85,
+          "encoded_seconds": 22.89,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0021_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0021_live_red.webm",
+              "spawned_at": 1795781570.1534,
+              "media_seconds": 22.92,
+              "ended_early": false,
+              "start": 1795781570.2212,
+              "end": 1795781593.1412,
+              "anchored": "measured",
+              "startup_seconds": 0.0678,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 22,
+        "source_id": "live_blue",
+        "file": "program_0022_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 419.3668,
+        "stopped_at": 442.1273,
+        "media_offset": 419.2943,
+        "first_frame_at": 419.3668,
+        "duration": 22.833,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 419.3668
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0022_live_blue",
+          "returncode": 0,
+          "output_bytes": 13171248,
+          "wall_seconds": 22.79,
+          "encoded_seconds": 22.8,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0022_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0022_live_blue.webm",
+              "spawned_at": 1795781590.045,
+              "media_seconds": 22.833,
+              "ended_early": false,
+              "start": 1795781590.045,
+              "end": 1795781612.878,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 23,
+        "source_id": "live_red",
+        "file": "program_0023_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 439.5588,
+        "stopped_at": 461.9881,
+        "media_offset": 439.6221,
+        "first_frame_at": 439.6221,
+        "duration": 22.366,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 439.5588
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0023_live_red",
+          "returncode": 0,
+          "output_bytes": 13412235,
+          "wall_seconds": 22.44,
+          "encoded_seconds": 22.33,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0023_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0023_live_red.webm",
+              "spawned_at": 1795781610.237,
+              "media_seconds": 22.366,
+              "ended_early": false,
+              "start": 1795781610.2944,
+              "end": 1795781632.6604,
+              "anchored": "measured",
+              "startup_seconds": 0.0575,
+              "tail_lost_seconds": 0.0182
+            }
+          ]
+        }
+      },
+      {
+        "index": 24,
+        "source_id": "live_blue",
+        "file": "program_0024_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 459.4958,
+        "stopped_at": 482.0308,
+        "media_offset": 459.5648,
+        "first_frame_at": 459.5648,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 459.4958
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0024_live_blue",
+          "returncode": 0,
+          "output_bytes": 12113525,
+          "wall_seconds": 22.55,
+          "encoded_seconds": 22.43,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0024_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0024_live_blue.webm",
+              "spawned_at": 1795781630.1739,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795781630.2251,
+              "end": 1795781652.6911,
+              "anchored": "measured",
+              "startup_seconds": 0.0512,
+              "tail_lost_seconds": 0.0289
+            }
+          ]
+        }
+      },
+      {
+        "index": 25,
+        "source_id": "live_red",
+        "file": "program_0025_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 479.3895,
+        "stopped_at": 502.5452,
+        "media_offset": 479.2792,
+        "first_frame_at": 479.3895,
+        "duration": 23.266,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 479.3895
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0025_live_red",
+          "returncode": 0,
+          "output_bytes": 11758186,
+          "wall_seconds": 23.16,
+          "encoded_seconds": 23.23,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0025_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0025_live_red.webm",
+              "spawned_at": 1795781650.0674,
+              "media_seconds": 23.266,
+              "ended_early": false,
+              "start": 1795781650.0674,
+              "end": 1795781673.3334,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 26,
+        "source_id": "live_blue",
+        "file": "program_0026_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 499.5456,
+        "stopped_at": 522.1073,
+        "media_offset": 499.7743,
+        "first_frame_at": 499.7743,
+        "duration": 22.333,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 499.5456
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0026_live_blue",
+          "returncode": 0,
+          "output_bytes": 13600465,
+          "wall_seconds": 22.58,
+          "encoded_seconds": 22.31,
+          "speed": 1.07,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0026_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0026_live_blue.webm",
+              "spawned_at": 1795781670.2236,
+              "media_seconds": 22.333,
+              "ended_early": false,
+              "start": 1795781670.4057,
+              "end": 1795781692.7387,
+              "anchored": "measured",
+              "startup_seconds": 0.1821,
+              "tail_lost_seconds": 0.066
+            }
+          ]
+        }
+      },
+      {
+        "index": 27,
+        "source_id": "live_red",
+        "file": "program_0027_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 519.499,
+        "stopped_at": 541.9547,
+        "media_offset": 519.4217,
+        "first_frame_at": 519.499,
+        "duration": 22.533,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 519.499
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0027_live_red",
+          "returncode": 0,
+          "output_bytes": 12391158,
+          "wall_seconds": 22.47,
+          "encoded_seconds": 22.5,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0027_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0027_live_red.webm",
+              "spawned_at": 1795781690.177,
+              "media_seconds": 22.533,
+              "ended_early": false,
+              "start": 1795781690.177,
+              "end": 1795781712.71,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 28,
+        "source_id": "live_blue",
+        "file": "program_0028_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 539.4148,
+        "stopped_at": 561.9992,
+        "media_offset": 539.4632,
+        "first_frame_at": 539.4632,
+        "duration": 22.536,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 539.4148
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0028_live_blue",
+          "returncode": 0,
+          "output_bytes": 13738981,
+          "wall_seconds": 22.59,
+          "encoded_seconds": 22.51,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0028_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0028_live_blue.webm",
+              "spawned_at": 1795781710.0928,
+              "media_seconds": 22.536,
+              "ended_early": false,
+              "start": 1795781710.2367,
+              "end": 1795781732.7727,
+              "anchored": "measured",
+              "startup_seconds": 0.1438,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 29,
+        "source_id": "live_red",
+        "file": "program_0029_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 559.4892,
+        "stopped_at": 581.9456,
+        "media_offset": 559.3886,
+        "first_frame_at": 559.4892,
+        "duration": 22.557,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 559.4892
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0029_live_red",
+          "returncode": 0,
+          "output_bytes": 13024594,
+          "wall_seconds": 22.47,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0029_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0029_live_red.webm",
+              "spawned_at": 1795781730.1672,
+              "media_seconds": 22.557,
+              "ended_early": false,
+              "start": 1795781730.1742,
+              "end": 1795781752.7312,
+              "anchored": "measured",
+              "startup_seconds": 0.007,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 30,
+        "source_id": "live_blue",
+        "file": "program_0030_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 579.4442,
+        "stopped_at": 602.109,
+        "media_offset": 579.531,
+        "first_frame_at": 579.531,
+        "duration": 22.578,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 579.4442
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0030_live_blue",
+          "returncode": 0,
+          "output_bytes": 13166614,
+          "wall_seconds": 22.68,
+          "encoded_seconds": 22.55,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0030_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0030_live_blue.webm",
+              "spawned_at": 1795781750.1223,
+              "media_seconds": 22.578,
+              "ended_early": false,
+              "start": 1795781750.2978,
+              "end": 1795781772.8758,
+              "anchored": "measured",
+              "startup_seconds": 0.1755,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 31,
+        "source_id": "live_red",
+        "file": "program_0031_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 599.5447,
+        "stopped_at": 621.9725,
+        "media_offset": 599.4395,
+        "first_frame_at": 599.5447,
+        "duration": 22.533,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 599.5447
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0031_live_red",
+          "returncode": 0,
+          "output_bytes": 13058757,
+          "wall_seconds": 22.45,
+          "encoded_seconds": 22.5,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0031_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0031_live_red.webm",
+              "spawned_at": 1795781770.2231,
+              "media_seconds": 22.533,
+              "ended_early": false,
+              "start": 1795781770.2231,
+              "end": 1795781792.7561,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 32,
+        "source_id": "live_blue",
+        "file": "program_0032_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 619.4348,
+        "stopped_at": 642.0282,
+        "media_offset": 619.5282,
+        "first_frame_at": 619.5282,
+        "duration": 22.5,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 619.4348
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0032_live_blue",
+          "returncode": 0,
+          "output_bytes": 13734730,
+          "wall_seconds": 22.62,
+          "encoded_seconds": 22.46,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0032_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0032_live_blue.webm",
+              "spawned_at": 1795781790.1128,
+              "media_seconds": 22.5,
+              "ended_early": false,
+              "start": 1795781790.2586,
+              "end": 1795781812.7586,
+              "anchored": "measured",
+              "startup_seconds": 0.1457,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 33,
+        "source_id": "live_red",
+        "file": "program_0033_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 639.3851,
+        "stopped_at": 662.0192,
+        "media_offset": 639.3532,
+        "first_frame_at": 639.3851,
+        "duration": 22.666,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 639.3851
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0033_live_red",
+          "returncode": 0,
+          "output_bytes": 13112149,
+          "wall_seconds": 22.66,
+          "encoded_seconds": 22.63,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0033_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0033_live_red.webm",
+              "spawned_at": 1795781810.0632,
+              "media_seconds": 22.666,
+              "ended_early": false,
+              "start": 1795781810.0632,
+              "end": 1795781832.7292,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 34,
+        "source_id": "live_blue",
+        "file": "program_0034_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 659.5266,
+        "stopped_at": 682.0715,
+        "media_offset": 659.4715,
+        "first_frame_at": 659.5266,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 659.5266
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0034_live_blue",
+          "returncode": 0,
+          "output_bytes": 13233429,
+          "wall_seconds": 22.56,
+          "encoded_seconds": 22.57,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0034_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0034_live_blue.webm",
+              "spawned_at": 1795781830.2047,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795781830.3319,
+              "end": 1795781852.9319,
+              "anchored": "measured",
+              "startup_seconds": 0.1272,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 35,
+        "source_id": "live_red",
+        "file": "program_0035_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 679.4744,
+        "stopped_at": 702.3588,
+        "media_offset": 679.6258,
+        "first_frame_at": 679.6258,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 679.4744
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0035_live_red",
+          "returncode": 0,
+          "output_bytes": 12249740,
+          "wall_seconds": 22.9,
+          "encoded_seconds": 22.7,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0035_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0035_live_red.webm",
+              "spawned_at": 1795781850.1525,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795781850.3214,
+              "end": 1795781873.0544,
+              "anchored": "measured",
+              "startup_seconds": 0.1689,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 36,
+        "source_id": "live_blue",
+        "file": "program_0036_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 699.4035,
+        "stopped_at": 722.1875,
+        "media_offset": 699.3875,
+        "first_frame_at": 699.4035,
+        "duration": 22.8,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 699.4035
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0036_live_blue",
+          "returncode": 0,
+          "output_bytes": 13175747,
+          "wall_seconds": 22.8,
+          "encoded_seconds": 22.76,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0036_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0036_live_blue.webm",
+              "spawned_at": 1795781870.0819,
+              "media_seconds": 22.8,
+              "ended_early": false,
+              "start": 1795781870.131,
+              "end": 1795781892.931,
+              "anchored": "measured",
+              "startup_seconds": 0.0491,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 37,
+        "source_id": "live_red",
+        "file": "program_0037_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 719.5171,
+        "stopped_at": 742.1992,
+        "media_offset": 719.6332,
+        "first_frame_at": 719.6332,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 719.5171
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0037_live_red",
+          "returncode": 0,
+          "output_bytes": 12176012,
+          "wall_seconds": 22.7,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0037_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0037_live_red.webm",
+              "spawned_at": 1795781890.1954,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795781890.3557,
+              "end": 1795781912.9217,
+              "anchored": "measured",
+              "startup_seconds": 0.1602,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 38,
+        "source_id": "live_blue",
+        "file": "program_0038_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 739.405,
+        "stopped_at": 762.5602,
+        "media_offset": 739.2782,
+        "first_frame_at": 739.405,
+        "duration": 23.282,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 739.405
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0038_live_blue",
+          "returncode": 0,
+          "output_bytes": 13368266,
+          "wall_seconds": 23.17,
+          "encoded_seconds": 23.27,
+          "speed": 1.11,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0038_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0038_live_blue.webm",
+              "spawned_at": 1795781910.0835,
+              "media_seconds": 23.282,
+              "ended_early": false,
+              "start": 1795781910.0835,
+              "end": 1795781933.3655,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 39,
+        "source_id": "live_red",
+        "file": "program_0039_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 759.5516,
+        "stopped_at": 782.0341,
+        "media_offset": 759.8681,
+        "first_frame_at": 759.8681,
+        "duration": 22.166,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 759.5516
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0039_live_red",
+          "returncode": 0,
+          "output_bytes": 11967971,
+          "wall_seconds": 22.49,
+          "encoded_seconds": 22.13,
+          "speed": 1.07,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0039_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0039_live_red.webm",
+              "spawned_at": 1795781930.2298,
+              "media_seconds": 22.166,
+              "ended_early": false,
+              "start": 1795781930.4816,
+              "end": 1795781952.6476,
+              "anchored": "measured",
+              "startup_seconds": 0.2518,
+              "tail_lost_seconds": 0.0697
+            }
+          ]
+        }
+      },
+      {
+        "index": 40,
+        "source_id": "live_blue",
+        "file": "program_0040_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 779.4324,
+        "stopped_at": 802.0456,
+        "media_offset": 779.3816,
+        "first_frame_at": 779.4324,
+        "duration": 22.664,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 779.4324
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0040_live_blue",
+          "returncode": 0,
+          "output_bytes": 13857145,
+          "wall_seconds": 22.62,
+          "encoded_seconds": 22.65,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0040_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0040_live_blue.webm",
+              "spawned_at": 1795781950.1117,
+              "media_seconds": 22.664,
+              "ended_early": false,
+              "start": 1795781950.3028,
+              "end": 1795781972.9668,
+              "anchored": "measured",
+              "startup_seconds": 0.1911,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 41,
+        "source_id": "live_red",
+        "file": "program_0041_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 799.4417,
+        "stopped_at": 821.9857,
+        "media_offset": 799.4287,
+        "first_frame_at": 799.4417,
+        "duration": 22.557,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 799.4417
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0041_live_red",
+          "returncode": 0,
+          "output_bytes": 13001360,
+          "wall_seconds": 22.57,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0041_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0041_live_red.webm",
+              "spawned_at": 1795781970.1202,
+              "media_seconds": 22.557,
+              "ended_early": false,
+              "start": 1795781970.1752,
+              "end": 1795781992.7322,
+              "anchored": "measured",
+              "startup_seconds": 0.055,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 42,
+        "source_id": "live_blue",
+        "file": "program_0042_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 819.3946,
+        "stopped_at": 842.2075,
+        "media_offset": 819.2875,
+        "first_frame_at": 819.3946,
+        "duration": 22.92,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 819.3946
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0042_live_blue",
+          "returncode": 0,
+          "output_bytes": 13612863,
+          "wall_seconds": 22.82,
+          "encoded_seconds": 22.89,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0042_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0042_live_blue.webm",
+              "spawned_at": 1795781990.0727,
+              "media_seconds": 22.92,
+              "ended_early": false,
+              "start": 1795781990.1005,
+              "end": 1795782013.0205,
+              "anchored": "measured",
+              "startup_seconds": 0.0279,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 43,
+        "source_id": "live_red",
+        "file": "program_0043_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 839.5144,
+        "stopped_at": 862.0288,
+        "media_offset": 839.5628,
+        "first_frame_at": 839.5628,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 839.5144
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0043_live_red",
+          "returncode": 0,
+          "output_bytes": 12425112,
+          "wall_seconds": 22.52,
+          "encoded_seconds": 22.43,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0043_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0043_live_red.webm",
+              "spawned_at": 1795782010.1927,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795782010.2378,
+              "end": 1795782032.7038,
+              "anchored": "measured",
+              "startup_seconds": 0.0451,
+              "tail_lost_seconds": 0.0086
+            }
+          ]
+        }
+      },
+      {
+        "index": 44,
+        "source_id": "live_blue",
+        "file": "program_0044_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 859.4865,
+        "stopped_at": 882.086,
+        "media_offset": 859.508,
+        "first_frame_at": 859.508,
+        "duration": 22.578,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 859.4865
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0044_live_blue",
+          "returncode": 0,
+          "output_bytes": 12511277,
+          "wall_seconds": 22.63,
+          "encoded_seconds": 22.55,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0044_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0044_live_blue.webm",
+              "spawned_at": 1795782030.1647,
+              "media_seconds": 22.578,
+              "ended_early": false,
+              "start": 1795782030.258,
+              "end": 1795782052.836,
+              "anchored": "measured",
+              "startup_seconds": 0.0933,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 45,
+        "source_id": "live_red",
+        "file": "program_0045_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 879.4299,
+        "stopped_at": 902.521,
+        "media_offset": 879.221,
+        "first_frame_at": 879.4299,
+        "duration": 23.3,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 879.4299
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0045_live_red",
+          "returncode": 0,
+          "output_bytes": 11757192,
+          "wall_seconds": 23.12,
+          "encoded_seconds": 23.26,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0045_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0045_live_red.webm",
+              "spawned_at": 1795782050.1081,
+              "media_seconds": 23.3,
+              "ended_early": false,
+              "start": 1795782050.1081,
+              "end": 1795782073.4081,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 46,
+        "source_id": "live_blue",
+        "file": "program_0046_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 899.5734,
+        "stopped_at": 922.6801,
+        "media_offset": 899.7391,
+        "first_frame_at": 899.7391,
+        "duration": 22.941,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 899.5734
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0046_live_blue",
+          "returncode": 0,
+          "output_bytes": 12687160,
+          "wall_seconds": 23.12,
+          "encoded_seconds": 22.91,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0046_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0046_live_blue.webm",
+              "spawned_at": 1795782070.2517,
+              "media_seconds": 22.941,
+              "ended_early": false,
+              "start": 1795782070.4578,
+              "end": 1795782093.3988,
+              "anchored": "measured",
+              "startup_seconds": 0.2061,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 47,
+        "source_id": "live_red",
+        "file": "program_0047_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 919.5312,
+        "stopped_at": 942.0809,
+        "media_offset": 919.6149,
+        "first_frame_at": 919.6149,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 919.5312
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0047_live_red",
+          "returncode": 0,
+          "output_bytes": 13244976,
+          "wall_seconds": 22.56,
+          "encoded_seconds": 22.43,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0047_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0047_live_red.webm",
+              "spawned_at": 1795782090.2098,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795782090.3923,
+              "end": 1795782112.8583,
+              "anchored": "measured",
+              "startup_seconds": 0.1825,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 48,
+        "source_id": "live_blue",
+        "file": "program_0048_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 939.4489,
+        "stopped_at": 962.1594,
+        "media_offset": 939.4264,
+        "first_frame_at": 939.4489,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 939.4489
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0048_live_blue",
+          "returncode": 0,
+          "output_bytes": 14124666,
+          "wall_seconds": 22.72,
+          "encoded_seconds": 22.7,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0048_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0048_live_blue.webm",
+              "spawned_at": 1795782110.1311,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795782110.1706,
+              "end": 1795782132.9036,
+              "anchored": "measured",
+              "startup_seconds": 0.0395,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 49,
+        "source_id": "live_red",
+        "file": "program_0049_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 959.5733,
+        "stopped_at": 982.0435,
+        "media_offset": 959.6775,
+        "first_frame_at": 959.6775,
+        "duration": 22.366,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 959.5733
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0049_live_red",
+          "returncode": 0,
+          "output_bytes": 13194914,
+          "wall_seconds": 22.48,
+          "encoded_seconds": 22.33,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0049_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0049_live_red.webm",
+              "spawned_at": 1795782130.2515,
+              "media_seconds": 22.366,
+              "ended_early": false,
+              "start": 1795782130.3716,
+              "end": 1795782152.7376,
+              "anchored": "measured",
+              "startup_seconds": 0.1201,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 50,
+        "source_id": "live_blue",
+        "file": "program_0050_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 979.5003,
+        "stopped_at": 1002.1842,
+        "media_offset": 979.6182,
+        "first_frame_at": 979.6182,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 979.5003
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0050_live_blue",
+          "returncode": 0,
+          "output_bytes": 12509569,
+          "wall_seconds": 22.7,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0050_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0050_live_blue.webm",
+              "spawned_at": 1795782150.1787,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795782150.2619,
+              "end": 1795782172.8279,
+              "anchored": "measured",
+              "startup_seconds": 0.0832,
+              "tail_lost_seconds": 0.0467
+            }
+          ]
+        }
+      },
+      {
+        "index": 51,
+        "source_id": "live_red",
+        "file": "program_0051_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 999.4214,
+        "stopped_at": 1022.0115,
+        "media_offset": 999.3115,
+        "first_frame_at": 999.4214,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 999.4214
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0051_live_red",
+          "returncode": 0,
+          "output_bytes": 12659079,
+          "wall_seconds": 22.59,
+          "encoded_seconds": 22.66,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0051_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0051_live_red.webm",
+              "spawned_at": 1795782170.1119,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795782170.1119,
+              "end": 1795782192.8119,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 52,
+        "source_id": "live_blue",
+        "file": "program_0052_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1019.5493,
+        "stopped_at": 1042.1721,
+        "media_offset": 1019.5721,
+        "first_frame_at": 1019.5721,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1019.5493
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0052_live_blue",
+          "returncode": 0,
+          "output_bytes": 13073919,
+          "wall_seconds": 22.64,
+          "encoded_seconds": 22.57,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0052_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0052_live_blue.webm",
+              "spawned_at": 1795782190.2277,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795782190.3065,
+              "end": 1795782212.9065,
+              "anchored": "measured",
+              "startup_seconds": 0.0788,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 53,
+        "source_id": "live_red",
+        "file": "program_0053_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1039.5283,
+        "stopped_at": 1061.981,
+        "media_offset": 1039.339,
+        "first_frame_at": 1039.5283,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1039.5283
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0053_live_red",
+          "returncode": 0,
+          "output_bytes": 12206658,
+          "wall_seconds": 22.49,
+          "encoded_seconds": 22.63,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0053_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0053_live_red.webm",
+              "spawned_at": 1795782210.2066,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795782210.2066,
+              "end": 1795782232.8486,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 54,
+        "source_id": "live_blue",
+        "file": "program_0054_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1059.4403,
+        "stopped_at": 1082.12,
+        "media_offset": 1059.387,
+        "first_frame_at": 1059.4403,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1059.4403
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0054_live_blue",
+          "returncode": 0,
+          "output_bytes": 13391830,
+          "wall_seconds": 22.7,
+          "encoded_seconds": 22.7,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0054_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0054_live_blue.webm",
+              "spawned_at": 1795782230.119,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795782230.119,
+              "end": 1795782252.852,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 55,
+        "source_id": "live_red",
+        "file": "program_0055_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1079.5543,
+        "stopped_at": 1102.0381,
+        "media_offset": 1079.4601,
+        "first_frame_at": 1079.5543,
+        "duration": 22.578,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1079.5543
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0055_live_red",
+          "returncode": 0,
+          "output_bytes": 13441092,
+          "wall_seconds": 22.48,
+          "encoded_seconds": 22.55,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0055_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0055_live_red.webm",
+              "spawned_at": 1795782250.2381,
+              "media_seconds": 22.578,
+              "ended_early": false,
+              "start": 1795782250.3003,
+              "end": 1795782272.8783,
+              "anchored": "measured",
+              "startup_seconds": 0.0623,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 56,
+        "source_id": "live_blue",
+        "file": "program_0056_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1099.5894,
+        "stopped_at": 1122.1211,
+        "media_offset": 1099.3881,
+        "first_frame_at": 1099.5894,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1099.5894
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0056_live_blue",
+          "returncode": 0,
+          "output_bytes": 12897824,
+          "wall_seconds": 22.55,
+          "encoded_seconds": 22.7,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0056_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0056_live_blue.webm",
+              "spawned_at": 1795782270.2683,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795782270.2683,
+              "end": 1795782293.0013,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 57,
+        "source_id": "live_red",
+        "file": "program_0057_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1119.5486,
+        "stopped_at": 1142.5554,
+        "media_offset": 1119.5894,
+        "first_frame_at": 1119.5894,
+        "duration": 22.966,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1119.5486
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0057_live_red",
+          "returncode": 0,
+          "output_bytes": 12402377,
+          "wall_seconds": 23.01,
+          "encoded_seconds": 22.93,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0057_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0057_live_red.webm",
+              "spawned_at": 1795782290.2313,
+              "media_seconds": 22.966,
+              "ended_early": false,
+              "start": 1795782290.342,
+              "end": 1795782313.308,
+              "anchored": "measured",
+              "startup_seconds": 0.1107,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 58,
+        "source_id": "live_blue",
+        "file": "program_0058_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1139.479,
+        "stopped_at": 1162.8217,
+        "media_offset": 1139.6677,
+        "first_frame_at": 1139.6677,
+        "duration": 23.154,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1139.479
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0058_live_blue",
+          "returncode": 0,
+          "output_bytes": 12917472,
+          "wall_seconds": 23.37,
+          "encoded_seconds": 23.13,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0058_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0058_live_blue.webm",
+              "spawned_at": 1795782310.158,
+              "media_seconds": 23.154,
+              "ended_early": false,
+              "start": 1795782310.3686,
+              "end": 1795782333.5226,
+              "anchored": "measured",
+              "startup_seconds": 0.2107,
+              "tail_lost_seconds": 0.0068
+            }
+          ]
+        }
+      },
+      {
+        "index": 59,
+        "source_id": "live_red",
+        "file": "program_0059_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1159.4876,
+        "stopped_at": 1182.0781,
+        "media_offset": 1159.6451,
+        "first_frame_at": 1159.6451,
+        "duration": 22.433,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1159.4876
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0059_live_red",
+          "returncode": 0,
+          "output_bytes": 13212420,
+          "wall_seconds": 22.61,
+          "encoded_seconds": 22.4,
+          "speed": 1.07,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0059_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0059_live_red.webm",
+              "spawned_at": 1795782330.166,
+              "media_seconds": 22.433,
+              "ended_early": false,
+              "start": 1795782330.36,
+              "end": 1795782352.793,
+              "anchored": "measured",
+              "startup_seconds": 0.194,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 60,
+        "source_id": "live_blue",
+        "file": "program_0060_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1179.4787,
+        "stopped_at": 1202.1012,
+        "media_offset": 1179.3682,
+        "first_frame_at": 1179.4787,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1179.4787
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0060_live_blue",
+          "returncode": 0,
+          "output_bytes": 12895847,
+          "wall_seconds": 22.64,
+          "encoded_seconds": 22.7,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0060_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0060_live_blue.webm",
+              "spawned_at": 1795782350.157,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795782350.157,
+              "end": 1795782372.89,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 61,
+        "source_id": "live_red",
+        "file": "program_0061_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1199.4286,
+        "stopped_at": 1222.0438,
+        "media_offset": 1199.4438,
+        "first_frame_at": 1199.4438,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1199.4286
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0061_live_red",
+          "returncode": 0,
+          "output_bytes": 12990396,
+          "wall_seconds": 22.63,
+          "encoded_seconds": 22.57,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0061_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0061_live_red.webm",
+              "spawned_at": 1795782370.1077,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795782370.1131,
+              "end": 1795782392.7131,
+              "anchored": "measured",
+              "startup_seconds": 0.0054,
+              "tail_lost_seconds": 0.0217
+            }
+          ]
+        }
+      },
+      {
+        "index": 62,
+        "source_id": "live_blue",
+        "file": "program_0062_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1219.4915,
+        "stopped_at": 1242.1401,
+        "media_offset": 1219.6071,
+        "first_frame_at": 1219.6071,
+        "duration": 22.533,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1219.4915
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0062_live_blue",
+          "returncode": 0,
+          "output_bytes": 12505696,
+          "wall_seconds": 22.66,
+          "encoded_seconds": 22.5,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0062_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0062_live_blue.webm",
+              "spawned_at": 1795782390.1699,
+              "media_seconds": 22.533,
+              "ended_early": false,
+              "start": 1795782390.2785,
+              "end": 1795782412.8115,
+              "anchored": "measured",
+              "startup_seconds": 0.1086,
+              "tail_lost_seconds": 0.0219
+            }
+          ]
+        }
+      },
+      {
+        "index": 63,
+        "source_id": "live_red",
+        "file": "program_0063_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1239.4459,
+        "stopped_at": 1262.0649,
+        "media_offset": 1239.4649,
+        "first_frame_at": 1239.4649,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1239.4459
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0063_live_red",
+          "returncode": 0,
+          "output_bytes": 12505104,
+          "wall_seconds": 22.66,
+          "encoded_seconds": 22.57,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0063_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0063_live_red.webm",
+              "spawned_at": 1795782410.1246,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795782410.2248,
+              "end": 1795782432.8248,
+              "anchored": "measured",
+              "startup_seconds": 0.1001,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 64,
+        "source_id": "live_blue",
+        "file": "program_0064_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1259.5788,
+        "stopped_at": 1282.0522,
+        "media_offset": 1259.4522,
+        "first_frame_at": 1259.5788,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1259.5788
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0064_live_blue",
+          "returncode": 0,
+          "output_bytes": 13925685,
+          "wall_seconds": 22.49,
+          "encoded_seconds": 22.57,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0064_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0064_live_blue.webm",
+              "spawned_at": 1795782430.2578,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795782430.2578,
+              "end": 1795782452.8578,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 65,
+        "source_id": "live_red",
+        "file": "program_0065_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1279.4864,
+        "stopped_at": 1302.2711,
+        "media_offset": 1279.5711,
+        "first_frame_at": 1279.5711,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1279.4864
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0065_live_red",
+          "returncode": 0,
+          "output_bytes": 12555024,
+          "wall_seconds": 22.8,
+          "encoded_seconds": 22.66,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0065_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0065_live_red.webm",
+              "spawned_at": 1795782450.1648,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795782450.2193,
+              "end": 1795782472.9193,
+              "anchored": "measured",
+              "startup_seconds": 0.0544,
+              "tail_lost_seconds": 0.0496
+            }
+          ]
+        }
+      },
+      {
+        "index": 66,
+        "source_id": "live_blue",
+        "file": "program_0066_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1299.4244,
+        "stopped_at": 1322.2264,
+        "media_offset": 1299.5604,
+        "first_frame_at": 1299.5604,
+        "duration": 22.666,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1299.4244
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0066_live_blue",
+          "returncode": 0,
+          "output_bytes": 12588859,
+          "wall_seconds": 22.84,
+          "encoded_seconds": 22.63,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0066_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0066_live_blue.webm",
+              "spawned_at": 1795782470.1029,
+              "media_seconds": 22.666,
+              "ended_early": false,
+              "start": 1795782470.2062,
+              "end": 1795782492.8722,
+              "anchored": "measured",
+              "startup_seconds": 0.1033,
+              "tail_lost_seconds": 0.0703
+            }
+          ]
+        }
+      },
+      {
+        "index": 67,
+        "source_id": "live_red",
+        "file": "program_0067_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1319.5159,
+        "stopped_at": 1342.1318,
+        "media_offset": 1319.5318,
+        "first_frame_at": 1319.5318,
+        "duration": 22.6,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1319.5159
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0067_live_red",
+          "returncode": 0,
+          "output_bytes": 12891205,
+          "wall_seconds": 22.63,
+          "encoded_seconds": 22.57,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0067_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0067_live_red.webm",
+              "spawned_at": 1795782490.1987,
+              "media_seconds": 22.6,
+              "ended_early": false,
+              "start": 1795782490.2733,
+              "end": 1795782512.8733,
+              "anchored": "measured",
+              "startup_seconds": 0.0746,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 68,
+        "source_id": "live_blue",
+        "file": "program_0068_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1339.3753,
+        "stopped_at": 1362.6421,
+        "media_offset": 1339.3421,
+        "first_frame_at": 1339.3753,
+        "duration": 23.3,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1339.3753
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0068_live_blue",
+          "returncode": 0,
+          "output_bytes": 13433611,
+          "wall_seconds": 23.29,
+          "encoded_seconds": 23.27,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0068_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0068_live_blue.webm",
+              "spawned_at": 1795782510.0548,
+              "media_seconds": 23.3,
+              "ended_early": false,
+              "start": 1795782510.0548,
+              "end": 1795782533.3548,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 69,
+        "source_id": "live_red",
+        "file": "program_0069_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1359.5287,
+        "stopped_at": 1382.0155,
+        "media_offset": 1359.6825,
+        "first_frame_at": 1359.6825,
+        "duration": 22.333,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1359.5287
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0069_live_red",
+          "returncode": 0,
+          "output_bytes": 13155695,
+          "wall_seconds": 22.5,
+          "encoded_seconds": 22.3,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0069_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0069_live_red.webm",
+              "spawned_at": 1795782530.2072,
+              "media_seconds": 22.333,
+              "ended_early": false,
+              "start": 1795782530.3656,
+              "end": 1795782552.6986,
+              "anchored": "measured",
+              "startup_seconds": 0.1584,
+              "tail_lost_seconds": 0.0064
+            }
+          ]
+        }
+      },
+      {
+        "index": 70,
+        "source_id": "live_blue",
+        "file": "program_0070_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1379.4287,
+        "stopped_at": 1402.0663,
+        "media_offset": 1379.5003,
+        "first_frame_at": 1379.5003,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1379.4287
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0070_live_blue",
+          "returncode": 0,
+          "output_bytes": 14018525,
+          "wall_seconds": 22.64,
+          "encoded_seconds": 22.53,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0070_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0070_live_blue.webm",
+              "spawned_at": 1795782550.1079,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795782550.1488,
+              "end": 1795782572.7148,
+              "anchored": "measured",
+              "startup_seconds": 0.0409,
+              "tail_lost_seconds": 0.0364
+            }
+          ]
+        }
+      },
+      {
+        "index": 71,
+        "source_id": "live_red",
+        "file": "program_0071_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1399.5296,
+        "stopped_at": 1421.9017,
+        "media_offset": 1399.5357,
+        "first_frame_at": 1399.5357,
+        "duration": 22.366,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1399.5296
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0071_live_red",
+          "returncode": 0,
+          "output_bytes": 12045576,
+          "wall_seconds": 22.39,
+          "encoded_seconds": 22.33,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0071_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0071_live_red.webm",
+              "spawned_at": 1795782570.2081,
+              "media_seconds": 22.366,
+              "ended_early": false,
+              "start": 1795782570.3215,
+              "end": 1795782592.6875,
+              "anchored": "measured",
+              "startup_seconds": 0.1135,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 72,
+        "source_id": "live_blue",
+        "file": "program_0072_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1419.4232,
+        "stopped_at": 1442.5684,
+        "media_offset": 1419.3024,
+        "first_frame_at": 1419.4232,
+        "duration": 23.266,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1419.4232
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0072_live_blue",
+          "returncode": 0,
+          "output_bytes": 12852026,
+          "wall_seconds": 23.18,
+          "encoded_seconds": 23.23,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0072_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0072_live_blue.webm",
+              "spawned_at": 1795782590.1027,
+              "media_seconds": 23.266,
+              "ended_early": false,
+              "start": 1795782590.1027,
+              "end": 1795782613.3687,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 73,
+        "source_id": "live_red",
+        "file": "program_0073_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1439.5577,
+        "stopped_at": 1462.505,
+        "media_offset": 1439.564,
+        "first_frame_at": 1439.564,
+        "duration": 22.941,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1439.5577
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0073_live_red",
+          "returncode": 0,
+          "output_bytes": 13507191,
+          "wall_seconds": 22.98,
+          "encoded_seconds": 22.91,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0073_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0073_live_red.webm",
+              "spawned_at": 1795782610.2362,
+              "media_seconds": 22.941,
+              "ended_early": false,
+              "start": 1795782610.3597,
+              "end": 1795782633.3007,
+              "anchored": "measured",
+              "startup_seconds": 0.1235,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 74,
+        "source_id": "live_blue",
+        "file": "program_0074_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1459.4876,
+        "stopped_at": 1482.1333,
+        "media_offset": 1459.7003,
+        "first_frame_at": 1459.7003,
+        "duration": 22.433,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1459.4876
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0074_live_blue",
+          "returncode": 0,
+          "output_bytes": 12474228,
+          "wall_seconds": 22.66,
+          "encoded_seconds": 22.4,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0074_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0074_live_blue.webm",
+              "spawned_at": 1795782630.1675,
+              "media_seconds": 22.433,
+              "ended_early": false,
+              "start": 1795782630.3613,
+              "end": 1795782652.7943,
+              "anchored": "measured",
+              "startup_seconds": 0.1938,
+              "tail_lost_seconds": 0.0324
+            }
+          ]
+        }
+      },
+      {
+        "index": 75,
+        "source_id": "live_red",
+        "file": "program_0075_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1479.4254,
+        "stopped_at": 1501.9904,
+        "media_offset": 1479.4244,
+        "first_frame_at": 1479.4254,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1479.4254
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0075_live_red",
+          "returncode": 0,
+          "output_bytes": 13115244,
+          "wall_seconds": 22.57,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0075_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0075_live_red.webm",
+              "spawned_at": 1795782650.1038,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795782650.1087,
+              "end": 1795782672.6747,
+              "anchored": "measured",
+              "startup_seconds": 0.0049,
+              "tail_lost_seconds": 0.002
+            }
+          ]
+        }
+      },
+      {
+        "index": 76,
+        "source_id": "live_blue",
+        "file": "program_0076_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1499.54,
+        "stopped_at": 1522.062,
+        "media_offset": 1499.362,
+        "first_frame_at": 1499.54,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1499.54
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0076_live_blue",
+          "returncode": 0,
+          "output_bytes": 13527650,
+          "wall_seconds": 22.55,
+          "encoded_seconds": 22.67,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0076_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0076_live_blue.webm",
+              "spawned_at": 1795782670.2186,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795782670.2186,
+              "end": 1795782692.9186,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 77,
+        "source_id": "live_red",
+        "file": "program_0077_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1519.4654,
+        "stopped_at": 1541.9015,
+        "media_offset": 1519.3685,
+        "first_frame_at": 1519.4654,
+        "duration": 22.533,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1519.4654
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0077_live_red",
+          "returncode": 0,
+          "output_bytes": 13080933,
+          "wall_seconds": 22.47,
+          "encoded_seconds": 22.5,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0077_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0077_live_red.webm",
+              "spawned_at": 1795782690.1444,
+              "media_seconds": 22.533,
+              "ended_early": false,
+              "start": 1795782690.1444,
+              "end": 1795782712.6774,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 78,
+        "source_id": "live_blue",
+        "file": "program_0078_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1539.4037,
+        "stopped_at": 1562.1487,
+        "media_offset": 1539.2487,
+        "first_frame_at": 1539.4037,
+        "duration": 22.9,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1539.4037
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0078_live_blue",
+          "returncode": 0,
+          "output_bytes": 12659284,
+          "wall_seconds": 22.76,
+          "encoded_seconds": 22.86,
+          "speed": 1.11,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0078_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0078_live_blue.webm",
+              "spawned_at": 1795782710.0856,
+              "media_seconds": 22.9,
+              "ended_early": false,
+              "start": 1795782710.0856,
+              "end": 1795782732.9856,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 79,
+        "source_id": "live_red",
+        "file": "program_0079_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1559.5078,
+        "stopped_at": 1581.9611,
+        "media_offset": 1559.4951,
+        "first_frame_at": 1559.5078,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1559.5078
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0079_live_red",
+          "returncode": 0,
+          "output_bytes": 12957201,
+          "wall_seconds": 22.47,
+          "encoded_seconds": 22.43,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0079_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0079_live_red.webm",
+              "spawned_at": 1795782730.1875,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795782730.2024,
+              "end": 1795782752.6684,
+              "anchored": "measured",
+              "startup_seconds": 0.0149,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 80,
+        "source_id": "live_blue",
+        "file": "program_0080_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1579.4407,
+        "stopped_at": 1602.0046,
+        "media_offset": 1579.5386,
+        "first_frame_at": 1579.5386,
+        "duration": 22.466,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1579.4407
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0080_live_blue",
+          "returncode": 0,
+          "output_bytes": 12110477,
+          "wall_seconds": 22.57,
+          "encoded_seconds": 22.43,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0080_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0080_live_blue.webm",
+              "spawned_at": 1795782750.1191,
+              "media_seconds": 22.466,
+              "ended_early": false,
+              "start": 1795782750.2021,
+              "end": 1795782772.6681,
+              "anchored": "measured",
+              "startup_seconds": 0.083,
+              "tail_lost_seconds": 0.0216
+            }
+          ]
+        }
+      },
+      {
+        "index": 81,
+        "source_id": "live_red",
+        "file": "program_0081_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1599.5815,
+        "stopped_at": 1622.4492,
+        "media_offset": 1599.4832,
+        "first_frame_at": 1599.5815,
+        "duration": 22.966,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1599.5815
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0081_live_red",
+          "returncode": 0,
+          "output_bytes": 13311763,
+          "wall_seconds": 22.88,
+          "encoded_seconds": 22.93,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0081_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0081_live_red.webm",
+              "spawned_at": 1795782770.2607,
+              "media_seconds": 22.966,
+              "ended_early": false,
+              "start": 1795782770.2607,
+              "end": 1795782793.2267,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 82,
+        "source_id": "live_blue",
+        "file": "program_0082_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1619.534,
+        "stopped_at": 1642.0871,
+        "media_offset": 1619.6541,
+        "first_frame_at": 1619.6541,
+        "duration": 22.433,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1619.534
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0082_live_blue",
+          "returncode": 0,
+          "output_bytes": 12476030,
+          "wall_seconds": 22.58,
+          "encoded_seconds": 22.4,
+          "speed": 1.08,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0082_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0082_live_blue.webm",
+              "spawned_at": 1795782790.2131,
+              "media_seconds": 22.433,
+              "ended_early": false,
+              "start": 1795782790.3779,
+              "end": 1795782812.8109,
+              "anchored": "measured",
+              "startup_seconds": 0.1648,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 83,
+        "source_id": "live_red",
+        "file": "program_0083_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1639.4769,
+        "stopped_at": 1661.7638,
+        "media_offset": 1639.0638,
+        "first_frame_at": 1639.4769,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1639.4769
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0083_live_red",
+          "returncode": 0,
+          "output_bytes": 12557853,
+          "wall_seconds": 22.79,
+          "encoded_seconds": 22.66,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0083_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0083_live_red.webm",
+              "spawned_at": 1795782810.1554,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795782810.24,
+              "end": 1795782832.94,
+              "anchored": "measured",
+              "startup_seconds": 0.0846,
+              "tail_lost_seconds": 0.0102
+            }
+          ]
+        }
+      },
+      {
+        "index": 84,
+        "source_id": "live_blue",
+        "file": "program_0084_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1659.3721,
+        "stopped_at": 1681.9409,
+        "media_offset": 1659.1749,
+        "first_frame_at": 1659.3721,
+        "duration": 22.766,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1659.3721
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0084_live_blue",
+          "returncode": 0,
+          "output_bytes": 13528366,
+          "wall_seconds": 22.6,
+          "encoded_seconds": 22.73,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0084_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0084_live_blue.webm",
+              "spawned_at": 1795782830.0513,
+              "media_seconds": 22.766,
+              "ended_early": false,
+              "start": 1795782830.0513,
+              "end": 1795782852.8173,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 85,
+        "source_id": "live_red",
+        "file": "program_0085_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1679.4353,
+        "stopped_at": 1701.9944,
+        "media_offset": 1679.2944,
+        "first_frame_at": 1679.4353,
+        "duration": 22.7,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1679.4353
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0085_live_red",
+          "returncode": 0,
+          "output_bytes": 12657326,
+          "wall_seconds": 22.62,
+          "encoded_seconds": 22.66,
+          "speed": 1.1,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0085_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0085_live_red.webm",
+              "spawned_at": 1795782850.1137,
+              "media_seconds": 22.7,
+              "ended_early": false,
+              "start": 1795782850.1137,
+              "end": 1795782872.8137,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 86,
+        "source_id": "live_blue",
+        "file": "program_0086_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1699.4014,
+        "stopped_at": 1721.977,
+        "media_offset": 1699.335,
+        "first_frame_at": 1699.4014,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1699.4014
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0086_live_blue",
+          "returncode": 0,
+          "output_bytes": 13447649,
+          "wall_seconds": 22.6,
+          "encoded_seconds": 22.63,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0086_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0086_live_blue.webm",
+              "spawned_at": 1795782870.0801,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795782870.0904,
+              "end": 1795782892.7324,
+              "anchored": "measured",
+              "startup_seconds": 0.0103,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 87,
+        "source_id": "live_red",
+        "file": "program_0087_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1719.5369,
+        "stopped_at": 1741.9867,
+        "media_offset": 1719.4207,
+        "first_frame_at": 1719.5369,
+        "duration": 22.566,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1719.5369
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0087_live_red",
+          "returncode": 0,
+          "output_bytes": 13115363,
+          "wall_seconds": 22.46,
+          "encoded_seconds": 22.53,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0087_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0087_live_red.webm",
+              "spawned_at": 1795782890.2162,
+              "media_seconds": 22.566,
+              "ended_early": false,
+              "start": 1795782890.2162,
+              "end": 1795782912.7822,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 88,
+        "source_id": "live_blue",
+        "file": "program_0088_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1739.421,
+        "stopped_at": 1762.1206,
+        "media_offset": 1739.4786,
+        "first_frame_at": 1739.4786,
+        "duration": 22.642,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1739.421
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0088_live_blue",
+          "returncode": 0,
+          "output_bytes": 12467183,
+          "wall_seconds": 22.72,
+          "encoded_seconds": 22.63,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0088_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0088_live_blue.webm",
+              "spawned_at": 1795782910.0998,
+              "media_seconds": 22.642,
+              "ended_early": false,
+              "start": 1795782910.2632,
+              "end": 1795782932.9052,
+              "anchored": "measured",
+              "startup_seconds": 0.1634,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      },
+      {
+        "index": 89,
+        "source_id": "live_red",
+        "file": "program_0089_live_red.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1759.5323,
+        "stopped_at": 1782.2616,
+        "media_offset": 1759.5286,
+        "first_frame_at": 1759.5323,
+        "duration": 22.733,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1759.5323
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0089_live_red",
+          "returncode": 0,
+          "output_bytes": 13119798,
+          "wall_seconds": 22.74,
+          "encoded_seconds": 22.7,
+          "speed": 1.09,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0089_live_red.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0089_live_red.webm",
+              "spawned_at": 1795782930.2109,
+              "media_seconds": 22.733,
+              "ended_early": false,
+              "start": 1795782930.2127,
+              "end": 1795782952.9457,
+              "anchored": "measured",
+              "startup_seconds": 0.0018,
+              "tail_lost_seconds": 0.0065
+            }
+          ]
+        }
+      },
+      {
+        "index": 90,
+        "source_id": "live_blue",
+        "file": "program_0090_live_blue.webm",
+        "synthetic": false,
+        "state": "stopped",
+        "spawned_at": 1779.4457,
+        "stopped_at": 1800.1419,
+        "media_offset": 1779.3759,
+        "first_frame_at": 1779.4457,
+        "duration": 20.766,
+        "has_audio": true,
+        "roles": [
+          {
+            "role": "program",
+            "at": 1779.4457
+          }
+        ],
+        "error": null,
+        "ended_early": false,
+        "report": {
+          "source_id": "program_0090_live_blue",
+          "returncode": 0,
+          "output_bytes": 12162378,
+          "wall_seconds": 20.69,
+          "encoded_seconds": 20.73,
+          "speed": 1.12,
+          "warnings": [],
+          "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/program_0090_live_blue.webm.ffmpeg.log",
+          "timing": [
+            {
+              "piece": 1,
+              "file": "program_0090_live_blue.webm",
+              "spawned_at": 1795782950.1251,
+              "media_seconds": 20.766,
+              "ended_early": false,
+              "start": 1795782950.1251,
+              "end": 1795782970.8911,
+              "anchored": "measured",
+              "startup_seconds": 0.0,
+              "tail_lost_seconds": 0.0
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "sound": [
+    {
+      "source_id": "live_red",
+      "file": "sound_live_red.wav",
+      "state": "recorded",
+      "note": null,
+      "report": {
+        "source_id": "sound_live_red",
+        "returncode": 0,
+        "output_bytes": 172845134,
+        "wall_seconds": 1800.46,
+        "encoded_seconds": 1800.44,
+        "speed": 1.0,
+        "warnings": [],
+        "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/sound_live_red.wav.ffmpeg.log",
+        "timing": [
+          {
+            "piece": 1,
+            "file": "sound_live_red.wav",
+            "spawned_at": 1795781170.6941,
+            "media_seconds": 1800.4693,
+            "ended_early": false,
+            "start": 1795781170.8554,
+            "end": 1795782971.3248,
+            "anchored": "measured",
+            "startup_seconds": 0.1613,
+            "tail_lost_seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "source_id": "live_blue",
+      "file": "sound_live_blue.wav",
+      "state": "recorded",
+      "note": null,
+      "report": {
+        "source_id": "sound_live_blue",
+        "returncode": 0,
+        "output_bytes": 172869710,
+        "wall_seconds": 1800.69,
+        "encoded_seconds": 1800.7,
+        "speed": 1.0,
+        "warnings": [],
+        "log": "/home/claude/endurance_keep/run/test_three_recording_modes_at_0/data/recordings/end_main/sound_live_blue.wav.ffmpeg.log",
+        "timing": [
+          {
+            "piece": 1,
+            "file": "sound_live_blue.wav",
+            "spawned_at": 1795781170.7023,
+            "media_seconds": 1800.7253,
+            "ended_early": false,
+            "start": 1795781170.8862,
+            "end": 1795782971.6115,
+            "anchored": "measured",
+            "startup_seconds": 0.1839,
+            "tail_lost_seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "microphone": null,
+  "show_data": {
+    "file": "show_data.jsonl.gz",
+    "events": 212,
+    "uncompressed_bytes": 62447,
+    "bytes": 10222,
+    "sha256": "6414e9d4e6e77fecd08f6ae4d108a3ce7ad6bd43cc2df3c740dc62e59bb446fb",
+    "complete": true,
+    "error": null,
+    "rooms_recorded": [],
+    "rooms_excluded": [
+      "main"
+    ]
+  },
+  "assembly": {
+    "state": "complete",
+    "file": "program.webm",
+    "duration": 1800.141,
+    "expected_duration": 1800.1333,
+    "origin": 0.0055,
+    "pieces": [
+      {
+        "kind": "segment",
+        "segment": 1,
+        "in": 0.010856,
+        "out": 19.571377
+      },
+      {
+        "kind": "segment",
+        "segment": 2,
+        "in": 0.076574,
+        "out": 20.021425
+      },
+      {
+        "kind": "segment",
+        "segment": 3,
+        "in": 0.096964,
+        "out": 19.996156
+      },
+      {
+        "kind": "segment",
+        "segment": 4,
+        "in": 0.096593,
+        "out": 20.302557
+      },
+      {
+        "kind": "segment",
+        "segment": 5,
+        "in": 0.0,
+        "out": 19.846553
+      },
+      {
+        "kind": "segment",
+        "segment": 6,
+        "in": 0.014467,
+        "out": 20.226981
+      },
+      {
+        "kind": "segment",
+        "segment": 7,
+        "in": 0.0,
+        "out": 19.701512
+      },
+      {
+        "kind": "segment",
+        "segment": 8,
+        "in": 0.116834,
+        "out": 20.459573
+      },
+      {
+        "kind": "segment",
+        "segment": 9,
+        "in": 0.0,
+        "out": 19.72997
+      },
+      {
+        "kind": "segment",
+        "segment": 10,
+        "in": 0.0,
+        "out": 19.977343
+      },
+      {
+        "kind": "segment",
+        "segment": 11,
+        "in": 0.031787,
+        "out": 20.24339
+      },
+      {
+        "kind": "segment",
+        "segment": 12,
+        "in": 0.0,
+        "out": 19.816279
+      },
+      {
+        "kind": "segment",
+        "segment": 13,
+        "in": 0.033262,
+        "out": 20.058211
+      },
+      {
+        "kind": "segment",
+        "segment": 14,
+        "in": 0.182111,
+        "out": 20.125886
+      },
+      {
+        "kind": "segment",
+        "segment": 15,
+        "in": 0.149226,
+        "out": 20.290796
+      },
+      {
+        "kind": "segment",
+        "segment": 16,
+        "in": 0.026948,
+        "out": 19.917217
+      },
+      {
+        "kind": "segment",
+        "segment": 17,
+        "in": 0.261214,
+        "out": 20.192818
+      },
+      {
+        "kind": "segment",
+        "segment": 18,
+        "in": 0.0,
+        "out": 20.075972
+      },
+      {
+        "kind": "segment",
+        "segment": 19,
+        "in": 0.137139,
+        "out": 20.221538
+      },
+      {
+        "kind": "segment",
+        "segment": 20,
+        "in": 0.143695,
+        "out": 20.071773
+      },
+      {
+        "kind": "segment",
+        "segment": 21,
+        "in": 0.093994,
+        "out": 19.985678
+      },
+      {
+        "kind": "segment",
+        "segment": 22,
+        "in": 0.072504,
+        "out": 20.327737
+      },
+      {
+        "kind": "segment",
+        "segment": 23,
+        "in": 0.0,
+        "out": 19.942729
+      },
+      {
+        "kind": "segment",
+        "segment": 24,
+        "in": 0.0,
+        "out": 19.824656
+      },
+      {
+        "kind": "segment",
+        "segment": 25,
+        "in": 0.110289,
+        "out": 20.495127
+      },
+      {
+        "kind": "segment",
+        "segment": 26,
+        "in": 0.0,
+        "out": 19.724722
+      },
+      {
+        "kind": "segment",
+        "segment": 27,
+        "in": 0.077304,
+        "out": 20.041483
+      },
+      {
+        "kind": "segment",
+        "segment": 28,
+        "in": 0.0,
+        "out": 20.026005
+      },
+      {
+        "kind": "segment",
+        "segment": 29,
+        "in": 0.100576,
+        "out": 20.142425
+      },
+      {
+        "kind": "segment",
+        "segment": 30,
+        "in": 0.0,
+        "out": 20.013609
+      },
+      {
+        "kind": "segment",
+        "segment": 31,
+        "in": 0.105134,
+        "out": 20.088705
+      },
+      {
+        "kind": "segment",
+        "segment": 32,
+        "in": 0.0,
+        "out": 19.856846
+      },
+      {
+        "kind": "segment",
+        "segment": 33,
+        "in": 0.031852,
+        "out": 20.173401
+      },
+      {
+        "kind": "segment",
+        "segment": 34,
+        "in": 0.055115,
+        "out": 20.154257
+      },
+      {
+        "kind": "segment",
+        "segment": 35,
+        "in": 0.0,
+        "out": 19.777721
+      },
+      {
+        "kind": "segment",
+        "segment": 36,
+        "in": 0.015983,
+        "out": 20.245678
+      },
+      {
+        "kind": "segment",
+        "segment": 37,
+        "in": 0.0,
+        "out": 19.771787
+      },
+      {
+        "kind": "segment",
+        "segment": 38,
+        "in": 0.126723,
+        "out": 20.589891
+      },
+      {
+        "kind": "segment",
+        "segment": 39,
+        "in": 0.0,
+        "out": 19.564239
+      },
+      {
+        "kind": "segment",
+        "segment": 40,
+        "in": 0.050752,
+        "out": 20.060122
+      },
+      {
+        "kind": "segment",
+        "segment": 41,
+        "in": 0.013067,
+        "out": 19.965906
+      },
+      {
+        "kind": "segment",
+        "segment": 42,
+        "in": 0.107117,
+        "out": 20.27533
+      },
+      {
+        "kind": "segment",
+        "segment": 43,
+        "in": 0.0,
+        "out": 19.945225
+      },
+      {
+        "kind": "segment",
+        "segment": 44,
+        "in": 0.0,
+        "out": 19.921932
+      },
+      {
+        "kind": "segment",
+        "segment": 45,
+        "in": 0.208902,
+        "out": 20.518071
+      },
+      {
+        "kind": "segment",
+        "segment": 46,
+        "in": 0.0,
+        "out": 19.875796
+      },
+      {
+        "kind": "segment",
+        "segment": 47,
+        "in": 0.0,
+        "out": 19.834003
+      },
+      {
+        "kind": "segment",
+        "segment": 48,
+        "in": 0.022568,
+        "out": 20.251121
+      },
+      {
+        "kind": "segment",
+        "segment": 49,
+        "in": 0.0,
+        "out": 19.940737
+      },
+      {
+        "kind": "segment",
+        "segment": 50,
+        "in": 0.0,
+        "out": 19.803186
+      },
+      {
+        "kind": "segment",
+        "segment": 51,
+        "in": 0.109929,
+        "out": 20.260663
+      },
+      {
+        "kind": "segment",
+        "segment": 52,
+        "in": 0.0,
+        "out": 19.956156
+      },
+      {
+        "kind": "segment",
+        "segment": 53,
+        "in": 0.189261,
+        "out": 20.101258
+      },
+      {
+        "kind": "segment",
+        "segment": 54,
+        "in": 0.053276,
+        "out": 20.167312
+      },
+      {
+        "kind": "segment",
+        "segment": 55,
+        "in": 0.094259,
+        "out": 20.129327
+      },
+      {
+        "kind": "segment",
+        "segment": 56,
+        "in": 0.201321,
+        "out": 20.20137
+      },
+      {
+        "kind": "segment",
+        "segment": 57,
+        "in": 0.0,
+        "out": 20.07831
+      },
+      {
+        "kind": "segment",
+        "segment": 58,
+        "in": 0.0,
+        "out": 19.977326
+      },
+      {
+        "kind": "segment",
+        "segment": 59,
+        "in": 0.0,
+        "out": 19.833607
+      },
+      {
+        "kind": "segment",
+        "segment": 60,
+        "in": 0.110505,
+        "out": 20.075597
+      },
+      {
+        "kind": "segment",
+        "segment": 61,
+        "in": 0.0,
+        "out": 20.163316
+      },
+      {
+        "kind": "segment",
+        "segment": 62,
+        "in": 0.0,
+        "out": 19.857833
+      },
+      {
+        "kind": "segment",
+        "segment": 63,
+        "in": 0.0,
+        "out": 20.113879
+      },
+      {
+        "kind": "segment",
+        "segment": 64,
+        "in": 0.126602,
+        "out": 20.118891
+      },
+      {
+        "kind": "segment",
+        "segment": 65,
+        "in": 0.0,
+        "out": 19.98929
+      },
+      {
+        "kind": "segment",
+        "segment": 66,
+        "in": 0.0,
+        "out": 19.971394
+      },
+      {
+        "kind": "segment",
+        "segment": 67,
+        "in": 0.0,
+        "out": 19.843504
+      },
+      {
+        "kind": "segment",
+        "segment": 68,
+        "in": 0.033128,
+        "out": 20.340407
+      },
+      {
+        "kind": "segment",
+        "segment": 69,
+        "in": 0.0,
+        "out": 19.817736
+      },
+      {
+        "kind": "segment",
+        "segment": 70,
+        "in": 0.0,
+        "out": 20.035459
+      },
+      {
+        "kind": "segment",
+        "segment": 71,
+        "in": 0.0,
+        "out": 19.88746
+      },
+      {
+        "kind": "segment",
+        "segment": 72,
+        "in": 0.12084,
+        "out": 20.261664
+      },
+      {
+        "kind": "segment",
+        "segment": 73,
+        "in": 0.0,
+        "out": 20.136281
+      },
+      {
+        "kind": "segment",
+        "segment": 74,
+        "in": 0.0,
+        "out": 19.725058
+      },
+      {
+        "kind": "segment",
+        "segment": 75,
+        "in": 0.000991,
+        "out": 20.115597
+      },
+      {
+        "kind": "segment",
+        "segment": 76,
+        "in": 0.177946,
+        "out": 20.103344
+      },
+      {
+        "kind": "segment",
+        "segment": 77,
+        "in": 0.096905,
+        "out": 20.035229
+      },
+      {
+        "kind": "segment",
+        "segment": 78,
+        "in": 0.154989,
+        "out": 20.259108
+      },
+      {
+        "kind": "segment",
+        "segment": 79,
+        "in": 0.012761,
+        "out": 20.043574
+      },
+      {
+        "kind": "segment",
+        "segment": 80,
+        "in": 0.0,
+        "out": 20.042864
+      },
+      {
+        "kind": "segment",
+        "segment": 81,
+        "in": 0.098304,
+        "out": 20.170898
+      },
+      {
+        "kind": "segment",
+        "segment": 82,
+        "in": 0.0,
+        "out": 19.822832
+      },
+      {
+        "kind": "segment",
+        "segment": 83,
+        "in": 0.413094,
+        "out": 20.308278
+      },
+      {
+        "kind": "segment",
+        "segment": 84,
+        "in": 0.197181,
+        "out": 20.26034
+      },
+      {
+        "kind": "segment",
+        "segment": 85,
+        "in": 0.140901,
+        "out": 20.107009
+      },
+      {
+        "kind": "segment",
+        "segment": 86,
+        "in": 0.066331,
+        "out": 20.201819
+      },
+      {
+        "kind": "segment",
+        "segment": 87,
+        "in": 0.11611,
+        "out": 20.057853
+      },
+      {
+        "kind": "segment",
+        "segment": 88,
+        "in": 0.0,
+        "out": 20.053735
+      },
+      {
+        "kind": "segment",
+        "segment": 89,
+        "in": 0.003758,
+        "out": 19.917119
+      },
+      {
+        "kind": "segment",
+        "segment": 90,
+        "in": 0.069752,
+        "out": 20.765917
+      }
+    ],
+    "audio": "follows the picture: each camera's own sound",
+    "warnings": [],
+    "render_seconds": 533.66,
+    "log": "program.webm.ffmpeg.log",
+    "filter": "program.webm.ffmpeg.filter",
+    "largest_cut_delay_ms": 340,
+    "finished_utc": 1795783505.7023692
+  },
+  "notes": []
+}

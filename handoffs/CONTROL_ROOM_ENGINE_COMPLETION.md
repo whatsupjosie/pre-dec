@@ -25,20 +25,22 @@ Updated 2026-11-27. Josie approved this order ("break that up into a workflow an
 intercom → preflight → fault tests → 30-minute endurance → handoff. All five are done; see the Dated log.
 
 1. Read "Regression run" at the end; if any failure is listed as NEW, fix it first.
-2. Open defect A (Known defects 7): `tests/test_recording_modes_e2e.py::test_data_only_records_no_picture_every_sound_and_the_show_data`
+2. Open defect B, first (Known defects 8): sound-only WAV files drift long, up to 0.88 s in 30 minutes. This decides
+   whether a data-only take can be reconstructed in sync to the end.
+3. Open defect A (Known defects 7): `tests/test_recording_modes_e2e.py::test_data_only_records_no_picture_every_sound_and_the_show_data`
    fails most runs: a sound file is 7.06 s against a 7.0 s bound. It fails the same way at 8fc67042, before the
    capture changes of 2026-11-27 (RAN 4 of 4), so it is not from them. Two explanations are in Known defects 8;
    the likelier one is that the test times the take from after the start's 0.6 s startup check, so the file is
    longer than the test's clock, not the take's. Tell them apart, then fix the cause or the test, with evidence.
-3. Josie's decision, still open: camcorder pause gaps (Known defects 2).
-4. Still not done from Phase 5: renderer interruption (kill the headless browser mid-reconstruction), network-camera
+4. Josie's decision, still open: camcorder pause gaps (Known defects 2).
+5. Still not done from Phase 5: renderer interruption (kill the headless browser mid-reconstruction), network-camera
    loss mid-take beyond an encoder dying (the source stops sending), a guest dropping, through the real host
    (unit-tested only), restart recovery of a reconstruction job, and export of a take with reconstructions.
-5. Windows (Josie's laptop): run `tests/test_recording_faults_e2e.py` needs Linux (it uses /proc and tmpfs). On
+6. Windows (Josie's laptop): run `tests/test_recording_faults_e2e.py` needs Linux (it uses /proc and tmpfs). On
    Windows, check by hand: start a take, end the host in Task Manager, and see that no ffmpeg.exe stays running
    (modules/child_lifetime.py, the job object, is NOT TESTED). Also open a fragmented MP4 take in the editor Josie
    uses (GUESS: current editors read them; not checked).
-6. The three debugging rounds of the assignment: not yet run as separate rounds.
+7. The three debugging rounds of the assignment: not yet run as separate rounds.
 
 ## Master checklist
 
@@ -97,7 +99,8 @@ Phase 5, reliability (2026-11-27)
       FIXED: encoders and the program assembler used to outlive the host. Windows mechanism NOT TESTED.
 - [x] The disk filling mid-take: stop says "No space left ... retry", keeps every file; gate refuses; with room a
       second stop finishes the take. RAN.
-- [x] 30-minute endurance, all three modes at once: see the Dated log for the result.
+- [x] 30-minute endurance, all three modes at once: PASSED on df765bbb (see "Endurance"). Open: sound-only drift
+      (Known defects 8).
 - [ ] Renderer interruption, a source that stops sending, a guest dropping through the real host, export with
       reconstructions (Exact next task 4).
 - [ ] The three debugging rounds as separate rounds.
@@ -311,13 +314,14 @@ RAN, 2026-11-26 (Linux):
 6. The Rust `ws_renderer` still renders nothing; reconstruction does not use it.
 7. (2026-11-27) The data-only e2e test fails most runs: a sound file 7.06 s against a 7.0 s bound. It fails the same
    way at 8fc67042, before the capture changes (RAN 4 of 4). Exact next task 2. See 8 for a likely cause.
-8. (2026-11-27) Measured fact: in the 2-minute endurance trial each sound file ran 0.24 to 0.41 s longer than the
-   take as the test timed it (120.06 s). Two explanations, NOT yet told apart:
-   (a) the test starts its clock after `/api/recording/start` returns, and the start waits 0.6 s
-       (`_STARTUP_CHECK_SECONDS`) after spawning the encoders, so the files begin before the test's clock;
-   (b) FFmpeg's input analysis lets in sound from before the take.
-   (a) would also explain defect 7, whose overrun is the same each run (7.061333 s). Check against the take's own
-   `take_started_utc` and `stopped_at` before changing anything.
+8. (2026-11-27) Sound-only WAV files from network sources run longer than the take: 0.24–0.41 s over 2 minutes,
+   0.30–0.88 s over 30 minutes (endurance, both RAN). The camcorder files' own sound (Opus in WebM) and the program's
+   sound do NOT do this (within 0.07 s). Because the excess grows, part of it is drift, not a fixed start offset.
+   GUESS at the cause: the WAV path writes every decoded sample with no clock correction, while the muxed
+   files follow the input timestamps. The effect: a data-only reconstruction places each WAV by its measured
+   start, so near the end of a 30-minute take its sound could sit up to about 0.9 s off the picture.
+   Next step: measure a tone's phase against the camera clock along the file, then decide on `aresample=async`
+   or timestamp-driven writing. Defect 7 (a 7.06 s file for a 6 s take) may be the start of the same thing.
 9. (2026-11-27) Windows: `modules/child_lifetime.py`'s job object is NOT TESTED. If it fails, it logs one warning and
    recording works as before, but encoders may outlive a killed host there.
 10. (2026-11-27) A live MP4/MOV is now a fragmented MP4. FFmpeg, browsers and the program assembly read it (RAN).
@@ -335,7 +339,8 @@ RAN, 2026-11-26 (Linux):
 - 3fcdff9e Recording preflight: check the machine, and gate every start
 - c344d400 READ notes: correct the preflight row
 - 7c1809de Faults mid-take: crash-safe live files, encoders end with the host, a dead program encoder
-- (next) the assembler, the join and reconstruction tied to the host; the endurance tool; this handoff
+- df765bbb Main camera: cuts keep up, the program stays on the clock; assembler tied to the host
+- (next) endurance result, evidence, this handoff
 
 ## Dated log
 - 2026-11-26 07:58–10:30 (Los Angeles): recovery comparison; base moved to ec7895a; renderer proven; dissolve fix;
@@ -344,22 +349,59 @@ RAN, 2026-11-26 (Linux):
   hang, the late pause window, meter blocks (256 KB writes), a missing file during input probing, and the
   `-stats_period` regression.
 
+- 2026-11-27 01:00–04:00 (Los Angeles), after Josie's "break that up into a workflow and let's knock them off":
+  - **Intercom**: ported, and proved through the real host (8fc67042).
+  - **Preflight**: the build already had it, newer than the parked copy. The parts index had wrongly said it was
+    not live; that is corrected. Extended with machine checks and a gate on every start (3fcdff9e).
+  - **Fault tests**: through the real host. They found and drove fixes for:
+    - crash-unsafe live files;
+    - encoders outliving a killed host;
+    - a dead program encoder misplaced, with the program cut short (7c1809de).
+  - **First 30-minute endurance run** (code before df765bbb), all three modes at once, 89 cuts, 30 PA
+    announcements:
+    - host memory 195.6 → 197.4 MB;
+    - every file decodes cleanly and runs 1800.06–1800.41 s for 1800.09 s of take;
+    - picture and sound within 0.07 s of each other in every file.
+    - It failed on one thing: the program ran 0.74 s long (the assembly's own warning).
+    - That raw report was lost to pytest's temp-folder rotation; the numbers here are copied from this session's
+      printout of it.
+  - **A 4-minute run with a cut every 3 s** then found cuts falling 13 s behind. Both are fixed (df765bbb):
+    80 of 80 cuts, median 92 ms late, program within 8 ms.
+  - **The 30-minute run on the final code** (df765bbb): passed; see "Endurance" below.
+
 ## Regression run
 
-RAN 2026-11-26, after the last code change: 40 test files in one run (every non-browser test file whose name starts
-with capture, recording, camera, blackbox_capture, segmented_capture, live_sources, frontend_startup,
-module_router_parity, main_route_authorization, timeline, studio_console, production, program_audio,
-participant_audio, switcher, stage_compat, 2_5d or studio25d, plus this branch's four new files).
-Result: **458 passed, 1 failed, 3 skipped**, in 13 min 15 s.
+RAN 2026-11-27 03:46, on df765bbb (the last code change). 46 test files in one run: every non-browser test file
+whose name has record, capture, segment, production, reconstruct, switch, camera, studio_console, timeline,
+preflight, intercom, program_audio, participant_audio, performance, range_pres, preservation, crash_safety or
+faults.
+Result: **473 passed, 2 failed, 3 skipped**, in 13 min 56 s. Neither failure is new:
+- `test_recording_modes_e2e.py::test_data_only_records_no_picture_every_sound_and_the_show_data`: known defect 7.
+  It fails the same way at 8fc67042, before the capture changes.
+- `test_recording_pipeline_e2e.py::test_recording_holds_picture_and_sound_for_the_whole_take[broadcast_mp4-...]`:
+  "no capture warnings" under load, the same as on 2026-11-26. Run alone right after: 2 of 2 passed. This
+  includes the broadcast MP4 case, now written as a fragmented MP4.
 
-The one failure: `tests/test_recording_pipeline_e2e.py::test_recording_holds_picture_and_sound_for_the_whole_take[broadcast_mp4-h264-aac-mp4]`,
-on its "no capture warnings" assertion (a 1080p H.264 take).
-- Rerun alone: 3 of 3 passed on this branch, and 3 of 3 on the base ec7895a, in a separate worktree (RAN).
-- handoffs/STUDIO_ASSEMBLY_2026-11-23.md records the same test failing the same way once under load, on the base.
-- GUESS, not proven: the encoder briefly ran under real time while two cores ran 40 suites, and the engine rightly
-  warned. Not caused by this branch, as far as these runs show.
+The 3 skips: browser tests (Playwright's Chromium is not installed here). NOT RUN, not passed.
+Not in this run: the full suite (over 3,000 tests).
 
-The 3 skips: browser tests whose Playwright build differs from the installed Chromium. They are NOT RUN, not passed.
+Earlier, 2026-11-26: 40 files, 458 passed, 1 failed (the same broadcast_mp4 load case), 3 skipped.
 
-Not in this run: the full suite (over 3,000 tests, about 50 minutes). Its last full run was before this branch, and
-is recorded in STUDIO_ASSEMBLY_2026-11-23.md.
+## Endurance
+
+`tools/acceptance/test_engine_endurance.py`, excluded from ordinary collection. Command (PowerShell 5):
+`$env:PUBCAST_ENDURANCE_SECONDS = "1800"; python -m pytest -s -p no:cacheprovider tools\acceptance\test_engine_endurance.py`
+(`PUBCAST_ENDURANCE_CUT_EVERY` sets the seconds between cuts; default 20). It needs UDP multicast on loopback and
+FFmpeg, and it uses /proc to find encoders, so as written it runs on Linux only. NOT RUN on Windows.
+
+RAN 2026-11-27 04:06–05:03 on df765bbb: **passed** (56 min 20 s including checking). All three recording modes
+at once on one host (2 cores), two cameras, a cut every 20 s, a PA announcement every minute. The report and the
+main-camera take record are kept in `evidence/engine-endurance-2026-11-27/`.
+- 1800.17 s of take. Host memory 195.3 → 197.7 MB. 89 cuts and 30 announcements, none refused.
+- Every cut recorded, median 29 ms late, worst 340 ms.
+- Program: 90 pieces, 1800.141 s, expected 1800.133 s, no warning; picture and sound 0.001 s apart.
+- Camcorder files 1800.166 s each; picture and sound within 0.07 s. Every file (7 whole files, 90 program pieces)
+  decodes cleanly from start to end.
+- Sound-only files (data only, and main camera's per-camera sound) ran **0.30 to 0.88 s longer** than the take
+  (1800.47 to 1801.05 s). See Known defects 8: this grew from 0.24–0.41 s in a 2-minute run, so part of it builds
+  up over time.
