@@ -17,7 +17,7 @@
     return typeof detail==="string"?detail:Array.isArray(detail)?detail.map(x=>x?.msg||String(x)).join("; "):`HTTP ${status}`;
   }
   async function request(path,body){
-    const options={cache:"no-store"};
+    const options={cache:"no-store",signal:AbortSignal.timeout(8000)};
     if(body!==undefined)Object.assign(options,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const res=await fetch(path,options);
     const data=await res.json().catch(()=>null);
@@ -38,19 +38,19 @@
     const status=document.createElement("output");status.setAttribute("role","status");status.style.display="block";
     const check=document.createElement("button");check.type="button";check.textContent="CHECK READINESS";
     panel.append(modeLabel,legend,sourceList,check,status);
-    let snapshot=null,selection=new Set(),explicit=false,signature="",locked=false;
+    let snapshot=null,selection=new Set(),explicit=false,signature="",locked=false,checking=false,revision=0;
     function setSnapshot(next){
       if(!next||!Array.isArray(next.sources))return;
       snapshot=next;
       const key=JSON.stringify([next.program,next.sources.map(s=>[s.id,s.name])]);
       if(key===signature)return;
-      signature=key;
+      signature=key;revision++;status.textContent="Registry changed; readiness must be rechecked.";
       if(!explicit)selection=new Set(next.program?[String(next.program)]:[]);
       sourceList.replaceChildren();
       for(const src of next.sources){
         const label=document.createElement("label"),input=document.createElement("input"),sid=String(src.id);
         label.style.display="block";input.type="checkbox";input.checked=selection.has(sid);
-        input.addEventListener("change",()=>{explicit=true;input.checked?selection.add(sid):selection.delete(sid);status.textContent="Selection changed; check readiness again.";});
+        input.addEventListener("change",()=>{explicit=true;revision++;input.checked?selection.add(sid):selection.delete(sid);status.textContent="Selection changed; check readiness again.";});
         label.append(input,document.createTextNode(" "+(src.name||sid)+(sid===String(next.program)?" (Program)":"")));
         sourceList.append(label);
       }
@@ -59,27 +59,31 @@
       for(const sid of selection)if(!known.has(sid)){
         const label=document.createElement("label"),input=document.createElement("input");
         label.style.display="block";input.type="checkbox";input.checked=true;
-        input.addEventListener("change",()=>{if(!input.checked){selection.delete(sid);label.remove();}});
+        input.addEventListener("change",()=>{if(!input.checked){selection.delete(sid);revision++;label.remove();status.textContent="Selection changed; check readiness again.";}});
         label.append(input,document.createTextNode(" "+sid+" (unavailable; deselect to continue)"));sourceList.append(label);
       }
       setLocked(locked);
     }
-    function setLocked(value){locked=!!value;mode.disabled=locked;check.disabled=locked;sourceList.querySelectorAll("input").forEach(x=>x.disabled=locked);}
+    function setLocked(value){locked=!!value;const disabled=locked||checking;mode.disabled=disabled;check.disabled=disabled;sourceList.querySelectorAll("input").forEach(x=>x.disabled=disabled);}
     async function prepare(){
+      if(checking)throw Error("Readiness check already in progress");checking=true;setLocked(locked);
+      try{
       setSnapshot(await request("/api/switcher/state"));
-      const payload=buildPayload(snapshot,mode.value,[...selection]);
+      const payload=buildPayload(snapshot,mode.value,[...selection]);const checkedRevision=revision;
       status.textContent="Checking selected sources and recording profile...";
       const report=await request("/api/recording/preflight",{sources:payload.sources,profile_id:payload.profile_id,host_override:false});
-      if(!Array.isArray(report.issues))throw Error("Invalid readiness report");
+      if(checkedRevision!==revision)throw Error("Camera registry or selection changed during readiness check");
+      if(typeof report.ready!=="boolean"||!Array.isArray(report.issues))throw Error("Invalid readiness report");
       // Existing preflight is video-oriented. Data-only intentionally writes no pictures.
       const issues=report.issues.filter(x=>!(payload.mode==="data_only"&&x.code==="source_not_recordable"));
       if(issues.length||(!report.ready&&report.issues.length===0))throw Error(issues.map(x=>x.message||x.code).join("; ")||"Recording preflight not ready");
       const warnings=(report.warnings||[]).map(x=>x.message||x.code).filter(Boolean);
-      status.textContent="Source/profile checks passed; actual capture must still be confirmed."+(warnings.length?" Warnings: "+warnings.join("; "):"");
+      status.textContent=(report.ready?"Source/profile checks passed; actual capture must still be confirmed.":"Data-only: video readiness not confirmed; server must validate the data recording.")+(warnings.length?" Warnings: "+warnings.join("; "):"");
       return payload;
+      }finally{checking=false;setLocked(locked);}
     }
-    mode.addEventListener("change",()=>{status.textContent="Mode changed; check readiness again.";});
-    check.addEventListener("click",async()=>{check.disabled=true;try{await prepare();}catch(e){status.textContent="Not ready: "+e.message;}finally{check.disabled=mode.disabled;}});
+    mode.addEventListener("change",()=>{revision++;status.textContent="Mode changed; check readiness again.";});
+    check.addEventListener("click",async()=>{check.disabled=true;try{await prepare();}catch(e){status.textContent="Not ready: "+e.message;}finally{setLocked(locked);}});
     status.textContent="Waiting for verified camera registry.";
     return {setSnapshot,setLocked,prepare};
   }

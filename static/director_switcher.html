@@ -625,7 +625,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
         <div style="height:10px"></div>
         <div class="button-grid cameras" id="programButtons"></div>
         <div style="height:14px"></div>
-        <div id="operatorRecordingOptions" style="margin-bottom:12px"></div>
+        <div id="operatorRecordingOptions" style="margin-bottom:12px"></div><button id="recReconcile" type="button">CHECK TAKE STATUS</button><button id="recRelease" type="button" hidden>RELEASE MISSING TAKE</button>
         <div class="button-grid transport">
           <button class="switch cut-button" type="button" id="cutBtn">CUT</button>
           <button class="switch" type="button" id="fadeBtn">FADE</button>
@@ -688,6 +688,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
+<script src="/static/operator_recording_session.js"></script>
 <script src="/static/operator_recording_library.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
 <script src="/static/operator_confidence_guard.js"></script>
@@ -870,7 +871,7 @@ function renderDangerPanel() {
 }
 
 function exportDetail() {
-  if (recording) return "not ready while recording/local REC is active";
+  if (sessionTracker.view().id) return "not ready until the local take is confirmed closed";
   if (activeRecordingSessionId) return `stopped session ${activeRecordingSessionId} can request recording export`;
   if (backendTruth.health && !backendTruth.health.error) return "backend reachable; export package still requires recording/project proof";
   return "backend status unavailable; export readiness not proven";
@@ -1050,92 +1051,26 @@ async function fade(){
   finally{fadeInProgress=false;}
 }
 
-async function toggleRecord(btn) {
-  if(recordingBusy)return;recordingBusy=true;btn.disabled=true;
-  try{await toggleRecordInternal(btn);}finally{recordingBusy=false;btn.disabled=false;recordingOptions.setLocked(recording);}
-}
-async function toggleRecordInternal(btn) {
-  if (!recording) {
-    let options;
-    try{options=await recordingOptions.prepare();}catch(e){toast("REC BLOCKED");setTruthCard("truthRecording","bad","Not ready",e.message);return;}
-    failedRecordingSources = [];
-    const sessionId = `director_${Date.now()}`;
-    const started = await runStudioAction("recording.start", {
-      ...options,session_id: sessionId
-    }, {
-      spec: {safety: "confirm", label: "Start recording"}
-    });
-    if (started?.result?.session_id) {
-      activeRecordingSessionId = started.result.session_id;
-      failedRecordingSources = startFailures(started.result);
-      recording = true;
-      paused = false;
-      if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture failed to start for " + failedRecordingSources.join(", "));
-      else setTruthCard("truthRecording", "ok", "Backend REC", `Recording session ${activeRecordingSessionId} started`);
-    } else {
-      activeRecordingSessionId = "";
-      recording = false;
-      paused = false;
-      setTruthCard("truthRecording", "bad", "Blocked", "Recording did not start because the studio action was canceled or unavailable");
-    }
-  } else {
-    const stopped = activeRecordingSessionId ? await runStudioAction("recording.stop", {
-      session_id: activeRecordingSessionId,
-    }, {
-      spec: {safety: "confirm", label: "Stop recording"}
-    }) : null;
-    if (activeRecordingSessionId && !stopped) {
-      setTruthCard("truthRecording", "ok", "Backend REC", `Recording session ${activeRecordingSessionId} remains active`);
-      btn.classList.toggle("live", true);
-      return;
-    }
-    recording = false;
-    paused = false;
-    $("pauseBtn").textContent="PAUSE";$("pauseBtn").classList.remove("active-preview");
-    failedRecordingSources = [...new Set([...failedRecordingSources, ...startFailures(stopped?.result), ...stopFailures(stopped?.result)])];
-    if (failedRecordingSources.length) {
-      const detail = "Capture problems with " + failedRecordingSources.join(", ") + " (see the take's capture report)";
-      setTruthCard("truthRecording", "bad", "Incomplete take", detail);
-      log(detail);
-    } else setTruthCard("truthRecording", stopped ? "ok" : "warn", "Idle", stopped ? `Stopped backend session ${activeRecordingSessionId}` : "Stopped local-only REC state");
-  }
-  btn.classList.toggle("live", recording);
-  setTruthCard("truthExport", recording ? "bad" : "warn", recording ? "Locked" : "Check", exportDetail());
-  log(recording ? "backend recording confirmed" : "recording stop outcome checked");
-  toast(failedRecordingSources.length ? "CAPTURE PROBLEM: " + failedRecordingSources.join(", ") : recording ? "REC CONFIRMED" : "REC STOPPED");
-}
-
-async function pauseRecording(btn) {
-  if(recordingBusy)return;recordingBusy=true;btn.disabled=true;
-  try{await pauseRecordingInternal(btn);}finally{recordingBusy=false;btn.disabled=false;}
-}
-async function pauseRecordingInternal(btn) {
-  clickFlash(btn);
-  if (!recording) {
-    log("pause not wired: no active recording");
-    toast("NO REC");
-    return;
-  }
-  if(!activeRecordingSessionId){toast("NO BACKEND REC");return;}
-  const desired=!paused;
-  const result=await postJSON(`/api/recording/${encodeURIComponent(activeRecordingSessionId)}/pause`,{paused:desired});
-  if(!result){toast("PAUSE FAILED: "+lastPostError);setTruthCard("truthRecording","bad","Pause failed",lastPostError);return;}
-  if(!["active","paused"].includes(result.state)){toast("PAUSE UNCONFIRMED");return;}
-  paused=result.state==="paused";
-  failedRecordingSources=[...new Set([...failedRecordingSources,...startFailures({capture_errors:result.pause_problems})])];
-  btn.textContent=paused?"RESUME":"PAUSE";
-  btn.classList.toggle("active-preview",paused);
-  setTruthCard("truthRecording",failedRecordingSources.length?"bad":paused?"warn":"ok",failedRecordingSources.length?"Incomplete take":paused?"Backend Paused":"Backend REC",
-    failedRecordingSources.length?"Capture problems: "+failedRecordingSources.join(", "):`Backend confirmed pause=${paused}`);
-  log(paused?"backend recording paused":"backend recording resumed");
-  toast(failedRecordingSources.length?"CAPTURE PROBLEM: "+failedRecordingSources.join(", "):paused?"PAUSED":"RESUMED");
-}
+const sessionTracker=window.PubCastRecordingSession.create({key:"director_console_take_v1",adapter:studioActions,prepare:()=>recordingOptions.prepare(),onState:s=>{
+  activeRecordingSessionId=s.id||s.last;recording=s.live;paused=s.state==="paused";
+  failedRecordingSources=[...new Set([...startFailures(s.record),...stopFailures(s.record)])];
+  recordingOptions.setLocked(s.locked);
+  $("recordBtn").disabled=s.busy||!!s.id&&!s.canStop;
+  $("recordBtn").classList.toggle("live",s.live&&s.verified);
+  $("pauseBtn").disabled=!s.canPause;
+  $("pauseBtn").textContent=paused?"RESUME":"PAUSE";
+  $("pauseBtn").classList.toggle("active-preview",paused&&s.verified);
+  $("recRelease").hidden=!s.missing;
+  setTruthCard("truthRecording",!s.verified&&s.id||failedRecordingSources.length?"bad":s.live?"warn":"ok",failedRecordingSources.length?"Incomplete take":s.busy?"Working":s.state.toUpperCase(),(s.id||s.last||"No local take")+(failedRecordingSources.length?" | "+failedRecordingSources.join(", "):""));
+},onError:message=>{setTruthCard("truthRecording","bad","Take not confirmed",message);log(message);}});
+async function toggleRecord(btn){const s=sessionTracker.view();return s.id?sessionTracker.stop():sessionTracker.start();}
+async function pauseRecording(btn){return sessionTracker.pause();}
 
 async function marker() {
-  if(!activeRecordingSessionId){log("Marker denied: no confirmed backend recording");toast("NO REC");return;}
+  if(!sessionTracker.view().canPause){log("Marker denied: no confirmed backend recording");toast("NO REC");return;}
   const result=await postJSON(`/api/recording/${encodeURIComponent(activeRecordingSessionId)}/marker`,
-    {label:"Director marker",operator:"director"});
-  if(!result){toast("MARK FAILED");return;}
+    {label:"Director marker"});
+  if(!result?.ok){toast("MARK FAILED");return;}
   log("Director recording marker acknowledged");
   toast("MARK SAVED");
 }
@@ -1146,9 +1081,7 @@ async function panic() {
   const releaseConfidence=confidenceGuard.hold();
   let result;try{result=await postJSON("/api/production/panic",{});}finally{releaseConfidence();}
   if(!result){setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
-  if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
-    recording=false;paused=false;recordingOptions.setLocked(false);$("recordBtn").classList.remove("live");$("pauseBtn").textContent="PAUSE";
-  }
+  sessionTracker.panicResult(result);
   directorBlackout=!!result.blackout_cued;
   setTruthCard("truthRecording",result.ok?"warn":"bad",result.ok?"PANIC SENT":"PANIC PARTIAL",
     `${result.sessions_stopped?.length||0} sessions stopped; ${result.capture_errors?.length||0} capture errors; audio mute ${result.audio_muted?"confirmed":"unverified"}`);
@@ -1180,7 +1113,7 @@ async function preset(name,btn) {
 
 async function exportRecording(btn) {
   clickFlash(btn);
-  if (recording) {
+  if (sessionTracker.view().id) {
     setTruthCard("truthExport", "bad", "Locked", "Stop recording before export");
     log("export blocked: recording is active");
     toast("EXPORT LOCKED");
@@ -1218,8 +1151,7 @@ async function refreshTruth() {
   refreshSwitcherState();
   setTruthCard("truthHealth", health.error ? "bad" : "ok", health.error ? "Offline" : "OK", health.error || `cameras=${health.systems?.cameras ?? "?"} recording_profiles=${health.systems?.recording_profiles ?? "?"}`);
   const studioState = studio.state || studio.status || (studio.available ? "available" : "unavailable");
-  if (failedRecordingSources.length) setTruthCard("truthRecording", "bad", "Incomplete take", "Capture problems with " + failedRecordingSources.join(", "));
-  else setTruthCard("truthRecording", recording ? "bad" : (studio.available ? "ok" : "warn"), recording ? "Local REC" : "Idle", `studio=${studioState}; duration=${Math.round(studio.recording_duration || 0)}s; recording pipeline not proven without browser/backend test`);
+  sessionTracker.publish();sessionTracker.refresh();
   setTruthCard("truthMocap", mocap.available ? "ok" : "bad", mocap.available ? "Available" : "Unavailable", mocap.error || JSON.stringify(mocap).slice(0, 90));
   await refreshAudioTruth();
   setTruthCard("truthTimeline", timeline.error ? "bad" : "ok", timeline.state || "Unknown", `progress=${Math.round((timeline.progress || 0) * 100)}% timeline=${timeline.timeline_name || timeline.timeline || "none"}`);
@@ -1311,6 +1243,8 @@ function init() {
   $("controlChatBtn").onclick = () => togglePanel("controlChatPanel");
   $("selfTestBtn").onclick = runSelfTest;
   $("refreshTruthBtn").onclick = refreshTruth;
+  $("recReconcile").onclick=()=>sessionTracker.refresh();$("recRelease").onclick=()=>sessionTracker.releaseMissing(id=>window.confirm("No server record found for "+id+". Release only after checking no pending capture remains?"));
+  sessionTracker.publish();sessionTracker.refresh();const takePoll=setInterval(()=>sessionTracker.refresh(),1500);window.addEventListener("pagehide",()=>{clearInterval(takePoll);sessionTracker.dispose();});
   $("openTakeLibrary").onclick=()=>{togglePanel("takeLibraryPanel",true);takeLibrary.refresh(activeRecordingSessionId);};
   document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => togglePanel(btn.dataset.close, false));
   $("publicChatForm").onsubmit = (ev) => { ev.preventDefault(); sendLocalChat("public", "publicChatInput", "publicChatLog"); };

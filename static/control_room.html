@@ -139,7 +139,7 @@ body{
   <button data-station="timeline">TIMELINE</button>
 </div>
 <div id="station-director" class="station-panel hidden"><h3>DIRECTOR / SWITCHER</h3><p style="font-size:10px;color:var(--cream-dim)">Use the console above. Keys: 1â€“5 cameras, SPACE cut, R record, ESC panic, M mute, D cycle modes.</p></div>
-<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="operatorRecordingOptions"></div><div id="rec-active-panel" style="display:none;margin-top:6px"><button id="operatorPause" onclick="togglePause()">PAUSE</button> <button onclick="toggleRec()">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
+<div id="station-recorder" class="station-panel hidden"><h3>RECORDING</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span id="rec-status-badge" style="background:#555">IDLE</span><span id="rec-active-id" style="font-size:10px;color:var(--cream-dim)"></span><span id="rec-active-timer" style="font-family:'Courier Prime';font-size:13px;color:var(--crt-green)"></span></div><div id="operatorRecordingOptions"></div><button type="button" id="recReconcile">CHECK TAKE STATUS</button> <button type="button" id="recRelease" hidden>RELEASE MISSING TAKE</button><div id="rec-active-panel" style="display:none;margin-top:6px"><button id="operatorPause" onclick="togglePause()">PAUSE</button> <button onclick="toggleRec()">STOP</button></div><div id="rec-storage" style="margin-top:8px;font-size:10px;color:var(--cream-dim)">Storage info loadingâ€¦</div><button id="rec-storage-refresh" style="margin-top:4px">REFRESH</button></div>
 <div id="station-chyron" class="station-panel hidden"><h3>CHYRON / LOWER THIRD</h3><input id="chy-lower" maxlength="240" placeholder="Lower third textâ€¦" style="width:100%;margin-bottom:6px"><button id="chy-apply">APPLY</button> <button id="chy-clear" type="button">CLEAR</button></div>
 <div id="station-prompter" class="station-panel hidden"><h3>TELEPROMPTER</h3><textarea id="pro-script" rows="4" placeholder="Paste script hereâ€¦" style="width:100%;resize:vertical;margin-bottom:6px"></textarea><div style="display:flex;gap:8px;align-items:center"><button id="pro-start">START</button><button id="pro-stop">STOP</button> <button id="pro-handoff" type="button">SEND SCRIPT TO FULL TELEPROMPTER</button> <a href="/static/pubcast_teleprompter.html" target="_blank" rel="noopener">Open without transfer</a><label style="font-size:10px">Speed <input id="pro-speed" type="number" min="1" max="20" value="5" style="width:50px"></label></div></div>
 <div id="station-vtr" class="station-panel hidden"><h3>VTR PLAYBACK</h3><input id="vtr-asset" placeholder="Local replay asset: vod/clip.mp4" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:8px"><button id="vtr-load">LOAD</button><button id="vtr-play">PLAY</button><button id="vtr-stop">STOP</button></div><video id="vtr-confidence" controls playsinline preload="metadata" style="width:100%;max-height:240px" hidden></video><p>Local confidence playback is separate from Program output.</p></div>
@@ -148,6 +148,7 @@ body{
 <div class="hk-bar"><span class="hk">1â€“5</span> CAMERAS Â· <span class="hk">SPACE</span> CUT Â· <span class="hk">R</span> REC Â· <span class="hk">ESC</span> PANIC Â· <span class="hk">M</span> MUTE ALL Â· <span class="hk">D</span> DIRECTOR</div>
 <script src="/static/studio_console_hotspots.js"></script>
 <script src="/static/operator_recording_controls.js"></script>
+<script src="/static/operator_recording_session.js"></script>
 <script src="/static/studio25d_remote_feed.js"></script>
 <script src="/static/operator_confidence_guard.js"></script>
 <script>
@@ -162,6 +163,23 @@ let recordingBusy=false,recordingPaused=false;
 // The server lists each source that failed to record as {source_id, error, phase}.
 function captureFailures(list){return [...new Set((Array.isArray(list)?list:[]).map(item=>String(item?.source_id||'a source')))]}
 let pgm='',pvw='',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
+const sessionTracker=window.PubCastRecordingSession.create({key:"image_console_take_v1",adapter:studioActions,prepare:()=>recordingOptions.prepare(),onState:s=>{
+  activeRecordingSessionId=s.id;isRec=s.live;recordingPaused=s.state==="paused";recStart=Number(s.record?.started_at)*1000||Date.now();
+  failedRecordingSources=captureFailures(s.record?.capture_errors);
+  recordingOptions.setLocked(s.locked);
+  document.getElementById("rec-active-id").textContent=s.id||s.last;
+  document.getElementById("rec-status-badge").textContent=s.busy?"WORKING":s.state.toUpperCase();
+  document.getElementById("rec-active-panel").style.display=s.id?"block":"none";
+  document.getElementById("operatorPause").disabled=!s.canPause;
+  document.getElementById("operatorPause").textContent=recordingPaused?"RESUME":"PAUSE";
+  document.querySelector("#rec-active-panel button:last-child").disabled=!s.canStop;
+  document.getElementById("recRelease").hidden=!s.missing;
+  document.getElementById("tRec").disabled=s.busy||!!s.id&&!s.canStop;
+  document.getElementById("hudRec").classList.toggle("on",s.live&&s.verified);
+  if(!s.live)document.getElementById("hudTime").textContent="00:00:00";
+  updateUI();
+  if(!s.verified&&s.id)document.getElementById("srRec").textContent="TAKE UNVERIFIED: "+s.id;
+},onError:message=>{document.getElementById("srRec").textContent=message;}});
 let audioMuted=[false,false,false,false,false];
 let controlBlackout=false,lastPanic=0,lastBlackout=0;
 let cameraBank=0,cameraGroup="",activeSourceList=[],lastSwitcherSnapshot=null;
@@ -234,7 +252,7 @@ function updateUI(){
   MODES.forEach(m=>{const el=document.getElementById(MODE_BTN_MAP[m]);if(el)el.className='hotspot round'+(mode===m?' pvw-active':'')});
   document.getElementById('srMode').textContent='MODE: '+mode.toUpperCase();
   document.getElementById('srCam').textContent='PGM: '+(pc?'CAM '+pc.n:'BLACK');
-  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(recordingPaused?'PAUSED':isRec?'â— ON':'OFF');
+  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(sessionTracker.view().id&&!sessionTracker.view().verified?'UNVERIFIED':recordingPaused?'PAUSED':isRec?'â— ON':'OFF');
   document.getElementById('tRec').className='hotspot rect'+(isRec?' rec-active':'');
 }
 async function setPGM(id){
@@ -251,51 +269,15 @@ async function cut(){
   try{await sharedSwitcher("/api/switcher/cut");}
   catch(e){document.getElementById("srCam").textContent="CUT FAILED: "+e.message;}
 }
-async function toggleRec(){
-  if(recordingBusy)return;recordingBusy=true;
-  try{await toggleRecInternal();}finally{recordingBusy=false;recordingOptions.setLocked(isRec);}
-}
-async function toggleRecInternal(){
-  if(!isRec){
-    let options;
-    try{options=await recordingOptions.prepare();}catch(e){document.getElementById("srRec").textContent="REC BLOCKED: "+e.message;return;}
-    const started=await runStudioAction('recording.start',{...options,session_id:`image_console_${Date.now()}`},{safety:'confirm',label:'Start recording'});
-    if(!started||!started.result||!started.result.session_id)return;
-    activeRecordingSessionId=started.result.session_id;failedRecordingSources=captureFailures(started.result.capture_errors);isRec=true;recordingPaused=false;recStart=Date.now();
-    document.getElementById('rec-active-panel').style.display='block';document.getElementById('rec-active-id').textContent=activeRecordingSessionId;document.getElementById('rec-status-badge').textContent='REC';document.getElementById('operatorPause').textContent='PAUSE';
-  }else{
-    const stopped=activeRecordingSessionId?await runStudioAction('recording.stop',{session_id:activeRecordingSessionId},{safety:'confirm',label:'Stop recording'}):null;
-    if(activeRecordingSessionId&&!stopped)return;
-    failedRecordingSources=[...new Set([...failedRecordingSources,...captureFailures(stopped?.result?.capture_errors)])];
-    activeRecordingSessionId='';isRec=false;recordingPaused=false;document.getElementById('rec-active-id').textContent='';document.getElementById('rec-status-badge').textContent='IDLE';document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudTime').textContent='00:00:00';
-  }
-  document.getElementById('hudRec').classList.toggle('on',isRec);document.getElementById('liveTag').style.display=isRec?'block':'none';updateUI()
-}
-async function togglePause(){
-  if(recordingBusy||!isRec||!activeRecordingSessionId)return;
-  recordingBusy=true;
-  try{
-    const response=await fetch('/api/recording/'+encodeURIComponent(activeRecordingSessionId)+'/pause',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paused:!recordingPaused})});
-    const result=await response.json().catch(()=>null);
-    if(!response.ok)throw Error(window.PubCastRecordingControls.errorText(result,response.status));
-    if(!['active','paused'].includes(result?.state))throw Error('Pause state not confirmed');
-    recordingPaused=result.state==='paused';
-    document.getElementById('operatorPause').textContent=recordingPaused?'RESUME':'PAUSE';
-    failedRecordingSources=[...new Set([...failedRecordingSources,...captureFailures(result.pause_problems)])];
-    document.getElementById('rec-status-badge').textContent=recordingPaused?'PAUSED':'REC';
-    document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):recordingPaused?'REC: PAUSED':'REC: ON';
-  }catch(e){document.getElementById('srRec').textContent='PAUSE FAILED: '+e.message;}
-  finally{recordingBusy=false;}
-}
+async function toggleRec(){const s=sessionTracker.view();return s.id?sessionTracker.stop():sessionTracker.start();}
+async function togglePause(){return sessionTracker.pause();}
 async function panic(){
   const releaseConfidence=confidenceGuard.hold();
   try{
     const response=await fetch("/api/production/panic",{method:"POST"});
     if(!response.ok)throw Error("HTTP "+response.status);
     const result=await response.json();
-    if(activeRecordingSessionId&&result.sessions_stopped?.includes(activeRecordingSessionId)){
-      activeRecordingSessionId='';isRec=false;recordingPaused=false;recordingOptions.setLocked(false);document.getElementById('rec-active-panel').style.display='none';document.getElementById('hudRec').classList.remove('on');updateUI();
-    }
+    sessionTracker.panicResult(result);
     if(result.blackout_cued)document.getElementById("pgmFeedText").textContent="PANIC BLACKOUT CUED";
     document.getElementById("srMode").textContent=result.ok?"PANIC CONFIRMED":"PANIC PARTIAL: "+(result.capture_errors?.length||0)+" ERRORS";
     if(!result.ok)console.warn("PANIC partial failure",result.capture_errors);
@@ -367,9 +349,12 @@ setInterval(()=>refreshCanonical().catch(()=>{}),1200);
 setInterval(()=>refreshProductionTruth().catch(()=>{}),900);
 setInterval(()=>refreshAudioTruth().catch(()=>{}),3500);
 refreshCanonical();refreshProductionTruth();refreshAudioTruth();confidenceGuard.poll();
+sessionTracker.publish();sessionTracker.refresh();const takePoll=setInterval(()=>sessionTracker.refresh(),1500);
+document.getElementById("recReconcile").onclick=()=>sessionTracker.refresh();document.getElementById("recRelease").onclick=()=>sessionTracker.releaseMissing(id=>window.confirm("No server record found for "+id+". Release this local claim only after checking no pending capture remains?"));
+window.addEventListener("pagehide",()=>{clearInterval(takePoll);sessionTracker.dispose();});
 const confidencePoll=setInterval(()=>confidenceGuard.poll(),800),framePoll=setInterval(()=>confidenceViewer?.refresh().catch(()=>{}),350);
 window.addEventListener("pagehide",()=>{clearInterval(confidencePoll);clearInterval(framePoll);confidenceGuard.stop();});
-function connectWS(){try{ws=new WebSocket(window.ReachAuth.websocketURL('/ws/controlroom'));ws.onmessage=e=>{try{const m=JSON.parse(e.data);handleWsEvent(m);if(typeof window.__pubcastStationsHook==='function'&&(!m.type?.startsWith('recording_')||m.payload?.session_id===activeRecordingSessionId))window.__pubcastStationsHook(m)}catch{}};ws.onclose=()=>setTimeout(connectWS,3000)}catch{}}
+function connectWS(){try{ws=new WebSocket(window.ReachAuth.websocketURL('/ws/controlroom'));ws.onmessage=e=>{try{const m=JSON.parse(e.data);handleWsEvent(m);if(typeof window.__pubcastStationsHook==='function'&&!m.type?.startsWith('recording_'))window.__pubcastStationsHook(m)}catch{}};ws.onclose=()=>setTimeout(connectWS,3000)}catch{}}
 function handleWsEvent(m){
   switch(m.type){
     case 'director_cut':
@@ -417,27 +402,12 @@ function handleWsEvent(m){
       break;
     }
     case 'recording_started':
-      if(!activeRecordingSessionId||activeRecordingSessionId!==m.payload?.session_id)break;
-      failedRecordingSources=captureFailures(m.payload?.capture_errors);
-      activeRecordingSessionId=m.payload.session_id;isRec=true;recordingPaused=false;recStart=Date.now();recordingOptions.setLocked(true);
-      document.getElementById('hudRec').classList.add('on');
-      document.getElementById('liveTag').style.display='block';
-      updateUI();
-      break;
+    case 'recording_active':
     case 'recording_paused':
     case 'recording_resumed':
-      if(!activeRecordingSessionId||m.payload?.session_id!==activeRecordingSessionId)break;
-      recordingPaused=m.type==='recording_paused';document.getElementById('operatorPause').textContent=recordingPaused?'RESUME':'PAUSE';updateUI();break;
     case 'recording_stopped':
     case 'recording_archived':
-      if(!activeRecordingSessionId||m.payload?.session_id!==activeRecordingSessionId)break;
-      activeRecordingSessionId='';recordingPaused=false;recordingOptions.setLocked(false);document.getElementById('rec-active-id').textContent='';document.getElementById('rec-status-badge').textContent='IDLE';document.getElementById('rec-active-panel').style.display='none';
-      if(m.payload?.capture_errors)failedRecordingSources=captureFailures(m.payload.capture_errors);
-      isRec=false;
-      document.getElementById('hudRec').classList.remove('on');
-      document.getElementById('hudTime').textContent='00:00:00';
-      document.getElementById('liveTag').style.display='none';
-      updateUI();
+      if(m.payload?.session_id===sessionTracker.view().id)sessionTracker.refresh();
       break;
   }
 }
