@@ -423,6 +423,7 @@ class Segment:
     report: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
     roles: List[Tuple[str, float]] = field(default_factory=list)
+    ended_early: bool = False            # its encoder stopped before it was told to (it crashed, or was killed)
 
     def to_dict(self, t0: float) -> Dict[str, Any]:
         rel = lambda value: None if value is None else round(value - t0, 4)
@@ -431,7 +432,7 @@ class Segment:
                 "media_offset": rel(self.media_offset), "first_frame_at": rel(self.first_frame_at),
                 "duration": self.duration, "has_audio": self.has_audio,
                 "roles": [{"role": role, "at": rel(at)} for role, at in self.roles], "error": self.error,
-                "report": self.report}
+                "ended_early": self.ended_early, "report": self.report}
 
 
 @dataclass
@@ -780,10 +781,24 @@ class ModeTake:
                          "the clock (a test pattern does this), so this piece's timing is not the take's")
         elif speed is not None and speed < 0.97 and wall >= 3.0:
             seg.error = f"the encoder fell behind real time ({speed:.2f}x), so this piece is shorter than its stretch"
+        # An encoder that died before it was told to stop (a crash, or killed) ended its file when it died, not at
+        # the stop request. Its last piece's timing says so (ended_early, with the moment it ended). Anchoring that
+        # file at the stop request put its picture seconds late and cut the program short (found by
+        # tests/test_recording_faults_e2e.py, 2026-11-27).
+        timing = (seg.report or {}).get("timing") or []
+        last = timing[-1] if timing else {}
+        file_end = seg.stop_requested_at
+        if last.get("ended_early") and last.get("end"):
+            file_end = min(seg.stop_requested_at, float(last["end"]))
+            seg.ended_early = True
+            died = self._clock(file_end) - self._clock(seg.spawned_at)
+            seg.error = seg.error or (f"its encoder stopped {died:.2f} s after it started, before it was told to: "
+                                      f"the program shows black from there ({seg.report.get('error') or 'no reason given'})")
         if seg.duration:
-            # FFmpeg writes every frame it read before it was told to stop, so the file ends at the stop request.
-            # Both times are take time (see _clock): a paused stretch is in neither the file nor the program.
-            seg.media_offset = self._clock(seg.stop_requested_at) - seg.duration
+            # FFmpeg writes every frame it read before it was told to stop, so the file ends at the stop request
+            # (or where the encoder died, above). Both times are take time (see _clock): a paused stretch is in
+            # neither the file nor the program.
+            seg.media_offset = self._clock(file_end) - seg.duration
             seg.first_frame_at = max(self._clock(seg.spawned_at), seg.media_offset)
         else:
             seg.error = seg.error or "no picture was written"
@@ -1191,7 +1206,7 @@ class ModeTake:
         script = self.dir / f"{out_path.name}.ffmpeg.filter"
         script.write_text(";\n".join(chains), encoding="utf-8")
         tmp = self.dir / f".{out_path.stem}.joining.{profile.container.value}"
-        args = _build_ffmpeg_output(profile, tmp)
+        args = _build_ffmpeg_output(profile, tmp, live=False)   # an offline render: an ordinary file
         cmd = [ffmpeg, "-y", "-hide_banner", "-nostdin", *inputs, "-filter_complex_script", script.name,
                "-map", "[vout]", "-map", "[aout]", *args[:-1], tmp.name]
         log_path = self.dir / f"{out_path.name}.ffmpeg.log"
@@ -1207,6 +1222,9 @@ class ModeTake:
         warnings: List[str] = []
         if not info.get("duration") or abs(info["duration"] - total) > tolerance:
             warnings.append(f"joined program lasts {info.get('duration')} s; the pieces add up to {total:.3f} s")
+        for seg in self.segments.values():
+            if getattr(seg, "ended_early", False) and any(p.get("segment") == seg.index for p in pieces):
+                warnings.append(f"{seg.source_id}: {seg.error}")
         os.replace(tmp, out_path)
         late = [c.get("late_by_ms") for c in self.cuts if c.get("late_by_ms") is not None]
         return {"state": "complete", "file": out_path.name, "duration": info.get("duration"), "expected_duration": round(total, 4),
@@ -1230,7 +1248,8 @@ class ModeTake:
                           stop_requested_at=absolute(item.get("stopped_at")), duration=item.get("duration"),
                           has_audio=bool(item.get("has_audio")), media_offset=absolute(item.get("media_offset")),
                           first_frame_at=absolute(item.get("first_frame_at")),
-                          report=item.get("report") or {}, error=item.get("error"))
+                          report=item.get("report") or {}, error=item.get("error"),
+                          ended_early=bool(item.get("ended_early")))
             if seg.first_frame_at is None and seg.file.is_file():
                 # The server stopped before this piece was closed: its start is the best estimate there is.
                 info = await asyncio.to_thread(probe_media, seg.file)

@@ -62,6 +62,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
+from modules import child_lifetime
 
 logger = logging.getLogger("pubcast.segmented_capture")
 
@@ -799,7 +800,9 @@ class SegmentedCaptureRecorder:
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=log_handle,
+                **child_lifetime.spawn_kwargs(),     # the encoder ends with the host (modules/child_lifetime.py)
             )
+            child_lifetime.adopt(proc.pid)
         except Exception as exc:
             log_handle.close()
             self._last_error = f"failed to start ffmpeg: {exc}"

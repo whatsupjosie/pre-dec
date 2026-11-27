@@ -31,6 +31,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlsplit, urlunsplit
 
+from . import child_lifetime
+
 logger = logging.getLogger(__name__)
 
 # ── FFmpeg resolution ──────────────────────────────────────────────────────────
@@ -296,8 +298,27 @@ def _piece_timing(cp: "_CaptureProcess", pieces: List["_Piece"], end: float) -> 
     return out
 
 
-def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
-    """Return FFmpeg codec/output arguments from an EncodingProfile."""
+# What a live recording loses if its encoder or the host dies mid-take (found by tests/test_recording_faults_e2e.py,
+# 2026-11-27). A plain MP4/MOV writes its index only at the end, so a killed encoder left a file nothing can open:
+# the whole camera was lost. WebM/MKV is readable, but FFmpeg held up to 5 s (or 5 MB) per cluster in memory, and a
+# camera killed in its first seconds left an empty file. Live capture therefore writes MP4/MOV as fragments
+# (ISO BMFF, read by FFmpeg, browsers and current editors), and closes a WebM/MKV cluster every second. Either way
+# a crash costs about a second, not the take.
+_CRASH_SAFE_MUXING = {
+    ".mp4": ["-movflags", "+frag_keyframe+empty_moov+default_base_moof", "-frag_duration", "1000000"],
+    ".mov": ["-movflags", "+frag_keyframe+empty_moov+default_base_moof", "-frag_duration", "1000000"],
+    ".m4a": ["-movflags", "+frag_keyframe+empty_moov+default_base_moof", "-frag_duration", "1000000"],
+    ".webm": ["-cluster_time_limit", "1000", "-cluster_size_limit", "1048576"],
+    ".mkv": ["-cluster_time_limit", "1000", "-cluster_size_limit", "1048576"],
+}
+
+
+def _build_ffmpeg_output(profile, output_path: Path, *, live: bool = True) -> List[str]:
+    """Return FFmpeg codec/output arguments from an EncodingProfile.
+
+    ``live`` (recording from a camera) makes the file survive a crash of its encoder or the host; an offline
+    render (``live=False``) is written the ordinary way.
+    """
     args: List[str] = []
 
     if profile.video_codec and not profile.is_audio_only:
@@ -328,6 +349,10 @@ def _build_ffmpeg_output(profile, output_path: Path) -> List[str]:
         # Write each sound packet as it is made. Without this FFmpeg writes a WAV in 256 KB blocks (2.7 s of 48 kHz
         # mono): live meters cannot read finer than that, and a crash loses whatever is still in the block.
         args += ["-flush_packets", "1"]
+    elif live:
+        muxing = _CRASH_SAFE_MUXING.get(Path(output_path).suffix.lower())
+        if muxing:
+            args += muxing + ["-flush_packets", "1"]
 
     args.append(str(output_path))
     return args
@@ -665,7 +690,9 @@ class FFmpegCaptureEngine:
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=log_file,
+                    **child_lifetime.spawn_kwargs(),     # the encoder ends with the host (modules/child_lifetime.py)
                 )
+                child_lifetime.adopt(proc.pid)
         except Exception as e:
             logger.error("Failed to start FFmpeg for %s: %s", source_id, e)
             return None
