@@ -242,3 +242,16 @@ Of the 599 engine-related candidates (the selection rule is in `tools/parts_inde
 
   The full list is in `missing_routes.json`, made by the route comparison in this folder.
 - **Everything else in the 599** not named in sections 1 to 8.
+
+## 9. New contents found in the Drive folders of extracted copies, 2026-11-26
+
+READ (structure; for the report, its first 60 lines). These seven contents are in no zip and no branch tip.
+
+| File | Drive id | Read | Verdict |
+|---|---|---|---|
+| `capture.py` (`aa6421f4`, 248 lines, Feb 2026), in pubcast_complete_debugged and codex_construction_pubblocks | 1qFb9l6de2e-GCKgmrMUOpXlk-Y8jGG7_, 1FWTcXEMQA8KUc3y_m1ksPtOPxbBP7U44 | structure | An earlier form of the capture engine: one FFmpeg per source. Older than the Prime-canon copy in section 3. Nothing to harvest. |
+| `pubcast_vision_integration.py` (`0e26abf9`), codex_construction | 1LYcJztxHE52aUsGiiiAGrUSwUFxuZr0K | every differing line against the live `modules/pubcast_vision_integration.py` | Older. Three lines differ, and the live file fixes all three. One is a real bug in this copy: `logger.info("broadcast_started", quality=...)` passes a keyword that the standard library's logging rejects. Nothing to harvest. |
+| `test_memory_systems.py` (`ffde98db`), codex_construction | 14YR5Vcff0NzpoMh06epBcNRNUOU__i70 | structure | A runnable script that tests the Alex, Jeremy and CC memory systems and the bridge protocol. Not engine. |
+| `conftest.py` (`c4ac1517`), codex_construction | 1KGKU1JxHw91uNrduGsWhLW5xTkZgdb41 | structure | Test fixtures: an app client with no startup, and a client run through the real startup. Worth comparing with the build's `tests/conftest.py` before a test-infrastructure change. |
+| `test_beefed_up_recovery_wiring.py` (`1ffc6f0a`, 1,107 bytes), codex_construction_pubblocks | 1Uma9A5b84zsRsbX0w8EW-ZgHT0fvyCMC | structure | Four checks that the safe-console and Pub Manager routes are declared and their scripts load. Not engine. |
+| `DEBUGGING_REPORT.md` (`2d696b16`, 2026-05-08), at the top of pubcast_complete_debugged | 1NNLYV-FhGAOaOwT93233XaTDF1BDXOg7 | first 60 lines | It claims "No critical bugs found. System is production-ready" and lists eight avatar-performer fixes. That is a claim from its writer; nothing here verifies it. Its fix list is useful as a checklist for `avatar_performer.py`. |

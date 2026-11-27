@@ -10,6 +10,7 @@ search the files only for what this log says it does not cover.
 | `zip_contents_index.tsv` | file inside any zip, at any depth (16,059 rows) | find a file by name, see where it lives, what it is, whether we already have it |
 | `branch_files_index.tsv` | distinct file in any branch tip of any repo (14,429 rows, 196 branch tips) | find which repo/branch/path holds a file |
 | `by_source/*.md` | source zip (108 pages) | read one zip's contents as a table |
+| `drive_folders_index.tsv` | file in a Drive folder of extracted copies (1,426 rows) | find a Drive copy by name; see whether it is new |
 | `stats.json` | the counts below | |
 
 TSV files open in Excel/LibreOffice or any text editor (tab-separated). In PowerShell 5:
@@ -73,7 +74,25 @@ TSV files open in Excel/LibreOffice or any text editor (tab-separated). In Power
   - `friday-Lunch (1).zip` (41,559,116) and `friday-whatsupjosie-further-better.zip` (41,473,396). Their names match
     GitHub's branch download of repo friday, branches Lunch and whatsupjosie-further-better. Those branches ARE in
     `branch_files_index.tsv`, but that the zips equal them is NOT verified.
-- Drive folders that hold extracted copies of some of these zips (not yet listed file by file):
+- **Drive folders holding extracted copies** (listed 2026-11-26; see `drive_folders_index.tsv`): 1,426 files, listed by
+  type: Python, JavaScript, HTML, CSS and zip in every folder below; plus Markdown, text and other binary files in
+  pubcast_complete_debugged_2026-05-08.
+  - **How each was identified.**
+    - 24 were downloaded and hashed.
+    - 1,394 match an indexed file by name and exact size. Five of these were sampled, downloaded and hashed, and all
+      five were byte-identical to the predicted fingerprint.
+  - **Result.**
+    - 7 contents are new, meaning in no zip or branch tip: an older `capture.py` (Feb 2026); an older
+      `pubcast_vision_integration.py`; `test_memory_systems.py`; a `conftest.py`; one small test; and
+      `DEBUGGING_REPORT.md`. See READ_NOTES.md section 9.
+    - 1 file could not be opened: a 15,284,978-byte `main.py` in codex_construction (Drive id
+      1vrUMHt-1zO8D8O2HDVtpdLZ4cZOHA-w8), which is over the connector's 10 MB limit.
+  - **Not listed in these folders.** Folder entries themselves; JSON and image files; Markdown/text outside
+    pubcast_complete_debugged; Rust build `.d` files beyond the first 98; and the `.git` folder
+    (1VwmtPI_-saCS11hFYcGXxFaIT3XyS531).
+  - **Why the big zips are mostly covered after all.** These folders are extracted copies of the large zips that could
+    not be downloaded. Almost all of their code is already in the index.
+- Drive folders (the original list; all but .git are now listed as above):
   - `codex_construction_pubcast_20260614` (1_A_yjDZxhfL8B3Fm3MPXKMNz5K2B9Y96)
   - `codex_construction_pubcast_20260614_pubblocks` (192ISPO4EeHV-Hr6qfymEUQOsjM0DI9p2)
   - `pubcast_complete_debugged_2026-05-08` (1vOOX-CbaYiF8J8aSzrOV21evR55gwV8n)
