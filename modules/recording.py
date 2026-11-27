@@ -178,6 +178,8 @@ class RecordingService:
         self._pipeline_sessions: Dict[str, Any] = {}
 
         self.recordings_dir = self.base_dir / "recordings"
+        # The preflight gate every start runs (modules/studio_camera_preflight.start_gate).
+        self.start_gate = True
         self.exports_dir = self.base_dir / "exports"
         self.imports_dir = self.base_dir / "imports"
         for directory in (self.recordings_dir, self.exports_dir, self.imports_dir):
@@ -336,6 +338,14 @@ class RecordingService:
         profile = self.get_profile(profile_id)
         if profile.profile_id == "browser_original":
             raise ValueError("Original browser takes use the encoded upload path, not camera capture")
+        if self.start_gate:
+            # Every start path comes through here (the route, the studio action, the timeline), so the
+            # gate cannot be skipped by any of them. It refuses only what would certainly lose the take.
+            from .studio_camera_preflight import start_gate  # it imports this module
+            preflight = start_gate(self.cameras, self, sources=sources, profile_id=profile_id,
+                                   host_override=host_override, mode=mode, record_data=record_data)
+        else:
+            preflight = None
 
         session = RecordingSession(
             session_id=session_id,
@@ -365,6 +375,10 @@ class RecordingService:
             except OSError:
                 logger.warning("Could not remove the empty reservation %s", session_dir)
             raise
+        if preflight is not None:
+            # What the director should know as the take starts (disk short of the plan, a camera offline ...).
+            session.preflight = {"warnings": preflight["warnings"], "issues": preflight["issues"],
+                                 "minutes_of_disk": preflight["machine"].get("minutes_of_disk")}
         self._sessions[session_id] = session
 
         # NEW: Create pipeline session for detailed event logging

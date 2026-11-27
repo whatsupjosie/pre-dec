@@ -42,7 +42,7 @@ from modules.persistence import sanitize_filename, unique_child_path
 from modules.runtime_control_routes import create_runtime_control_router
 from modules.stage_compat_routes import create_stage_compat_router
 from modules.blackbox_runtime import BlackBoxRuntimeWitness
-from modules.studio_camera_preflight import all_camera_visibility, camera_visibility_report, recording_preflight, studio_readiness
+from modules.studio_camera_preflight import PreflightRefusal, all_camera_visibility, camera_visibility_report, recording_preflight, studio_readiness
 from modules.program_audio import ProgramAudioState, apply_audio_event
 from modules.program_audio_routes import create_program_audio_router
 from modules.participant_audio import create_participant_audio_router
@@ -619,7 +619,12 @@ def create_production_router(
         sources = _string_list(body, "sources")
         profile_id = _string_field(body, "profile_id", default="broadcast_mp4", max_length=128) or "broadcast_mp4"
         host_override = _bool_field(body, "host_override", default=False)
-        report = recording_preflight(cameras, recording, sources=sources, profile_id=profile_id, host_override=host_override)
+        mode = body.get("mode")
+        if mode is not None and not isinstance(mode, str):
+            raise HTTPException(400, "mode must be text")
+        planned = _numeric_field(body, "planned_minutes", default=30, minimum=0)
+        report = recording_preflight(cameras, recording, sources=sources, profile_id=profile_id, host_override=host_override,
+                                     mode=mode, record_data=body.get("record_data", True), planned_minutes=planned)
         _blackbox_event(
             "recording.preflight",
             source="recording",
@@ -762,6 +767,9 @@ def create_production_router(
                 mode=mode,
                 record_data=record_data,
             )
+        except PreflightRefusal as exc:
+            raise HTTPException(409, {"message": str(exc), "refusals": exc.report["gate"]["refusals"],
+                                      "machine": exc.report["machine"]})
         except (ValueError, PermissionError, KeyError) as exc:
             raise HTTPException(400, str(exc))
 
@@ -789,6 +797,8 @@ def create_production_router(
             })
 
         response = session.to_dict()
+        if getattr(session, "preflight", None):
+            response["preflight"] = session.preflight
         if capture_paths:
             response["capture_paths"] = capture_paths
         # FFmpeg exiting within moments of starting means nothing is being recorded; say so now.
