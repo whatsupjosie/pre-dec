@@ -280,6 +280,14 @@ committed from the run.
 | `test_architecture_boundaries.py` (`665390a9`) | 1 passed, 1 failed | Needs `blackbox_plugin`. |
 | `test_sir_purfluous.py` (`ed49ce96`) | cannot import | Needs a module named `sir_purfluous`, which the build doesn't have. |
 
-None of the test files touch the control-room engine's recording, camera or audio authority in a way the build's own
-tests don't already cover. That was checked by their imports: none import `capture`, `recording_modes`, `cameras` or
-`program_audio`.
+**Correction, made in the same session.** The first version of this section said that no test file imports
+`capture`, `recording_modes`, `cameras` or `program_audio`. That was written before it was checked, and it was wrong.
+A check by import found two, and both were then RUN:
+
+- `test_pubcast.py` (`fa98a38f`) imports `modules.recording` and `modules.cameras`: 27 passed, 1 failed. The failure
+  expects 4 recording profiles where the live build has 5. It differs from the build's own `tests/test_pubcast.py` by
+  5 lines.
+- `test_module_router_parity_guards.py` (`33e64865`) imports `modules.recording_pipeline_routes`: 9 passed, 2 failed.
+  Its stand-in recording service lacks `get_session` and the `operator` argument, which the live routes now use.
+
+Neither failure is a regression in the build: in both, the test is older than the live interface.
