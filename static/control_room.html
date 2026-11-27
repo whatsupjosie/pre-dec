@@ -159,7 +159,7 @@ const MODE_BTN_MAP={auto:'dAuto',news:'dNews',documentary:'dDoc',cinematic:'dCin
 const studioActions=window.PubCastStudioConsoleHotspots?new window.PubCastStudioConsoleHotspots.StudioConsoleHotspots():null;
 let failedRecordingSources=[];
 const recordingOptions=window.PubCastRecordingControls.mount('operatorRecordingOptions');
-let recordingBusy=false,recordingPaused=false;
+let recordingPaused=false;
 // The server lists each source that failed to record as {source_id, error, phase}.
 function captureFailures(list){return [...new Set((Array.isArray(list)?list:[]).map(item=>String(item?.source_id||'a source')))]}
 let pgm='',pvw='',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
@@ -174,7 +174,7 @@ const sessionTracker=window.PubCastRecordingSession.create({key:"image_console_t
   document.getElementById("operatorPause").textContent=recordingPaused?"RESUME":"PAUSE";
   document.querySelector("#rec-active-panel button:last-child").disabled=!s.canStop;
   document.getElementById("recRelease").hidden=!s.missing;
-  document.getElementById("tRec").disabled=s.busy||!!s.id&&!s.canStop;
+  document.getElementById("tRec").disabled=s.busy||s.panicPending||!!s.id&&!s.canStop;
   document.getElementById("hudRec").classList.toggle("on",s.live&&s.verified);
   if(!s.live)document.getElementById("hudTime").textContent="00:00:00";
   updateUI();
@@ -272,16 +272,16 @@ async function cut(){
 async function toggleRec(){const s=sessionTracker.view();return s.id?sessionTracker.stop():sessionTracker.start();}
 async function togglePause(){return sessionTracker.pause();}
 async function panic(){
-  const releaseConfidence=confidenceGuard.hold();
+  const releaseConfidence=confidenceGuard.hold();sessionTracker.panicBegin();
   try{
-    const response=await fetch("/api/production/panic",{method:"POST"});
+    const response=await fetch("/api/production/panic",{method:"POST",signal:AbortSignal.timeout(120000)});
     if(!response.ok)throw Error("HTTP "+response.status);
     const result=await response.json();
     sessionTracker.panicResult(result);
     if(result.blackout_cued)document.getElementById("pgmFeedText").textContent="PANIC BLACKOUT CUED";
     document.getElementById("srMode").textContent=result.ok?"PANIC CONFIRMED":"PANIC PARTIAL: "+(result.capture_errors?.length||0)+" ERRORS";
     if(!result.ok)console.warn("PANIC partial failure",result.capture_errors);
-  }catch(e){document.getElementById("srMode").textContent="PANIC FAILED: "+e.message;}
+  }catch(e){sessionTracker.panicResult(null);document.getElementById("srMode").textContent="PANIC FAILED: "+e.message;}
   finally{releaseConfidence();}
 }
 async function muteAll(){
@@ -367,7 +367,7 @@ function handleWsEvent(m){
       break;
     case 'production_panic':
       // A panic broadcast alone does not prove this particular take stopped.
-      confidenceGuard.invalidate();refreshProductionTruth();refreshCanonical();
+      confidenceGuard.invalidate();sessionTracker.panicResult(m.payload);refreshProductionTruth();refreshCanonical();
       break;
     case 'lighting_preset':{
       const badge=document.getElementById('srMode');

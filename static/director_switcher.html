@@ -696,7 +696,7 @@ html.drag-scroll-active,html.drag-scroll-active *{cursor:grabbing!important;user
 const cameras = []; // Populate only with acknowledged server camera IDs.
 const recordingOptions=window.PubCastRecordingControls.mount("operatorRecordingOptions");
 const takeLibrary=window.PubCastRecordingLibrary.mount(document.getElementById("operatorTakeLibrary"));
-let recordingBusy=false,lastPostError="";
+let lastPostError="";
 // One audio mixer shared by all studios. These are real server buses, NOT a
 // fabricated separation of individual speakers (host/guest/Pete routing is future work).
 const audio = [
@@ -777,9 +777,10 @@ function headers() {
 
 async function postJSON(url, payload) {
   try {
-    const res = await fetch(url, {method: "POST", headers: headers(), body: JSON.stringify(payload || {})});
-    const data = await res.json().catch(() => ({}));
+    const res = await fetch(url, {method: "POST", headers: headers(), body: JSON.stringify(payload || {}),signal:AbortSignal.timeout(url==="/api/production/panic"?120000:15000)});
+    const data = await res.json().catch(() => null);
     if (!res.ok) throw new Error(window.PubCastRecordingControls.errorText(data,res.status));
+    if(!data||typeof data!=="object"||Array.isArray(data))throw Error("Invalid JSON receipt");
     lastPostError="";
     log("backend ok: " + url);
     return data;
@@ -794,9 +795,9 @@ async function postJSON(url, payload) {
 
 async function getJSON(url) {
   try {
-    const res = await fetch(url, {headers: headers()});
+    const res = await fetch(url, {headers: headers(),cache:"no-store",signal:AbortSignal.timeout(8000)});
     if (!res.ok) throw new Error("HTTP " + res.status);
-    return await res.json();
+    const data=await res.json();if(!data||typeof data!=="object")throw Error("Invalid JSON response");return data;
   } catch (err) {
     const msg = `${url} unavailable: ${err.message}`;
     backendTruth.failures.push(msg);
@@ -842,7 +843,7 @@ function log(text) {
   const el = document.createElement("div");
   const t = new Date().toLocaleTimeString([], {hour12:false});
   el.textContent = t + "  " + text;
-  $("eventLog").prepend(el);
+  const events=$("eventLog");events.prepend(el);while(events.childElementCount>300)events.lastElementChild.remove();
 }
 
 function setTruthCard(id, state, value, detail) {
@@ -856,18 +857,19 @@ function setTruthCard(id, state, value, detail) {
 
 function renderDangerPanel() {
   const body = $("dangerBody");
-  const lines = [];
-  const healthOk = backendTruth.health && !backendTruth.health.error;
-  lines.push(`<div class="danger-line ${healthOk ? "ok" : "bad"}">Health: ${healthOk ? "OK" : "Unavailable"} ${backendTruth.health?.error || ""}</div>`);
-  lines.push(`<div class="danger-line ${recording ? "bad" : "ok"}">Recording: ${recording ? "LOCAL REC ARMED" : "IDLE"} - visible on truth rail and REC button.</div>`);
-  lines.push(`<div class="danger-line warn">Recording session: ${activeRecordingSessionId || "no backend session confirmed"}</div>`);
-  lines.push(`<div class="danger-line ${backendTruth.mocap?.available ? "ok" : "bad"}">Mocap: ${backendTruth.mocap?.available ? "Available" : "Unavailable"} ${backendTruth.mocap?.error || ""}</div>`);
-  lines.push(`<div class="danger-line ${backendTruth.timeline?.error ? "bad" : "ok"}">Timeline: ${backendTruth.timeline?.state || backendTruth.timeline?.error || "Unknown"}</div>`);
-  lines.push(`<div class="danger-line ${backendTruth.ai?.error ? "bad" : "warn"}">AI brains: ${backendTruth.ai?.error || backendTruth.ai?.status || "not proven"}</div>`);
-  lines.push(`<div class="danger-line warn">Feeds: monitors are labeled LOCAL PREVIEW unless a real backend feed confirms availability.</div>`);
-  lines.push(`<div class="danger-line warn">Export: ${exportDetail()}</div>`);
-  backendTruth.failures.slice(-8).forEach(f => lines.push(`<div class="danger-line bad">${escapeHTML(f)}</div>`));
-  body.innerHTML = lines.join("");
+  const s=sessionTracker.view();
+  const line=(kind,message)=>{const el=document.createElement("div");el.className="danger-line "+kind;el.textContent=message;return el;};
+  const healthOk=backendTruth.health&&!backendTruth.health.error;
+  body.replaceChildren(
+    line(healthOk?"ok":"bad","Health: "+(healthOk?"OK":"Unavailable")+" "+(backendTruth.health?.error||"")),
+    line(s.id?"warn":"ok","Recording: "+(s.id&&!s.verified?"UNVERIFIED":s.state.toUpperCase())),
+    line("warn","Recording session: "+(s.id||s.last||"No local take")),
+    line(backendTruth.mocap?.available?"ok":"bad","Mocap: "+(backendTruth.mocap?.available?"Available":"Unavailable")+" "+(backendTruth.mocap?.error||"")),
+    line(backendTruth.timeline?.error?"bad":"ok","Timeline: "+(backendTruth.timeline?.state||backendTruth.timeline?.error||"Unknown")),
+    line(backendTruth.ai?.error?"bad":"warn","AI brains: "+(backendTruth.ai?.error||backendTruth.ai?.status||"not proven")),
+    line("warn","Feeds: verified low-rate confidence images, not broadcast capture."),
+    line("warn","Export: "+exportDetail()),
+    ...backendTruth.failures.slice(-8).map(f=>line("bad",f)));
 }
 
 function exportDetail() {
@@ -1055,7 +1057,7 @@ const sessionTracker=window.PubCastRecordingSession.create({key:"director_consol
   activeRecordingSessionId=s.id||s.last;recording=s.live;paused=s.state==="paused";
   failedRecordingSources=[...new Set([...startFailures(s.record),...stopFailures(s.record)])];
   recordingOptions.setLocked(s.locked);
-  $("recordBtn").disabled=s.busy||!!s.id&&!s.canStop;
+  $("recordBtn").disabled=s.busy||s.panicPending||!!s.id&&!s.canStop;
   $("recordBtn").classList.toggle("live",s.live&&s.verified);
   $("pauseBtn").disabled=!s.canPause;
   $("pauseBtn").textContent=paused?"RESUME":"PAUSE";
@@ -1078,9 +1080,9 @@ async function marker() {
 async function panic() {
   // Do not update the local video source or claim recording stopped until
   // the backend has actually attempted the stop, black cue, and audio mute.
-  const releaseConfidence=confidenceGuard.hold();
+  const releaseConfidence=confidenceGuard.hold();sessionTracker.panicBegin();
   let result;try{result=await postJSON("/api/production/panic",{});}finally{releaseConfidence();}
-  if(!result){setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
+  if(!result){sessionTracker.panicResult(null);setTruthCard("truthRecording","bad","PANIC FAILED","Backend not reached");toast("PANIC FAILED");return;}
   sessionTracker.panicResult(result);
   directorBlackout=!!result.blackout_cued;
   setTruthCard("truthRecording",result.ok?"warn":"bad",result.ok?"PANIC SENT":"PANIC PARTIAL",

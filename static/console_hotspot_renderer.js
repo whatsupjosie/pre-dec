@@ -75,6 +75,7 @@
         report(hotspot.label + " canceled.");
         return;
       }
+      if(result?.ok!==true)throw Error("Action not confirmed by studio");
       report(hotspot.label + " ok.");
     } catch (err) {
       // Signing out is not this control's fault and must be seen whatever is

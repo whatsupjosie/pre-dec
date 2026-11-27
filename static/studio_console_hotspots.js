@@ -89,19 +89,23 @@
       ].join("");
       ensureConfirmStyles();
       document.body.appendChild(overlay);
+      const previousFocus=document.activeElement;let completed=false;
       const done = (value) => {
-        document.removeEventListener("keydown", onKey);
-        overlay.remove();
+        if(completed)return;completed=true;
+        document.removeEventListener("keydown", onKey,true);
+        overlay.remove();previousFocus?.focus?.();
         resolve(value);
       };
       const onKey = (event) => {
-        if (event.key === "Escape") done(false);
-        if (event.key === "Enter") done(true);
+        if(event.key==="Escape"){event.preventDefault();event.stopImmediatePropagation();done(false);return;}
+        if(event.key==="Tab"){event.preventDefault();event.stopImmediatePropagation();const cancel=overlay.querySelector("[data-confirm-cancel]"),ok=overlay.querySelector("[data-confirm-ok]");(document.activeElement===cancel?ok:cancel).focus();return;}
+        if(event.key==="Enter"){event.stopImmediatePropagation();if(!overlay.contains(document.activeElement))event.preventDefault();return;}
+        if(!overlay.contains(event.target))event.stopImmediatePropagation();
       };
       overlay.querySelector("[data-confirm-cancel]").addEventListener("click", () => done(false));
       overlay.querySelector("[data-confirm-ok]").addEventListener("click", () => done(true));
-      document.addEventListener("keydown", onKey);
-      overlay.querySelector("[data-confirm-ok]").focus();
+      document.addEventListener("keydown", onKey,true);
+      overlay.querySelector("[data-confirm-cancel]").focus();
     });
   }
 
@@ -181,7 +185,9 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload || {}),
+        signal: globalThis.AbortSignal?.timeout?.(120000),
       });
+      if(response?.ok!==true)throw Error(typeof response?.detail==="string"?response.detail:"Studio action did not return an affirmative receipt");
       this.lastAction = response;
       return response;
     }
@@ -195,6 +201,9 @@
           return { ok: false, canceled: true, action_id: actionId };
         }
         body.confirm = true;
+      }
+      if(typeof context?.beforeExecute==="function"){
+        try{await context.beforeExecute();}catch(error){return {ok:false,notSent:true,reason:error.message||String(error),action_id:actionId};}
       }
       return this.execute(actionId, body);
     }
@@ -236,12 +245,12 @@
       if (!response) throw new Error("Studio console request failed");
       // A proxy or crashed host can answer with HTML; that must surface as a
       // clear failure, not as a JSON parse error.
-      let data = {};
+      let data = null;
       if (typeof response.json === "function") {
         try {
           data = await response.json();
         } catch (_err) {
-          data = {};
+          data = null;
         }
       }
       if (!response.ok) {
@@ -253,7 +262,8 @@
         const detail = data && typeof data.detail === "string" ? data.detail : "";
         throw new Error(detail || ("Studio console request failed" + (response.status ? " (" + response.status + ")" : "")));
       }
-      return data || {};
+      if(!data||typeof data!=="object"||Array.isArray(data))throw Error("Studio console returned an invalid JSON receipt");
+      return data;
     }
   }
 
