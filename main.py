@@ -1227,6 +1227,15 @@ async def lifespan(application: FastAPI):
     application.include_router(create_studio25d_recording_router(recording))
     slate_router = create_slate_router(DATA_DIR / "production_slates.sqlite3")
     application.include_router(slate_router)
+    # The director's PA (modules/intercom.py): announcements to one room or all, grants kept on disk.
+    from modules.intercom import Intercom
+    from modules.intercom_routes import create_intercom_router
+    intercom = Intercom(hub, lambda: getattr(application.state, "tts_engine", None),
+                        grants_path=DATA_DIR / "intercom_grants.json",
+                        record=production_router.recording_modes.record_event)
+    application.state.intercom = intercom
+    application.include_router(create_intercom_router(
+        intercom, display_name=lambda user_id: hub.user_display_name.get(user_id, user_id)))
 
     def production_pass_scope():
         slate = slate_router.store.current()

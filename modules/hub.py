@@ -441,8 +441,12 @@ class Hub:
             return False
 
     async def post_chat_message(self, room: str, user_id: str, text: str,
-                                client_message_id: str | None = None) -> Dict[str, Any]:
+                                client_message_id: str | None = None,
+                                notify_ai: bool = True) -> Dict[str, Any]:
         """Commit room text first, then try the independent side effects.
+
+        ``notify_ai=False`` keeps the line from reaching the chat callback (the AI cast and the room
+        conductor): a PA announcement is direction for the room, not conversation to answer.
 
         A UUID-keyed retry reuses the existing persisted message without a
         second broadcast or bot callback. Legacy unkeyed sends retain their
@@ -475,7 +479,7 @@ class Hub:
                 logger.exception("EQ recorder failed after chat message %s was persisted", payload["message_id"])
         await self._broadcast(room, {"type": "chat", "payload": payload})
         warnings = [] if witnessed else ["BlackBox witness unavailable for this message"]
-        if callable(self.on_chat_callback):
+        if notify_ai and callable(self.on_chat_callback):
             try:
                 await self.on_chat_callback(payload)
             except Exception:
