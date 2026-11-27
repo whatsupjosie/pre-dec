@@ -306,7 +306,7 @@ function applyLowerThird(value,shared){
 async function setLowerThird(value){
  const text=String(value||"").trim().slice(0,240);
  if(state.sharedSwitcher?.connected()){
-   const response=await fetch("/api/state/production",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lower_third:text})});
+   const response=await fetch("/api/state/production",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lower_third:text}),signal:AbortSignal.timeout(8000)});
    if(!response.ok)throw Error("Lower-third command rejected: HTTP "+response.status);
    const result=await response.json();
    if(result.lower_third!==text)throw Error("Lower-third command not confirmed");
@@ -325,7 +325,7 @@ async function syncServerVideoCues(){
  const session=state.session;
  state.cuePollBusy=true;
  try{
-   const response=await fetch("/api/state/production",{cache:"no-store"});
+   const response=await fetch("/api/state/production",{cache:"no-store",signal:AbortSignal.timeout(3000)});
    if(!response.ok)return;
    const remote=await response.json();
    if(state.session!==session||!remote||typeof remote!=="object")return;
@@ -930,6 +930,7 @@ function frame(now){
     pv.fillStyle="#ff8b8b";pv.font="bold 28px system-ui";pv.textAlign="center";
     pv.fillText("EXTERNAL PREVIEW SOURCE — NO LOCAL VIDEO FEED",Core.W/2,Core.H/2);
   }
+  if(state.blackout||state.panicActive){state.transition=null;pr.globalAlpha=1;pr.fillStyle="#000";pr.fillRect(0,0,Core.W,Core.H);}
   if(state.transition){
    const f=1-(now-state.transition.started)/state.transition.duration;
    if(f>0){pr.globalAlpha=Math.min(1,Math.max(0,f));pr.drawImage(lastFrame,0,0);pr.globalAlpha=1;}

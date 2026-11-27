@@ -152,7 +152,7 @@ async function prodPatch(patch) {
   const response = await fetch('/api/state/production', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(patch)
+    body: JSON.stringify(patch),signal:AbortSignal.timeout(15000)
   });
   let data = null;
   try { data = await response.json(); } catch (_) {}
@@ -169,17 +169,20 @@ async function prodPatch(patch) {
   return data;
 }
 
+const stationBusy=new Set();
 async function stationAction(station, buttonId, task, success) {
   const button = document.getElementById(buttonId);
-  if (!button || button.disabled) return;
-  button.disabled = true;
+  if (!button || button.disabled || stationBusy.has(station)) return;
+  stationBusy.add(station);
+  const controls=[...document.querySelectorAll("#station-"+station+" button")].filter(b=>!b.disabled);
+  controls.forEach(b=>b.disabled=true);
   try {
     await task();
     stationFeedback(station, success);
   } catch (error) {
     stationFeedback(station, error.message || 'The command failed', true);
   } finally {
-    button.disabled = false;
+    stationBusy.delete(station);controls.forEach(b=>b.disabled=false);
   }
 }
 
@@ -210,7 +213,7 @@ document.getElementById('pro-start')?.addEventListener('click', () => {
   const inputSpeed = Number(document.getElementById('pro-speed')?.value || 5);
   const speed = Number.isFinite(inputSpeed) ? Math.max(1, Math.min(20, inputSpeed)) : 5;
   if (_proTimer) clearInterval(_proTimer);
-  _proTimer = setInterval(() => { el.scrollTop += speed * 0.4; }, 50);
+  _proTimer = setInterval(() => {const previous=el.scrollTop;el.scrollTop+=speed*0.4;if(el.scrollTop===previous&&el.scrollHeight-el.clientHeight-el.scrollTop<=1){clearInterval(_proTimer);_proTimer=null;stationFeedback("prompter","End of local script");}}, 50);
   stationFeedback('prompter', 'Local teleprompter scrolling');
 });
 document.getElementById('pro-stop')?.addEventListener('click', () => {
@@ -239,7 +242,7 @@ function replayAsset(raw) {
 }
 async function requireReplayAsset(asset) {
   const url = '/assets/' + asset.split('/').map(encodeURIComponent).join('/');
-  const response = await fetch(url, {method: 'HEAD', cache: 'no-store'});
+  const response = await fetch(url, {method: 'HEAD', cache: 'no-store',signal:AbortSignal.timeout(8000)});
   if (!response.ok) throw Error('Replay asset not found: ' + asset + ' (HTTP ' + response.status + ')');
   const type = response.headers?.get('content-type') || '';
   if (type && !type.toLowerCase().startsWith('video/')) {
@@ -247,7 +250,7 @@ async function requireReplayAsset(asset) {
   }
 }
 async function readProductionState() {
-  const response = await fetch('/api/state/production', {cache: 'no-store'});
+  const response = await fetch('/api/state/production', {cache: 'no-store',signal:AbortSignal.timeout(8000)});
   if (!response.ok) throw Error('Cannot read production state (HTTP ' + response.status + ')');
   const result = await response.json();
   if (!result || typeof result !== 'object') throw Error('Invalid production state');
@@ -271,7 +274,7 @@ document.getElementById('vtr-play')?.addEventListener('click', () => stationActi
   }, 'Replay cue acknowledged by host; actual Program playback is not verified'
 ));
 document.getElementById('vtr-stop')?.addEventListener('click', () => stationAction(
-  'vtr', 'vtr-stop', () => prodPatch({on_air: false}), 'Replay taken off air'
+  'vtr', 'vtr-stop', () => prodPatch({on_air: false}), 'Replay stop cue acknowledged; Program playback not independently verified'
 ));
 
 // ── Shared program audio mixer ───────────────────────────────────────────────

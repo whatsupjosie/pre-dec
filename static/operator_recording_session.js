@@ -57,6 +57,7 @@
    }
    function remember(value){last=value;lastVerified=true;try{storage?.setItem(scope,principal);storage?.setItem(key+"_last",value);}catch(_){}}
    function view(){
+     if(identity()!==principal)identityBlocked=true;
      return {id,last,state,record,busy,verified,missing,error,lastVerified,identityBlocked,
        live:activeStates.has(state),closed:closedStates.has(state),locked:busy||!!id||panicPending||identityBlocked,
        canStop:!!id&&verified&&activeStates.has(state)&&!busy&&!panicPending&&!identityBlocked,

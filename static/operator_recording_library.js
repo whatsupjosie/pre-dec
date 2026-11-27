@@ -6,7 +6,7 @@
   const route=id=>"/api/recording/"+encodeURIComponent(id);
   function ordered(items){if(!Array.isArray(items))throw Error("Invalid recording list");return items.filter(x=>x&&typeof x.session_id==="string"&&x.session_id).sort((a,b)=>Number(b.started_at||0)-Number(a.started_at||0));}
   function filename(id){return (String(id).replace(/[^a-zA-Z0-9_.-]/g,"_").slice(0,120)||"recording")+".zip";}
-  function formatBytes(bytes){const n=Number(bytes);if(!Number.isFinite(n)||n<0)return "unknown size";return n>=1048576?(n/1048576).toFixed(1)+" MiB":Math.round(n/1024)+" KiB";}
+  function formatBytes(bytes){if(bytes===null||bytes===undefined||bytes==="")return "unknown size";const n=Number(bytes);if(!Number.isFinite(n)||n<0)return "unknown size";return n>=1048576?(n/1048576).toFixed(1)+" MiB":Math.round(n/1024)+" KiB";}
   function reportLines(s,m){
     const artifacts=Array.isArray(s.artifacts)?s.artifacts:[];
     const errors=Array.isArray(s.capture_errors)?s.capture_errors:[];
@@ -18,7 +18,7 @@
     return out;
   }
   async function failure(response){let data;try{data=await response.json();}catch(_){}return Error(typeof data?.detail==="string"?data.detail:"HTTP "+response.status);}
-  async function json(url,options={}){const response=await fetch(url,{cache:"no-store",...options});if(!response.ok)throw await failure(response);return response.json();}
+  async function json(url,options={}){const response=await fetch(url,{cache:"no-store",signal:AbortSignal.timeout(options.method==="POST"?120000:8000),...options});if(!response.ok)throw await failure(response);return response.json();}
   function appendTail(tail,chunk,limit=65664){
     if(chunk.length>=limit)return chunk.slice(chunk.length-limit);
     const keep=Math.min(tail.length,limit-chunk.length),next=new Uint8Array(keep+chunk.length);
@@ -109,7 +109,7 @@
     function controls(){cancelButton.hidden=!exportController;select.disabled=busy;refreshButton.disabled=busy;format.disabled=busy;exportButton.disabled=busy||!closed(selected);assembleButton.disabled=busy||!closed(selected)||selected?.mode!=="main_camera";}
     async function work(fn){if(busy)return;busy=true;controls();try{await fn();}catch(e){status.textContent="Failed: "+e.message;}finally{busy=false;controls();}}
     async function inspect(){const generation=++revision;selected=sessions.find(x=>x.session_id===select.value)||null;modeReport=null;details.textContent=selected?reportLines(selected,null).join("\n"):"No take selected";controls();if(!selected)return;const id=selected.session_id;try{const report=await json(route(id)+"/mode");if(generation===revision){modeReport=report;details.textContent=reportLines(selected,report).join("\n");}}catch(e){if(generation===revision)status.textContent="Take metadata available; mode report unavailable: "+e.message;}}
-    async function refresh(preferred){await work(async()=>{const previous=preferred||select.value;sessions=ordered(await json("/api/recording/sessions"));select.replaceChildren();for(const session of sessions){const opt=document.createElement("option");opt.value=session.session_id;opt.textContent=session.session_id+" | "+(modes[session.mode]||session.mode||"unknown")+" | "+session.state;select.append(opt);}if(sessions.some(x=>x.session_id===previous))select.value=previous;status.textContent=sessions.length?sessions.length+" server recording(s)":"No recordings returned by server";await inspect();});}
+    async function refresh(preferred){await work(async()=>{const previous=preferred||select.value;revision++;selected=null;modeReport=null;details.textContent="Refreshing takes...";controls();sessions=ordered(await json("/api/recording/sessions"));select.replaceChildren();for(const session of sessions){const opt=document.createElement("option");opt.value=session.session_id;opt.textContent=session.session_id+" | "+(modes[session.mode]||session.mode||"unknown")+" | "+session.state;select.append(opt);}if(sessions.some(x=>x.session_id===previous))select.value=previous;status.textContent=sessions.length?sessions.length+" server recording(s)":"No recordings returned by server";await inspect();});}
     select.addEventListener("change",inspect);controls();
     return {refresh,select(id){return refresh(id);}};
   }

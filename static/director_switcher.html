@@ -728,7 +728,7 @@ function stopFailures(result){
     .filter(item => Array.isArray(item?.warnings) && item.warnings.length)
     .map(item => String(item.source_id || "a source"));
 }
-let clockStart = performance.now();
+let clockStart = performance.now(),truthPolling=false,exportBusy=false,exportReceipt=false;
 let backendTruth = {
   health: null,
   studio: null,
@@ -874,7 +874,7 @@ function renderDangerPanel() {
 
 function exportDetail() {
   if (sessionTracker.view().id) return "not ready until the local take is confirmed closed";
-  if (activeRecordingSessionId) return `stopped session ${activeRecordingSessionId} can request recording export`;
+  if (sessionTracker.view().lastVerified) return `confirmed closed session ${activeRecordingSessionId} can request recording export`;
   if (backendTruth.health && !backendTruth.health.error) return "backend reachable; export package still requires recording/project proof";
   return "backend status unavailable; export readiness not proven";
 }
@@ -1054,16 +1054,18 @@ async function fade(){
 }
 
 const sessionTracker=window.PubCastRecordingSession.create({key:"director_console_take_v1",adapter:studioActions,prepare:()=>recordingOptions.prepare(),onState:s=>{
+  if(activeRecordingSessionId!==(s.id||s.last))exportReceipt=false;
   activeRecordingSessionId=s.id||s.last;recording=s.live;paused=s.state==="paused";
   failedRecordingSources=[...new Set([...startFailures(s.record),...stopFailures(s.record)])];
   recordingOptions.setLocked(s.locked);
-  $("recordBtn").disabled=s.busy||s.panicPending||!!s.id&&!s.canStop;
+  $("recordBtn").disabled=s.identityBlocked||s.busy||s.panicPending||!!s.id&&!s.canStop;
   $("recordBtn").classList.toggle("live",s.live&&s.verified);
   $("pauseBtn").disabled=!s.canPause;
   $("pauseBtn").textContent=paused?"RESUME":"PAUSE";
   $("pauseBtn").classList.toggle("active-preview",paused&&s.verified);
-  $("recRelease").hidden=!s.missing;
-  setTruthCard("truthRecording",!s.verified&&s.id||failedRecordingSources.length?"bad":s.live?"warn":"ok",failedRecordingSources.length?"Incomplete take":s.busy?"Working":s.state.toUpperCase(),(s.id||s.last||"No local take")+(failedRecordingSources.length?" | "+failedRecordingSources.join(", "):""));
+  $("recRelease").hidden=!s.canRelease;
+  $("exportBtn").disabled=exportBusy||s.identityBlocked||s.busy||!!s.id||!s.lastVerified;
+  setTruthCard("truthRecording",s.identityBlocked||s.error||!s.verified&&s.id||failedRecordingSources.length?"bad":s.live?"warn":"ok",s.identityBlocked?"Operator changed":failedRecordingSources.length?"Incomplete take":s.busy?"Working":s.state==="active"?"Backend REC":s.state==="stopped"||s.state==="archived"?"Idle (closed)":s.state.toUpperCase(),(s.id||s.last||"No local take")+(failedRecordingSources.length?" | "+failedRecordingSources.join(", "):"")+(s.error?" | "+s.error:""));
 },onError:message=>{setTruthCard("truthRecording","bad","Take not confirmed",message);log(message);}});
 async function toggleRecord(btn){const s=sessionTracker.view();return s.id?sessionTracker.stop():sessionTracker.start();}
 async function pauseRecording(btn){return sessionTracker.pause();}
@@ -1078,6 +1080,7 @@ async function marker() {
 }
 
 async function panic() {
+  if(sessionTracker.view().panicPending)return;
   // Do not update the local video source or claim recording stopped until
   // the backend has actually attempted the stop, black cue, and audio mute.
   const releaseConfidence=confidenceGuard.hold();sessionTracker.panicBegin();
@@ -1115,7 +1118,9 @@ async function preset(name,btn) {
 
 async function exportRecording(btn) {
   clickFlash(btn);
-  if (sessionTracker.view().id) {
+  if (exportBusy)return;
+  const session=sessionTracker.view();
+  if (session.id||session.identityBlocked||session.busy||!session.lastVerified) {
     setTruthCard("truthExport", "bad", "Locked", "Stop recording before export");
     log("export blocked: recording is active");
     toast("EXPORT LOCKED");
@@ -1127,17 +1132,18 @@ async function exportRecording(btn) {
     toast("NO EXPORT SESSION");
     return;
   }
-  btn.disabled=true;
+  exportBusy=true;exportReceipt=true;btn.disabled=true;
   try{
     const result=await window.PubCastRecordingLibrary.download(activeRecordingSessionId,"mp4",message=>setTruthCard("truthExport","warn","Exporting",message));
     if(result.canceled){setTruthCard("truthExport","warn","Canceled","No export saved");return;}
     setTruthCard("truthExport","ok",result.saved?"Saved":"Download started",window.PubCastRecordingLibrary.formatBytes(result.bytes)+" ZIP bundle");
     toast(result.saved?"EXPORT SAVED":"DOWNLOAD STARTED");
   }catch(e){setTruthCard("truthExport","bad","Export failed",e.message);log("Export failed: "+e.message);toast("EXPORT FAILED");}
-  finally{btn.disabled=false;}
+  finally{exportBusy=false;sessionTracker.publish();}
 }
 
 async function refreshTruth() {
+  if(truthPolling)return;truthPolling=true;try{
   backendTruth.failures = [];
   const [health, studio, camerasState, recordingStorage, mocap, timeline, voxel, ai] = await Promise.all([
     getJSON("/health"),
@@ -1158,10 +1164,11 @@ async function refreshTruth() {
   await refreshAudioTruth();
   setTruthCard("truthTimeline", timeline.error ? "bad" : "ok", timeline.state || "Unknown", `progress=${Math.round((timeline.progress || 0) * 100)}% timeline=${timeline.timeline_name || timeline.timeline || "none"}`);
   setTruthCard("truthAI", ai.error ? "bad" : "warn", ai.error ? "Unavailable" : (ai.status || "Reachable"), ai.error || `Studio/Architect model availability must be confirmed before show`);
-  setTruthCard("truthExport", recording ? "bad" : (health.error ? "bad" : "warn"), recording ? "Locked" : "Visible", exportDetail());
+  if(!exportBusy&&!exportReceipt)setTruthCard("truthExport", sessionTracker.view().id ? "bad" : (health.error ? "bad" : "warn"), sessionTracker.view().id ? "Locked" : "Visible", exportDetail());
   updateMonitors();
   renderDangerPanel();
   log("truth surface refreshed");
+  }finally{truthPolling=false;}
 }
 
 function togglePanel(id, open) {

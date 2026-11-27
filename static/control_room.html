@@ -165,20 +165,22 @@ function captureFailures(list){return [...new Set((Array.isArray(list)?list:[]).
 let pgm='',pvw='',isRec=false,recStart=0,mode='auto',ws=null,activeRecordingSessionId='';
 const sessionTracker=window.PubCastRecordingSession.create({key:"image_console_take_v1",adapter:studioActions,prepare:()=>recordingOptions.prepare(),onState:s=>{
   activeRecordingSessionId=s.id;isRec=s.live;recordingPaused=s.state==="paused";recStart=Number(s.record?.started_at)*1000||Date.now();
-  failedRecordingSources=captureFailures(s.record?.capture_errors);
+  failedRecordingSources=[...new Set([...captureFailures(s.record?.capture_errors),...captureFailures((s.record?.capture_report||[]).filter(r=>r?.warnings?.length))])];
   recordingOptions.setLocked(s.locked);
   document.getElementById("rec-active-id").textContent=s.id||s.last;
-  document.getElementById("rec-status-badge").textContent=s.busy?"WORKING":s.state.toUpperCase();
+  document.getElementById("rec-status-badge").textContent=s.identityBlocked?"OPERATOR CHANGED":s.busy?"WORKING":s.state.toUpperCase();
+  document.getElementById("rec-status-badge").style.background=s.identityBlocked||!s.verified&&s.id||failedRecordingSources.length?"#9d302f":s.state==="active"?"#c22":s.state==="paused"?"#a80":"#555";
   document.getElementById("rec-active-panel").style.display=s.id?"block":"none";
   document.getElementById("operatorPause").disabled=!s.canPause;
   document.getElementById("operatorPause").textContent=recordingPaused?"RESUME":"PAUSE";
   document.querySelector("#rec-active-panel button:last-child").disabled=!s.canStop;
-  document.getElementById("recRelease").hidden=!s.missing;
-  document.getElementById("tRec").disabled=s.busy||s.panicPending||!!s.id&&!s.canStop;
+  document.getElementById("recRelease").hidden=!s.canRelease;
+  document.getElementById("tRec").disabled=s.identityBlocked||s.busy||s.panicPending||!!s.id&&!s.canStop;
   document.getElementById("hudRec").classList.toggle("on",s.live&&s.verified);
   if(!s.live)document.getElementById("hudTime").textContent="00:00:00";
   updateUI();
-  if(!s.verified&&s.id)document.getElementById("srRec").textContent="TAKE UNVERIFIED: "+s.id;
+  if(s.error)document.getElementById("srRec").textContent=s.error;
+  else if(!s.verified&&s.id)document.getElementById("srRec").textContent="TAKE UNVERIFIED: "+s.id;
 },onError:message=>{document.getElementById("srRec").textContent=message;}});
 let audioMuted=[false,false,false,false,false];
 let controlBlackout=false,lastPanic=0,lastBlackout=0;
@@ -252,7 +254,7 @@ function updateUI(){
   MODES.forEach(m=>{const el=document.getElementById(MODE_BTN_MAP[m]);if(el)el.className='hotspot round'+(mode===m?' pvw-active':'')});
   document.getElementById('srMode').textContent='MODE: '+mode.toUpperCase();
   document.getElementById('srCam').textContent='PGM: '+(pc?'CAM '+pc.n:'BLACK');
-  document.getElementById('srRec').textContent=failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(sessionTracker.view().id&&!sessionTracker.view().verified?'UNVERIFIED':recordingPaused?'PAUSED':isRec?'â— ON':'OFF');
+  document.getElementById('srRec').textContent=sessionTracker.view().identityBlocked?'SIGN-IN CHANGED':sessionTracker.view().error|| (failedRecordingSources.length?'CAPTURE ERROR: '+failedRecordingSources.join(', '):'REC: '+(sessionTracker.view().id&&!sessionTracker.view().verified?'UNVERIFIED':recordingPaused?'PAUSED':isRec?'â— ON':'OFF'));
   document.getElementById('tRec').className='hotspot rect'+(isRec?' rec-active':'');
 }
 async function setPGM(id){
@@ -272,6 +274,7 @@ async function cut(){
 async function toggleRec(){const s=sessionTracker.view();return s.id?sessionTracker.stop():sessionTracker.start();}
 async function togglePause(){return sessionTracker.pause();}
 async function panic(){
+  if(sessionTracker.view().panicPending)return;
   const releaseConfidence=confidenceGuard.hold();sessionTracker.panicBegin();
   try{
     const response=await fetch("/api/production/panic",{method:"POST",signal:AbortSignal.timeout(120000)});
@@ -319,9 +322,10 @@ document.addEventListener('keydown',e=>{
   if(e.repeat||e.target.closest?.('input,textarea,select,button,[contenteditable]'))return;
   switch(e.key){case'1':setPGM('cam1');break;case'2':setPGM('cam2');break;case'3':setPGM('cam3');break;case'4':setPGM('cam4');break;case'5':setPGM('cam5');break;case' ':e.preventDefault();cut();break;case'r':case'R':toggleRec();break;case'Escape':panic();break;case'm':case'M':muteAll();break;case'd':case'D':setMode(MODES[(MODES.indexOf(mode)+1)%MODES.length]);break}
 });
-setInterval(()=>{const now=new Date();const tc=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}:${String(Math.floor(now.getMilliseconds()/1000*30)).padStart(2,'0')}`;document.getElementById('pgmTc').textContent=tc;document.getElementById('pvwTc').textContent=tc.slice(0,8);document.getElementById('chkTc').textContent=tc.slice(0,8);if(isRec){const s=Math.floor((Date.now()-recStart)/1000);document.getElementById('hudTime').textContent=`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}},250);
+setInterval(()=>{const now=new Date();const tc=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}:${String(Math.floor(now.getMilliseconds()/1000*30)).padStart(2,'0')}`;document.getElementById('pgmTc').textContent=tc;document.getElementById('pvwTc').textContent=tc.slice(0,8);document.getElementById('chkTc').textContent=tc.slice(0,8);if(isRec&&sessionTracker.view().verified){const s=Math.max(0,Math.floor((Date.now()-recStart)/1000));document.getElementById('hudTime').textContent=`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;document.getElementById('rec-active-timer').textContent='Take age '+document.getElementById('hudTime').textContent;}else{document.getElementById('rec-active-timer').textContent=sessionTracker.view().id?'Timing unverified':'';}},250);
 // These timecode digits are wall-clock estimates, not recorder synchronization.
 document.getElementById('pgmTc').title='Wall-clock estimate only; not embedded media timecode';
+document.getElementById('hudTime').title='Wall-clock take age, including pauses; not media duration or embedded timecode';
 async function refreshProductionTruth(){
   try{
     const response=await fetch("/api/state/production",{cache:"no-store"});
